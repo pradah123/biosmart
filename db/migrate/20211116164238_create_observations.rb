@@ -11,6 +11,11 @@ class CreateObservations < ActiveRecord::Migration[6.1]
             t.st_point  :location, geographic: true
             t.string    :app_id, index: true
             t.string    :username
+            t.string    :user_id
+            t.integer   :quality_level
+            t.integer   :location_accuracy
+            t.integer   :identifications_count, default: 0
+            t.integer   :photos_count, default: 0
 
             t.index     :location, using: :gist
             

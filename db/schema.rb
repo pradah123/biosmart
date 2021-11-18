@@ -27,6 +27,11 @@ ActiveRecord::Schema.define(version: 2021_11_18_115816) do
     t.geography "location", limit: {:srid=>4326, :type=>"st_point", :geographic=>true}
     t.string "app_id"
     t.string "username"
+    t.string "user_id"
+    t.integer "quality_level"
+    t.integer "location_accuracy"
+    t.integer "identifications_count", default: 0
+    t.integer "photos_count", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["app_id"], name: "index_observations_on_app_id"
