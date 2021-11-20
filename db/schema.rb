@@ -10,11 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_18_115816) do
+ActiveRecord::Schema.define(version: 2021_11_20_043154) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
+
+  create_table "contests", force: :cascade do |t|
+    t.string "title"
+    t.string "description"
+    t.datetime "begin_at"
+    t.datetime "end_at"
+    t.text "participating_regions", default: [], array: true
+    t.bigint "observation_id", null: false
+    t.datetime "deleted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["observation_id"], name: "index_contests_on_observation_id"
+  end
 
   create_table "observations", force: :cascade do |t|
     t.string "unique_id"
@@ -52,6 +65,16 @@ ActiveRecord::Schema.define(version: 2021_11_18_115816) do
     t.index ["observation_id"], name: "index_photos_on_observation_id"
   end
 
+  create_table "region_contests", force: :cascade do |t|
+    t.datetime "deleted_at"
+    t.bigint "region_id", null: false
+    t.bigint "contest_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["contest_id"], name: "index_region_contests_on_contest_id"
+    t.index ["region_id"], name: "index_region_contests_on_region_id"
+  end
+
   create_table "regions", force: :cascade do |t|
     t.string "name"
     t.string "description"
@@ -68,5 +91,8 @@ ActiveRecord::Schema.define(version: 2021_11_18_115816) do
     t.index ["polygon"], name: "index_regions_on_polygon", using: :gist
   end
 
+  add_foreign_key "contests", "observations"
   add_foreign_key "photos", "observations"
+  add_foreign_key "region_contests", "contests"
+  add_foreign_key "region_contests", "regions"
 end
