@@ -46,7 +46,6 @@ ActiveRecord::Schema.define(version: 2021_11_18_115816) do
     t.string "attribution"
     t.string "license_name"
     t.string "license_url"
-    t.text "json"
     t.bigint "observation_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
