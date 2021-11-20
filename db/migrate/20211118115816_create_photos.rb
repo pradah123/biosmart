@@ -7,6 +7,7 @@ class CreatePhotos < ActiveRecord::Migration[6.1]
             t.string :attribution
             t.string :license_name
             t.string :license_url
+            t.datetime  :deleted_at
 
             t.references :observation, null: false, foreign_key: true
 

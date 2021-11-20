@@ -10,7 +10,7 @@ class CreateRegions < ActiveRecord::Migration[6.1]
             t.datetime  :last_updated_at
             t.integer   :refresh_interval_mins, default: 60
             t.st_polygon :polygon, geographic: true
-            
+            t.datetime  :deleted_at
             t.index     :polygon, using: :gist
             
             t.timestamps
