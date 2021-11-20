@@ -18,6 +18,7 @@ class CreateObservations < ActiveRecord::Migration[6.1]
             t.integer   :photos_count, default: 0
 
             t.index     :location, using: :gist
+            t.datetime  :deleted_at
             
             t.timestamps
         end
