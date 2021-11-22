@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_20_043154) do
+ActiveRecord::Schema.define(version: 2021_11_22_124849) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -29,6 +29,21 @@ ActiveRecord::Schema.define(version: 2021_11_20_043154) do
     t.index ["observation_id"], name: "index_contests_on_observation_id"
   end
 
+  create_table "downloadable_regions", force: :cascade do |t|
+    t.string "type", default: "circle"
+    t.string "app_id"
+    t.float "lat"
+    t.float "lng"
+    t.float "radius"
+    t.datetime "start_at"
+    t.datetime "end_at"
+    t.bigint "region_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+    t.index ["region_id"], name: "index_downloadable_regions_on_region_id"
+  end
+
   create_table "observations", force: :cascade do |t|
     t.string "unique_id"
     t.string "sname"
@@ -45,6 +60,7 @@ ActiveRecord::Schema.define(version: 2021_11_20_043154) do
     t.integer "location_accuracy"
     t.integer "identifications_count", default: 0
     t.integer "photos_count", default: 0
+    t.datetime "deleted_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["app_id"], name: "index_observations_on_app_id"
@@ -59,6 +75,7 @@ ActiveRecord::Schema.define(version: 2021_11_20_043154) do
     t.string "attribution"
     t.string "license_name"
     t.string "license_url"
+    t.datetime "deleted_at"
     t.bigint "observation_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -85,6 +102,7 @@ ActiveRecord::Schema.define(version: 2021_11_20_043154) do
     t.datetime "last_updated_at"
     t.integer "refresh_interval_mins", default: 60
     t.geography "polygon", limit: {:srid=>4326, :type=>"st_polygon", :geographic=>true}
+    t.datetime "deleted_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["name"], name: "index_regions_on_name"
@@ -92,6 +110,7 @@ ActiveRecord::Schema.define(version: 2021_11_20_043154) do
   end
 
   add_foreign_key "contests", "observations"
+  add_foreign_key "downloadable_regions", "regions"
   add_foreign_key "photos", "observations"
   add_foreign_key "region_contests", "contests"
   add_foreign_key "region_contests", "regions"
