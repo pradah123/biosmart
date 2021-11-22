@@ -8,6 +8,7 @@ class CreateDownloadableRegions < ActiveRecord::Migration[6.1]
             t.float     :radius
             t.datetime  :start_at
             t.datetime  :end_at
+            t.string    :params
 
             t.references :region, null: false, foreign_key: true
 

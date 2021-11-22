@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 2021_11_22_124849) do
     t.float "radius"
     t.datetime "start_at"
     t.datetime "end_at"
+    t.string "params"
     t.bigint "region_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
