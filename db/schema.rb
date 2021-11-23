@@ -30,17 +30,13 @@ ActiveRecord::Schema.define(version: 2021_11_22_124849) do
   end
 
   create_table "downloadable_regions", force: :cascade do |t|
-    t.string "type", default: "circle"
     t.string "app_id"
-    t.float "lat"
-    t.float "lng"
-    t.float "radius"
-    t.datetime "start_at"
-    t.datetime "end_at"
+    t.jsonb "params", default: "{}", null: false
     t.bigint "region_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.datetime "deleted_at"
+    t.index ["params"], name: "index_downloadable_regions_on_params", using: :gin
     t.index ["region_id"], name: "index_downloadable_regions_on_region_id"
   end
 
