@@ -9,5 +9,25 @@ Rails.application.routes.draw do
                 post :logout
             end
         end
+        scope :observations do
+            controller :observations do
+                get '/count', action: :count
+            end
+        end
+        scope :identifications do
+            controller :observations do
+                get '/count', action: :identifications_count
+            end
+        end
+        scope :species do
+            controller :observations do
+                get '/count', action: :species_count
+            end
+        end
+        scope :participants do
+            controller :observations do
+                get '/count', action: :participants_count
+            end
+        end
     end
 end
