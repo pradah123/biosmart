@@ -10,15 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_25_163532) do
+ActiveRecord::Schema.define(version: 2021_12_09_090704) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
 
   create_table "admins", force: :cascade do |t|
-    t.string "name"
-    t.string "email"
+    t.string "name", null: false
+    t.string "email", null: false
     t.string "password_digest"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -84,7 +84,9 @@ ActiveRecord::Schema.define(version: 2021_11_25_163532) do
     t.bigint "observation_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "unique_id"
     t.index ["observation_id"], name: "index_photos_on_observation_id"
+    t.index ["unique_id"], name: "index_photos_on_unique_id", unique: true
   end
 
   create_table "region_contests", force: :cascade do |t|
