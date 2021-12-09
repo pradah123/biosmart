@@ -16,6 +16,11 @@ Rails.application.routes.draw do
                 get '/species', action: :species_count
                 get '/participants', action: :participants_count
             end
-        end        
+        end
+        scope :observations do
+            controller :observations do
+                get '/', action: :index
+            end
+        end
     end
 end
