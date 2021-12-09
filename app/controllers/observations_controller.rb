@@ -1,6 +1,6 @@
 class ObservationsController < ApplicationController
     def index
-        @observations = Observation.select(
+        @observations = Observation.where.not(deleted_at: nil).select(
             :id,
             :unique_id,
             :sname,
