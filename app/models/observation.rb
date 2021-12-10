@@ -1,6 +1,8 @@
 class Observation < ApplicationRecord
-    def format_for_api
-        return {
+    has_many :photos
+
+    def format_for_api(params={})
+        data = {
             id: id,
             unique_id: unique_id,
             sname: sname,
@@ -15,5 +17,10 @@ class Observation < ApplicationRecord
             identifications_count: identifications_count,
             photos_count: photos_count
         }
+        if params[:include_photos].present?
+            data[:photos] = photos.map{|p| p.format_for_api()}
+        end
+
+        return data
     end
 end
