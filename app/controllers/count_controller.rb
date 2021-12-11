@@ -12,7 +12,7 @@ class CountController < ApplicationController
     end
 
     def species_count
-        species_count = Observation.where.not(sname: nil).distinct.count(:sname)
+        species_count = Observation.where.not(clean_sname: nil).distinct.count(:clean_sname)
         render  json: {count: species_count}, 
                 status: :ok
     end
