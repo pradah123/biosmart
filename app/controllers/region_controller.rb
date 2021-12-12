@@ -1,6 +1,5 @@
 class RegionController < ApplicationController
     def create
-        puts params.inspect
         render :json => {
             :name => "Creating a region"
         }
