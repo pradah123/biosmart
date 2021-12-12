@@ -22,5 +22,10 @@ Rails.application.routes.draw do
                 get '/', action: :index
             end
         end
+        scope :status do
+            controller :status do
+                get '/', action: :index
+            end
+        end
     end
 end
