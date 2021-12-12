@@ -15,6 +15,9 @@ class ObservationsController < ApplicationController
             :identifications_count,
             :photos_count
         )
+        if params[:offset].present?
+            @observations = @observations.offset(params[:offset])
+        end
         if params[:limit].present?
             @observations = @observations.limit(params[:limit])
         end
