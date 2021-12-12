@@ -12,7 +12,7 @@ Rails.application.routes.draw do
         scope :count do
             controller :count do
                 get '/observations', action: :observations_count
-                get '/identifications', action: :observations_count
+                get '/identifications', action: :identifications_count
                 get '/species', action: :species_count
                 get '/participants', action: :participants_count
             end
