@@ -13,6 +13,12 @@ Rails.application.routes.draw do
                 post :logout
             end
         end
+        scope :contests do
+            controller :contest do
+                get '/:contest_id/counts', action: :counts
+                get '/:contest_id/observations', action: :observations
+            end
+        end
         scope :count do
             controller :count do
                 get '/observations', action: :observations_count
