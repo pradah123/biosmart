@@ -19,19 +19,6 @@ Rails.application.routes.draw do
                 get '/:contest_id/observations', action: :observations
             end
         end
-        scope :count do
-            controller :count do
-                get '/observations', action: :observations_count
-                get '/identifications', action: :identifications_count
-                get '/species', action: :species_count
-                get '/participants', action: :participants_count
-            end
-        end
-        scope :observations do
-            controller :observations do
-                get '/', action: :index
-            end
-        end
         scope :status do
             controller :status do
                 get '/', action: :index
