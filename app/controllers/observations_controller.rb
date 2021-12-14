@@ -21,6 +21,11 @@ class ObservationsController < ApplicationController
         if params[:limit].present?
             @observations = @observations.limit(params[:limit])
         end
+        if params[:d1].present? && params[:d2].present?
+            d1 = DateTime.parse(params[:d1])
+            d2 = DateTime.parse(params[:d2])
+            @observations = @observations.where(obs_dttm: d1..d2)
+        end
         if params[:include_photos].present?
             @observations = @observations.includes(:photos).where(
                 'photos.deleted_at': nil
