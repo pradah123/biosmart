@@ -6,7 +6,6 @@ class CreateContests < ActiveRecord::Migration[6.1]
             t.datetime  :begin_at
             t.datetime  :end_at
             t.text      :participating_regions, array: true, default: []
-            t.references :observation, null: false, foreign_key: true
             t.datetime  :deleted_at
 
             t.timestamps
