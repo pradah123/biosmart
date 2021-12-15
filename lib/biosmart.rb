@@ -1,6 +1,6 @@
 module BioSmart
 
-    def self.enqueue_sightings_update(for_contest_id:)
+    def self.enqueue_sightings_update()
         region = ENV["SQS_REGION"] || "ap-southeast-2"
         queue_url = ENV["SQS_URL"] || "https://sqs.ap-southeast-2.amazonaws.com/461130176523/biosmart-import-queue-test"
         sqs_client = Aws::SQS::Client.new(region: region)
