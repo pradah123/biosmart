@@ -6,7 +6,11 @@ module BioSmart
         sqs_client = Aws::SQS::Client.new(region: region)
 
         RegionContest.where(
-            contest_id: for_contest_id, 
+            contest_id: Contest.select(
+                :id
+            ).where(
+                'CURRENT_TIMESTAMP BETWEEN begin_at AND end_at AND deleted_at IS NULL'
+            ), 
             deleted_at: nil
         ).includes(:contest).each do |rc|
             DownloadableRegion.where(
