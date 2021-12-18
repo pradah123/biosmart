@@ -61,7 +61,7 @@ class ContestController < ApplicationController
             :quality_level,
             :identifications_count,
             :photos_count
-        ).where(obs_dttm: contest.begin_at..contest.end_at)
+        )
         if params[:offset].present?
             @observations = @observations.offset(params[:offset])
         end
@@ -72,6 +72,10 @@ class ContestController < ApplicationController
             @observations = @observations.includes(:photos).where(
                 'photos.deleted_at': nil
             ).where('photos_count > 0')
+        else
+            @observations = @observations.where(
+                obs_dttm: contest.begin_at..contest.end_at
+            )
         end
         observations_data = @observations.map{ |o| 
             o.format_for_api(include_photos: params[:include_photos])
