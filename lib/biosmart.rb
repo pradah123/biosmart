@@ -1,10 +1,8 @@
+require 'biosmart_queue.rb'
+
 module BioSmart
 
     def self.enqueue_sightings_update()
-        region = ENV["SQS_REGION"] || "ap-southeast-2"
-        queue_url = ENV["SQS_URL"] || "https://sqs.ap-southeast-2.amazonaws.com/461130176523/biosmart-import-queue-test"
-        sqs_client = Aws::SQS::Client.new(region: region)
-
         RegionContest.where(
             contest_id: Contest.select(
                 :id
@@ -24,15 +22,35 @@ module BioSmart
                     params: dr.params
                 }.to_json
                 begin
-                    sqs_client.send_message(
-                        queue_url: queue_url,
-                        message_body: event_json
-                    )
+                    BiosmartQueue.new.enqueue(event_json)
                 rescue StandardError => e
-                    puts "Error sending message: #{e.message}"
+                    Rails.logger.fatal "Error sending message to queue: #{e.message}"
                 end
             end
         end
-    end    
+    end
+
+    def self.enqueue_photo_sightings(for_region_id:)
+        dr = DownloadableRegion.where(region_id: for_region_id, app_id: 'inaturalist').first
+        if dr.blank?
+            puts "No Downloadable Region found for region ID: #{for_region_id}"
+            return
+        end
+        photo_params = dr.params
+        # include photos
+        photo_params["photos"] = true
+        # ignore date range
+        photo_params.delete("d1")
+        photo_params.delete("d2")
+        photo_params["per_page"] = 30
+        begin
+            BiosmartQueue.new.enqueue({
+                "app-id" => dr.app_id,
+                params: dr.params
+            }.to_json)
+        rescue StandardError => e
+            puts "Error sending message to queue: #{e.message}"
+        end
+    end
     
 end
