@@ -68,6 +68,8 @@ ActiveRecord::Schema.define(version: 2021_12_22_061508) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "clean_sname"
     t.jsonb "more", default: "{}"
+    t.index "((more -> 'lat'::text))", name: "index_observations_on_more_lat"
+    t.index "((more -> 'lng'::text))", name: "index_observations_on_more_lng"
     t.index "((more -> 'locId'::text))", name: "index_observations_on_more_locId"
     t.index "((more -> 'obsDt'::text))", name: "index_observations_on_more_obsDt"
     t.index "((more -> 'obsTime'::text))", name: "index_observations_on_more_obsTime"
