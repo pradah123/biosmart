@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_12_11_084525) do
+ActiveRecord::Schema.define(version: 2021_12_22_061508) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,11 +31,9 @@ ActiveRecord::Schema.define(version: 2021_12_11_084525) do
     t.datetime "begin_at"
     t.datetime "end_at"
     t.text "participating_regions", default: [], array: true
-    t.bigint "observation_id", null: false
     t.datetime "deleted_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["observation_id"], name: "index_contests_on_observation_id"
   end
 
   create_table "downloadable_regions", force: :cascade do |t|
@@ -69,6 +67,11 @@ ActiveRecord::Schema.define(version: 2021_12_11_084525) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "clean_sname"
+    t.jsonb "more", default: "{}"
+    t.index "((more -> 'locId'::text))", name: "index_observations_on_more_locId"
+    t.index "((more -> 'obsDt'::text))", name: "index_observations_on_more_obsDt"
+    t.index "((more -> 'obsTime'::text))", name: "index_observations_on_more_obsTime"
+    t.index "((more -> 'subId'::text))", name: "index_observations_on_more_subId"
     t.index ["app_id"], name: "index_observations_on_app_id"
     t.index ["clean_sname"], name: "index_observations_on_clean_sname"
     t.index ["location"], name: "index_observations_on_location", using: :gist
@@ -118,7 +121,6 @@ ActiveRecord::Schema.define(version: 2021_12_11_084525) do
     t.index ["polygon"], name: "index_regions_on_polygon", using: :gist
   end
 
-  add_foreign_key "contests", "observations"
   add_foreign_key "downloadable_regions", "regions"
   add_foreign_key "photos", "observations"
   add_foreign_key "region_contests", "contests"

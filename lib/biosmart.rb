@@ -52,5 +52,9 @@ module BioSmart
             puts "Error sending message to queue: #{e.message}"
         end
     end
+
+    def self.ebird_participant_count()
+        
+    end
     
 end
