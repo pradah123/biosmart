@@ -34,7 +34,9 @@ class ContestController < ApplicationController
                 deleted_at: nil
             ).where.not(
                 user_id: nil
-            ).distinct.count(:user_id)
+            ).where.not(
+                username: 'unknown'
+            ).distinct.count(:username)
         end
         render  json: counts_data,
                 status: :ok
