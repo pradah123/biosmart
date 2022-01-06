@@ -19,7 +19,7 @@ module BioSmart
                 dr.params["d2"] = rc.contest.end_at.strftime('%Y-%m-%d')
                 event_json = {
                     "app-id" => dr.app_id,
-                    polygon: RGeo::GeoJSON.encode(rc.region.multi_polygon),
+                    multi_polygon: RGeo::GeoJSON.encode(rc.region.multi_polygon),
                     params: dr.params
                 }.to_json
                 begin
