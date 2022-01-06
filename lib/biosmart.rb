@@ -10,7 +10,7 @@ module BioSmart
                 'CURRENT_TIMESTAMP BETWEEN begin_at AND end_at AND deleted_at IS NULL'
             ), 
             deleted_at: nil
-        ).includes(:contest).each do |rc|
+        ).includes(:contest, :region).each do |rc|
             DownloadableRegion.where(
                 region_id: rc.region_id,
                 deleted_at: nil
@@ -19,6 +19,7 @@ module BioSmart
                 dr.params["d2"] = rc.contest.end_at.strftime('%Y-%m-%d')
                 event_json = {
                     "app-id" => dr.app_id,
+                    polygon: RGeo::GeoJSON.encode(rc.region.multi_polygon),
                     params: dr.params
                 }.to_json
                 begin

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_12_22_061508) do
+ActiveRecord::Schema.define(version: 2022_01_06_171516) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -115,12 +115,12 @@ ActiveRecord::Schema.define(version: 2021_12_22_061508) do
     t.string "region_url"
     t.datetime "last_updated_at"
     t.integer "refresh_interval_mins", default: 60
-    t.geography "polygon", limit: {:srid=>4326, :type=>"st_polygon", :geographic=>true}
     t.datetime "deleted_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.geography "multi_polygon", limit: {:srid=>4326, :type=>"multi_polygon", :geographic=>true}
+    t.index ["multi_polygon"], name: "index_regions_on_multi_polygon", using: :gist
     t.index ["name"], name: "index_regions_on_name"
-    t.index ["polygon"], name: "index_regions_on_polygon", using: :gist
   end
 
   add_foreign_key "downloadable_regions", "regions"
