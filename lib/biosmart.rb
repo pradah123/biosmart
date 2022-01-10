@@ -18,7 +18,7 @@ module BioSmart
                 dr.params["d1"] = rc.contest.begin_at.strftime('%Y-%m-%d')
                 dr.params["d2"] = rc.contest.end_at.strftime('%Y-%m-%d')
                 event_json = {
-                    "app-id" => dr.app_id,
+                    "app_id" => dr.app_id,
                     multi_polygon: RGeo::GeoJSON.encode(rc.region.multi_polygon),
                     params: dr.params
                 }.to_json
@@ -46,7 +46,7 @@ module BioSmart
         photo_params["per_page"] = 30
         begin
             BiosmartQueue.new.enqueue({
-                "app-id" => dr.app_id,
+                "app_id" => dr.app_id,
                 params: dr.params
             }.to_json)
         rescue StandardError => e
