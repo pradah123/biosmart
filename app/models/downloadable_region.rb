@@ -1,0 +1,2 @@
+class DownloadableRegion < ApplicationRecord
+end
