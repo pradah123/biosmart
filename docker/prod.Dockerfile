@@ -21,6 +21,7 @@ ENV RACK_ENV production
 
 COPY --chown=app:app . ./
 
-EXPOSE 3000
+EXPOSE 8080
 # CMD ["rails", "server", "-b", "0.0.0.0"]
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+CMD ["puma", "config.ru", "-C", "config/puma.rb"]
+# CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
