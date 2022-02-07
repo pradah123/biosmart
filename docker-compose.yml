@@ -1,0 +1,39 @@
+version: "3"
+
+volumes:
+    biosmart_postgres_data:
+    # synonym_system_coverage_data:
+networks:
+    biosmart_net:
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: ./docker/app.Dockerfile
+        depends_on:
+            - postgres
+        networks:
+            - biosmart_net
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+        environment:
+            DB_USER: dbuser
+            DB_PASSWORD: dbpasswd
+            DB_HOST: postgres
+            DB_NAME: biosmart_db
+            RACK_ENV: development
+    postgres:
+        image: postgis/postgis
+        restart: always
+        volumes:
+            - biosmart_postgres_data:/var/lib/postgresql/data
+        networks:
+            - biosmart_net
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_DB: biosmart_db
+            POSTGRES_USER: dbuser
+            POSTGRES_PASSWORD: dbpasswd

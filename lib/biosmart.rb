@@ -23,7 +23,8 @@ module BioSmart
                     params: dr.params
                 }.to_json
                 begin
-                    BiosmartQueue.new.enqueue(event_json)
+                    puts event_json.inspect
+                    # BiosmartQueue.new.enqueue(event_json)
                 rescue StandardError => e
                     Rails.logger.fatal "Error sending message to queue: #{e.message}"
                 end

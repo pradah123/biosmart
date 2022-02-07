@@ -16,11 +16,8 @@ USER app
 COPY --chown=app:app Gemfile Gemfile.lock ./
 RUN bundle install
 
-ENV RAILS_ENV production 
-ENV RACK_ENV production
-
 COPY --chown=app:app . ./
 
-EXPOSE 3000
-# CMD ["rails", "server", "-b", "0.0.0.0"]
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+EXPOSE 8080
+
+CMD ["puma", "config.ru", "-C", "config/puma.rb"]
