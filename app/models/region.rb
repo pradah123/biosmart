@@ -13,7 +13,7 @@ class Region < ApplicationRecord
             updated_at: updated_at
         }
         if params[:polygon_format] == :geo_json
-            data[:polygon] = RGeo::GeoJSON.encode(polygon)
+            data[:polygon] = RGeo::GeoJSON.encode(multi_polygon)
         end
         
         return data
