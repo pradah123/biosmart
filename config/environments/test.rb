@@ -59,4 +59,7 @@ Rails.application.configure do
   # config.action_view.annotate_rendered_view_with_filenames = true
 
     config.active_record.logger = Logger.new(STDOUT)
+    
+    # Allow request from any source
+    config.hosts.clear
 end
