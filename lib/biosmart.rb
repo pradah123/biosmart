@@ -1,5 +1,4 @@
 require 'sidekiq'
-require 'biosmart_queue.rb'
 
 module BioSmart
     Sidekiq.configure_client do |config|
@@ -7,7 +6,6 @@ module BioSmart
     end
     
     def self.enqueue_sightings_update()
-        
         RegionContest.where(
             contest_id: Contest.select(
                 :id
@@ -40,7 +38,10 @@ module BioSmart
     end
 
     def self.enqueue_photo_sightings(for_region_id:)
-        dr = DownloadableRegion.where(region_id: for_region_id, app_id: 'inaturalist').first
+        dr = DownloadableRegion.where(
+            region_id: for_region_id,
+             app_id: 'inaturalist'
+        ).includes(:region).first
         if dr.blank?
             puts "No Downloadable Region found for region ID: #{for_region_id}"
             return
@@ -53,10 +54,15 @@ module BioSmart
         photo_params.delete("d2")
         photo_params["per_page"] = 30
         begin
-            BiosmartQueue.new.enqueue({
-                "app_id" => dr.app_id,
-                params: dr.params
-            }.to_json)
+            Sidekiq::Client.push(
+                'class' => 'ImportObservationsWorker',
+                'args' => [
+                    dr.app_id,
+                    RGeo::GeoJSON.encode(dr.region.multi_polygon),
+                    dr.params
+                ],
+                'retry' => false
+            )
         rescue StandardError => e
             puts "Error sending message to queue: #{e.message}"
         end
