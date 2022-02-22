@@ -22,13 +22,14 @@ module BioSmart
                 dr.params["d2"] = rc.contest.end_at.strftime('%Y-%m-%d')
                 begin
                     Sidekiq::Client.push(
+                        'queue' => 'import_observations',
                         'class' => 'ImportObservationsWorker',
                         'args' => [
                             dr.app_id,
                             RGeo::GeoJSON.encode(rc.region.multi_polygon),
                             dr.params
                         ],
-                        'retry' => false
+                        'retry' => 0
                     )
                 rescue StandardError => e
                     Rails.logger.fatal "Error sending message to queue: #{e.message}"
@@ -55,13 +56,14 @@ module BioSmart
         photo_params["per_page"] = 30
         begin
             Sidekiq::Client.push(
+                'queue' => 'import_observations',
                 'class' => 'ImportObservationsWorker',
                 'args' => [
                     dr.app_id,
                     RGeo::GeoJSON.encode(dr.region.multi_polygon),
                     dr.params
                 ],
-                'retry' => false
+                'retry' => 0
             )
         rescue StandardError => e
             puts "Error sending message to queue: #{e.message}"

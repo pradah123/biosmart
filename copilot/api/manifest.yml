@@ -30,14 +30,18 @@ exec: true # Enable running commands in your container.
 
 # Optional fields for more advanced use-cases.
 #
-variables: # Pass environment variables as key value pairs.
-    RACK_ENV: test
-secrets:
-    DB_USER: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_USER
-    DB_PASSWORD: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_PASSWORD
-    DB_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_HOST
-    DB_NAME: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_NAME
+# variables: # Pass environment variables as key value pairs.
+
 # You can override any of the values defined above by environment.
-#environments:
-#  test:
-#    count: 2               # Number of tasks to run for the "test" environment.
+environments:
+    test:
+        variables:
+            RACK_ENV: test
+            RAILS_ENV: test
+            REDIS_URL: redis://redis-svc.test.biosmart.local:6379/0
+            RAYGUN_API_KEY:
+        secrets:
+            DB_USER: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_USER
+            DB_PASSWORD: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_PASSWORD
+            DB_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_HOST
+            DB_NAME: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/BIOSMART_DB_NAME
