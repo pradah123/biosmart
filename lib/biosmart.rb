@@ -18,8 +18,6 @@ module BioSmart
                 region_id: rc.region_id,
                 deleted_at: nil
             ).find_each do |dr|
-                dr.params["d1"] = rc.contest.begin_at.strftime('%Y-%m-%d')
-                dr.params["d2"] = rc.contest.end_at.strftime('%Y-%m-%d')
                 begin
                     Sidekiq::Client.push(
                         'queue' => 'import_observations',
