@@ -50,7 +50,13 @@ class ContestController < ApplicationController
                 BiosmartAPIError::EXCEPTION_TYPE
             )
         end
-        @observations = Observation.where('observations.deleted_at': nil).order('obs_dttm desc').select(
+        @observations = Observation.where(
+            'observations.deleted_at': nil
+        ).where(
+            obs_dttm: contest.begin_at..contest.end_at
+        ).order(
+            'obs_dttm desc'
+        ).select(
             :id,
             :unique_id,
             :sname,
@@ -74,10 +80,6 @@ class ContestController < ApplicationController
             @observations = @observations.includes(:photos).where(
                 'photos.deleted_at': nil
             ).where('photos_count > 0')
-        else
-            @observations = @observations.where(
-                obs_dttm: contest.begin_at..contest.end_at
-            )
         end
         observations_data = @observations.map{ |o| 
             o.format_for_api(include_photos: params[:include_photos])
