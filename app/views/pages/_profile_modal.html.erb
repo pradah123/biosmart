@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <% if @user.admin? %>
+        <% if @user && @user.admin? %>
           <div class="row justify-content-center">
             <div class="col-8 col-lg-4 mb-3">
               <div class="input-group">
