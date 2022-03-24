@@ -1,0 +1,72 @@
+
+<div class="row justify-content-center my-5">
+  <div class="col-4">
+    <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#region">+ New</button>
+  </div>
+</div>
+
+<div class="row my-5 mb-3">
+  <div class="col-3 fw-bold">Region</div>
+  <div class="col-3 fw-bold">Description</div>
+  <div class="col-2 fw-bold">Population</div>
+  <div class="col-1 fw-bold">Online</div>
+  <div class="col-3"></div>
+</div>
+
+<% @regions.each do |r| %>
+  <div class="row mb-3">
+  	<div class="col-3"><a href="<%= r.region_url%>"><%= r.name %></a></div>
+  	<div class="col-3"><%= r.description.truncate_words 10 %></div>
+  	<div class="col-2"><%= r.population %></div>
+  	<div class="col-1 text-<%= r.online? ? 'success' : 'muted' %>"><%= r.online? ? '&#10004;'.html_safe: '&#9587;'.html_safe %></div>
+  	<div class="col-3">
+      <a role="button" class="btn btn-secondary" href="/region/<%= r.id %>" target="_blank">View</a>
+      <a role="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#region<%= r.id %>_modal">Edit</a>
+    </div>
+  </div>
+<% end %>
+
+
+
+
+<% @regions.each do |r| %>
+  <div class="modal fade" tabindex="-1" id="region<%= r.id %>_modal">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title fw-heavy">Edit Region</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <%= render partial: 'region_form', locals: { region: r } %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+
+
+
+<div class="modal fade" tabindex="-1" id="region">
+  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title fw-heavy">Create a Region</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= render partial: 'region_form', locals: { region: nil } %>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>        
+
+
+

@@ -1,0 +1,137 @@
+<div class="row justify-content-center mb-5">
+  <div class="col-6 col-lg-4">
+    <div class="input-group">
+      <select class="form-select">
+        <option value="online" <%= !region.nil? && region.online? ? 'selected' : '' %>>online</option>
+        <option value="offline" <%= !region.nil? && region.offline? ? 'selected' : '' %>>offline</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12 col-lg-6 mb-3">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Region Name" required="required" id="name_region<%= id %>" value="<%= region.nil? ? '' : region.name %>">
+    </div>
+  </div>
+  <div class="col-12 col-lg-6 mb-3">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Description" required="required" id="description_region<%= id %>" value="<%= region.nil? ? '' : region.description %>">
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12 col-lg-6 mb-3">
+    <div class="input-group">
+      <input type="url" class="form-control" placeholder="Region Url" required="required" id="region_url_region<%= id %>" value="<%= region.nil? ? '' : region.region_url %>">
+    </div>
+  </div>
+  <div class="col-12 col-lg-6 mb-3">
+    <div class="input-group">
+      <input type="number" class="form-control" placeholder="Population" required="required" step="1000" id="population_region<%= id %>" value="<%= region.nil? ? '' : region.population %>">
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 col-lg-6 my-5">
+    <div class="row">
+      <div class="col">    
+        <label for="Image" class="form-label">Logo Image</label>
+        <input type="url" class="form-control" placeholder="Image Url" required="required" id="logo_url_region<%= id %>" value="<%= region.nil? ? '' : region.logo_url %>">
+        <div class="w-100 text-center my-3">or</div>
+        <input class="form-control" type="file" id="logo" onchange="preview()">
+        <button onclick="clearImage()" class="btn btn-primary mt-3">Remove Image</button>
+      </div>
+    </div>  
+    <div class="row">
+      <div class="col">  
+        <img id="frame" src="" class="img-fluid" />
+      </div>
+    </div>
+<script>
+    function preview() {
+        frame.src = URL.createObjectURL(event.target.files[0]);
+    }
+    function clearImage() {
+        document.getElementById('logo').value = null;
+        frame.src = "";
+    }
+</script>
+  </div>
+  <div class="col-12 col-lg-6 my-5">
+    <div class="row">
+      <div class="col">    
+        <label for="Image" class="form-label">Header Image</label>
+        <input type="url" class="form-control" placeholder="Image Url" required="required" id="header_url_region<%= id %>" value="<%= region.nil? ? '' : region.header_url %>">
+        <div class="w-100 text-center my-3">or</div>
+        <input class="form-control" type="file" id="logo" onchange="preview()">
+        <button onclick="clearImage()" class="btn btn-primary mt-3">Remove Image</button>
+      </div>
+    </div>  
+    <div class="row">
+      <div class="col">  
+        <img id="frame" src="" class="img-fluid" />
+      </div>
+    </div>
+
+<script>
+    function preview() {
+        frame.src = URL.createObjectURL(event.target.files[0]);
+    }
+    function clearImage() {
+        document.getElementById('logo').value = null;
+        frame.src = "";
+    }
+</script>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <label class="form-label">Region Boundaries</label>
+    <div class="row my-3" id="map<%= id %>" style="width:100%; height:600px;">
+      <script>
+        (function() {
+          const s = { lat: 35.6804, lng : 139.7690 };
+          const map = new google.maps.Map(document.getElementById("map<%= id %>"), { zoom: 5, center: s, controlSize: 20 });
+          //const marker = new google.maps.Marker({ position: s, map: map });
+
+          var drawingManager = new google.maps.drawing.DrawingManager({
+            drawingControl: true,
+            drawingControlOptions: { 
+              position: google.maps.ControlPosition.TOP_CENTER, 
+              drawingModes: ['polygon'] 
+            }
+          });
+        
+          drawingManager.setMap(map);
+
+          google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
+            var points = polygon.getPath();
+            for (var i = 0; i < points.length; i++) {
+              console.log(i+"  : "+points.getAt(i).lat()+","+points.getAt(i).lng());
+            }
+          });
+            
+        })();
+      </script>
+    </div>
+  </div>
+</div>  
+
+<div class="row justify-content-center my-5">
+  <div class="col-8">
+    <div class="form-group">
+      <button class="btn btn-outline-secondary w-100" id="region_save_action<%= id %>" data-id="<%= region.nil? ? '' : region.id %>" disabled>Save</button>
+    </div>
+  </div>
+</div>
+<div class="row justify-content-center mb-3">
+  <div class="col-8 validation-messages">
+    <span class="text-danger validation-ok organization_name_unique">Organization name is already taken.</span>
+    <span class="text-danger validation-ok email_unique">Email is already taken.</span>
+    <span class="text-danger validation-ok organization_name">Organization name is required.</span>
+    <span class="text-danger validation-ok email">Email is required.</span>
+  </div>
+</div>

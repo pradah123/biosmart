@@ -31,3 +31,11 @@
 
 en:
   hello: "Hello world"
+
+  admin:
+    actions:
+      facebook:
+        menu: 'Post to Facebook'
+      twitter:
+        menu: 'Post to Twitter'
+

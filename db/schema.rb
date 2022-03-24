@@ -10,41 +10,88 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_01_06_171516) do
+ActiveRecord::Schema.define(version: 2022_01_22_074937) do
 
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-  enable_extension "postgis"
+  #enable_extension "plpgsql"
+  #enable_extension "postgis"
 
-  create_table "admins", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "email", null: false
+  create_table "users", force: :cascade do |t|
+    t.string "organization_name"
+    t.string "email"
+    t.integer "role", default: 0
+    t.integer "status", default: 0
+
+    t.string "login_code"
+    t.datetime "login_code_expires_at"
+    t.string "jwt_token"
     t.string "password_digest"
+    t.integer "login_attempts", default: 0
+    t.integer "login_attempts_max", default: 5   
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.datetime "deleted_at"
+  end
+
+  create_table "regions", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "name"
+    t.string "description"
+    t.text "raw_polygon_json"
+    t.string "region_url"
+    t.integer "population"
+    #t.geography "multi_polygon", limit: { srid: 4326, type: "multi_polygon", geographic: true }
+    t.text "header_image"
+    t.text "logo_image"
+    t.string "header_image_url"
+    t.string "logo_image_url"
+    t.integer "status", default: 0
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "contests", force: :cascade do |t|
+    t.integer "user_id"
     t.string "title"
     t.string "description"
-    t.datetime "begin_at"
-    t.datetime "end_at"
-    t.text "participating_regions", default: [], array: true
-    t.datetime "deleted_at"
+    t.datetime "begins_at"
+    t.datetime "ends_at"
+    t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "participations", force: :cascade do |t|
+    t.integer "region_id"
+    t.integer "contest_id"
+    t.integer "status", default: 0
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "observations", force: :cascade do |t|
+    t.float "lat"
+    t.float "lng"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "observations_regions", force: :cascade do |t|
+    t.integer "region_id"
+    t.integer "observation_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+
+
+
+=begin
   create_table "downloadable_regions", force: :cascade do |t|
     t.string "app_id"
     t.jsonb "params", default: "{}", null: false
-    t.bigint "region_id", null: false
+    t.integer "region_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.datetime "deleted_at"
-    t.index ["params"], name: "index_downloadable_regions_on_params", using: :gin
-    t.index ["region_id"], name: "index_downloadable_regions_on_region_id"
   end
 
   create_table "observations", force: :cascade do |t|
@@ -64,8 +111,7 @@ ActiveRecord::Schema.define(version: 2022_01_06_171516) do
     t.integer "identifications_count", default: 0
     t.integer "photos_count", default: 0
     t.datetime "deleted_at"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+
     t.string "clean_sname"
     t.jsonb "more", default: "{}"
     t.index "((more -> 'lat'::text))", name: "index_observations_on_more_lat"
@@ -95,36 +141,6 @@ ActiveRecord::Schema.define(version: 2022_01_06_171516) do
     t.index ["observation_id"], name: "index_photos_on_observation_id"
     t.index ["unique_id"], name: "index_photos_on_unique_id", unique: true
   end
+=end
 
-  create_table "region_contests", force: :cascade do |t|
-    t.datetime "deleted_at"
-    t.bigint "region_id", null: false
-    t.bigint "contest_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["contest_id"], name: "index_region_contests_on_contest_id"
-    t.index ["region_id"], name: "index_region_contests_on_region_id"
-  end
-
-  create_table "regions", force: :cascade do |t|
-    t.string "name"
-    t.string "description"
-    t.datetime "subscription_ends_at"
-    t.string "header_image_url"
-    t.string "logo_image_url"
-    t.string "region_url"
-    t.datetime "last_updated_at"
-    t.integer "refresh_interval_mins", default: 60
-    t.datetime "deleted_at"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.geography "multi_polygon", limit: {:srid=>4326, :type=>"multi_polygon", :geographic=>true}
-    t.index ["multi_polygon"], name: "index_regions_on_multi_polygon", using: :gist
-    t.index ["name"], name: "index_regions_on_name"
-  end
-
-  add_foreign_key "downloadable_regions", "regions"
-  add_foreign_key "photos", "observations"
-  add_foreign_key "region_contests", "contests"
-  add_foreign_key "region_contests", "regions"
 end

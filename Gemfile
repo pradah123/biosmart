@@ -3,47 +3,51 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '3.0.2'
 
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem 'rails', '~> 6.1.4', '>= 6.1.4.1'
-# Use postgresql as the database for Active Record
-gem 'pg', '~> 1.1'
-gem 'activerecord-postgis-adapter'
-# Use Puma as the app server
+gem 'rails', '~> 6.1.4'
+gem 'sqlite3', '~> 1.4'
 gem 'puma', '~> 5.0'
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-# gem 'jbuilder', '~> 2.7'
-# Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 4.0'
-# Use Active Model has_secure_password
-# gem 'bcrypt', '~> 3.1.7'
-
-# Use Active Storage variant
-# gem 'image_processing', '~> 1.2'
-
-# Reduces boot times through caching; required in config/boot.rb
+gem 'sass-rails', '>= 6'
+gem 'webpacker', '~> 5.0'
+gem 'turbolinks', '~> 5'
+gem 'jbuilder', '~> 2.7'
+gem 'bcrypt', '~> 3.1.7'
 gem 'bootsnap', '>= 1.4.4', require: false
+gem 'image_processing', '~> 1.2'
+# gem 'redis', '~> 4.0'
 
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-# gem 'rack-cors'
+gem 'json', '2.6.0'
+gem 'jsonapi-serializer'
+gem 'rails_admin'
+gem 'rails_admin-i18n'
+gem 'rails_admin_toggleable'
+gem 'rails_admin_globalize_field'
+gem 'jwt'
+gem 'geocoder'
+gem 'rack-attack'
+gem 'rack-cors'
+gem 'httparty'
+gem 'rgeo-geojson'
+gem 'activerecord-postgis-adapter'
+gem 'pg'
+
+#gem 'aws-sdk-sqs'
+#gem 'sidekiq'
+#gem 'redis-namespace'
+#gem 'raygun4ruby'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
 end
 
 group :development do
+  gem 'web-console', '>= 4.1.0'
+  #gem 'rack-mini-profiler', '~> 2.0'
   gem 'listen', '~> 3.3'
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
 end
 
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-
-gem 'aws-sdk-sqs'
-gem 'bcrypt'
-gem 'rack-cors'
-gem 'rgeo-geojson'
-gem 'sidekiq'
-gem 'redis-namespace'
-gem 'raygun4ruby'
+group :test do
+  gem 'capybara', '>= 3.26'
+  gem 'selenium-webdriver'
+  gem 'webdrivers'
+end

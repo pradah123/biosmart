@@ -1,8 +1,9 @@
-Rails.application.config.middleware.insert_before 0, Rack::Cors do
-    allow do
-        origins '*'
-        resource '*', 
-            headers: ['DNT','X-CustomHeader','Keep-Alive','User-Agent','X-Requested-With','If-Modified-Since','Cache-Control','Content-Type'], 
-            methods: [:get, :options]
-    end
+Rails.application.config.middleware.insert_before 0, Rack::Cors, debug: true do
+  allow do
+    origins 'http://localhost:3000'
+    resource '*',
+      headers: :any,
+      methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true
+  end
 end

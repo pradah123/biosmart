@@ -1,3 +1,7 @@
 class Contest < ApplicationRecord
-    has_many :regions, through: :region_contest
+  belongs_to :user  
+  has_many :participations
+  has_many :regions, through: :participations
+
+  enum status: [:online, :offline, :deleted, :completed]  
 end
