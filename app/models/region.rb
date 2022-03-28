@@ -1,16 +1,61 @@
 class Region < ApplicationRecord
   belongs_to :user
-  has_and_belongs_to_many :observations
   has_many :participations
   has_many :contests, through: :participations
+  has_and_belongs_to_many :observations
 
-  enum status: [:online, :offline, :deleted]  
+  after_save :prepare_geokit_polygons, :assign_observations, if: :saved_change_to_raw_polygon_json
+
+  enum status: [:online, :offline, :deleted]
 
 
 
 
+  @polygons = []
+  @lat_min = 0
+  @lat_max = 0
+  @lng_min = 0
+  @lng_max = 0
+
+  def prepare_geokit_polygons
+    # make polygon objects ahead of time, for use when deciding if an observation is in the region
+    # work out the bounding box contaning all polygons too
+
+    @polygons = []
+    
+    JSON.parse(raw_polygon_json).each do |polygon|
+      points = [] 
+      polygon.each do |p|
+        points.push Geokit::LatLng.new(p['lat'], p['lng'])
+      end
+      @polygons.push Geokit::Polygon.new(points)
+    end
+
+  end  
+
+  def assign_observations
+    observations_in_box = Observation.where lat: (@lat_min..@lat_max), lng: (@lng_min..@lng_max)
+    observations_in_region = []
+
+    observations_in_box.each do |o|
+      observations_in_region << o if region_contains(o.lat, o.lng)
+    end
+
+    observations.clear
+    observations = observations_in_region
+
+    participations.each do |p|
+      p.assign_observations
+    end  
+  end
+
+  def region_contains lat, lng
+    @polygons.each { |p| return true if p.contains?( GEOkit::LatLng.new lat.to_s, lng.to_s ); }
+    return false
+  end
 
 
+=begin
   def format_for_api(params={})
     data = {
         id: id,
@@ -28,5 +73,6 @@ class Region < ApplicationRecord
     
     return data
   end
+=end
 
 end

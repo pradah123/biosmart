@@ -38,21 +38,40 @@ ActiveRecord::Schema.define(version: 2022_01_22_074937) do
     t.text "raw_polygon_json"
     t.string "region_url"
     t.integer "population"
-    #t.geography "multi_polygon", limit: { srid: 4326, type: "multi_polygon", geographic: true }
     t.text "header_image"
     t.text "logo_image"
     t.string "header_image_url"
     t.string "logo_image_url"
     t.integer "status", default: 0
+    #t.geography "multi_polygon", limit: { srid: 4326, type: "multi_polygon", geographic: true }
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
+
+  create_table "observations", force: :cascade do |t|
+    t.float "lat"
+    t.float "lng"
+    t.integer "data_source_id"
+    t.datetime "observed_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "observations_regions", force: :cascade do |t|
+    t.integer "region_id"
+    t.integer "observation_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end  
+
+
+
 
   create_table "contests", force: :cascade do |t|
     t.integer "user_id"
     t.string "title"
     t.string "description"
-    t.datetime "begins_at"
+    t.datetime "starts_at"
     t.datetime "ends_at"
     t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
@@ -67,19 +86,33 @@ ActiveRecord::Schema.define(version: 2022_01_22_074937) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "observations", force: :cascade do |t|
-    t.float "lat"
-    t.float "lng"
+  create_table "data_sources", force: :cascade do |t|
+    t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "observations_regions", force: :cascade do |t|
-    t.integer "region_id"
+  create_table "data_sources_participations", force: :cascade do |t|
+    t.integer "participation_id"
+    t.integer "data_source_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "observations_participations", force: :cascade do |t|
+    t.integer "observation_id"
+    t.integer "participation_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end  
+
+  create_table "contests_observations", force: :cascade do |t|
+    t.integer "contest_id"
     t.integer "observation_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
+
 
 
 

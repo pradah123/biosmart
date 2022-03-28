@@ -4,23 +4,37 @@ class PagesController < ApplicationController
   end
 
   def regions
-    render :top if @user.nil?
-    @regions = @user.regions
+    if @user.nil?
+      render :top 
+    else
+      @regions = @user.admin? ? Region.all : @user.regions
+    end  
   end
 
   def contests
-    render :top if @user.nil?
-    @contests = @user.contests
-    @contests_through_regions = @user.regions.map { |r| r.contests }.flatten.uniq
+    if @user.nil?
+      render :top 
+    else
+      @contests = @user.admin? ? Contest.all : @user.contests
+      @contests_through_regions = @user.regions.map { |r| r.contests }.flatten.uniq
+    end  
+  end
+
+  def participations
+    if @user.nil?
+      render :top 
+    else
+      @participations = @user.admin? ? Participation.all : @user.participations
+    end  
   end
 
   def users
-    render :top if @user.nil? || !@user.admin?
-    @users = User.all
+    if @user.nil? || !@user.admin?
+      render :top 
+    else
+      @users = User.all
+    end  
   end
-  
-    
-
 
   def region
     @region = Region.find_by_id params[:id]
@@ -31,10 +45,5 @@ class PagesController < ApplicationController
     @contest = Contest.find_by_id params[:id]
     render :top if @contest.nil?
   end
-
-
-
-  def profile
-  end  
 
 end

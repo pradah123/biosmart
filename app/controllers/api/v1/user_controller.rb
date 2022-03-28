@@ -35,7 +35,7 @@ module Api::V1
 
     def logout
       get_user
-      unless @user.nil?
+      if @user
         @user.logout
         cookies.delete :jwt_token
       end
@@ -43,7 +43,11 @@ module Api::V1
     end
 
     def close_account
-      @user.closed! if @user
+      get_user
+      if @user
+        @user.closed! 
+        cookies.delete :jwt_token
+      end
       render_success
     end
 

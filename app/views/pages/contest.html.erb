@@ -1,57 +1,67 @@
-<div class="row justify-content-center p-0 m-0 mt-5">    
-  <div class="col-12 col-lg-6 p-0 m-0">
 
-		<div class="row p-0 m-0 justify-content-center mb-5">
-			<div class="col">
-				<div class="row">
-  				<div class="col ms-2">
-						<div class="input-group" id="search">
-  						<input type="text" class="form-control light-grey-bg border-0 p-1 px-2 m-0">
-  						<button class="btn btn-outline-secondary light-grey-bg border-0 p-1 px-2 m-0" type="button"> <img src="<%= asset_path 'search-b.svg' %>" class="align-text-top icon-large"></button>
-						</div>
-  				</div>
-  			</div>
-  		</div>
-  	</div>				
-
-		<% unless @no_results || @only_show_all %>
-			<div class="row p-0 m-0 justify-content-center mb-5">
-				<div class="col">
-					<div class="row">
-	  				<div class="col ms-2">
-	  					
-								<div class="nav nav-tabs border-0" id="tabs" role="tablist">
-									<% (0...@tab_ids.length).each do |i| %>
-									  <% if @tab_articles[i].length>0 %>
-											<button class="nav-link fw-bold fst-italic border-0 rounded-0 border-top border-5 header-tab <%= i==0 ? 'active' : '' %>" data-bs-toggle="tab" data-bs-target="#<%= @tab_ids[i] %>"><%= @tab_labels[i] %></button>
-										<% end %>	
-									<% end %>
-								</div>
-
-	        	</div>
-	        </div>
-	      </div>
-			</div>
-		<% end %>		
-
-		<div class="row p-0 m-0 justify-content-center mb-2 tab-content">
-			<% if @no_results	%>
-				<div class="col-12 text-center">No results for this search yet</div>
-			  <div class="col-12 text-center mt-3">Why don't you write something?</div>
-			<% else %>
-				<% (0...@tab_ids.length).each do |i| %>
-					<div class="col ms-2 tab-pane fade <%= i==0 ? 'show active' : '' %>" id="<%= @tab_ids[i] %>">
-				    <div class="row">
-							<% @tab_articles[i].each do |a| %>
-							  <div class="col-12 mb-5 ms-2">
-									<%= render partial: 'article_short', locals: { article: a, hide_category: false, hide_author: false, full_description: false } %>
-								</div>
-							<% end %>
-						</div>
-					</div>
-				<% end %>	
-			<% end %>	
-		</div>
-
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10 d-flex justify-content-center h2 fw-bold">
+    <%= @contest.title %>
   </div>
 </div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-6 d-flex justify-content-center h6">
+    <%= @contest.description %>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-10">
+    <div class="row my-3">
+      <div class="col" id="map" style="width:100%; height:400px;">
+        <script>
+          (function() {
+            const s = { lat: 35.6804, lng : 139.7690 };
+            const map = new google.maps.Map(document.getElementById("map"), { zoom: 5, center: s, controlSize: 20 });
+            const marker = new google.maps.Marker({ position: s, map: map });
+          })();
+        </script>
+      </div>  
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-10">
+    <div class="row my-3">
+      <div class="col">
+      	<div class="row mb-3">
+      	  <h1>Regions Leaderboard</h1>
+      	</div>	
+      	<div class="row">
+      	  <div class="col">
+    		    <% @contest.regions.each.with_index(1) do |r,i| %>
+    		      <%= render partial: 'region', locals: { r: r, i: i } %>
+        		<% end %>
+          </div>
+      	</div>
+      </div>      
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-10">
+    <div class="row my-3">
+      <div class="col">
+      	<div class="row mb-3">
+      	  <h1>Recent Sightings</h1>
+      	</div>	
+      	<div class="row">
+      	  <div class="col">
+    		    <% @contest.observations.each.with_index(1) do |o,i| %>
+    		      <%= render partial: 'observation', locals: { o: o, i: i } %>
+        		<% end %>
+          </div>
+      	</div>
+      </div>      
+    </div>
+  </div>
+</div> 
+

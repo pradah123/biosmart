@@ -3,6 +3,7 @@ require 'i18n'
 I18n.default_locale = :en
 
 RailsAdmin.config do |config|
+  config.asset_source = :webpacker
   config.parent_controller = '::ApplicationController'  
   config.main_app_name = ['Biosmart Admin', '']
   config.default_items_per_page = 1000

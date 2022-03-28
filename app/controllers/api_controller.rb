@@ -135,17 +135,31 @@ class ApiController < ActionController::API
 
   def create
     begin
+      Rails.logger.info get_model_str
+      Rails.logger.info params.inspect
+      
       obj = get_model.new params[get_model_str].permit!
+      Rails.logger.info "here"
+      Rails.logger.info obj
+      Rails.logger.info ">>>>>>>>>>>>>>>> creating"
     rescue => e
+      Rails.logger.info ">>>>>> failed"
       raise ApiFail.new e.message
     end
     raise ApiFail.new obj.errors.messages unless obj.save
+     Rails.logger.info ">>>>>>>>>>>>>>>> creating ok"
     render_success get_object_serialized(obj)
   end
 
   def update
     obj = get_object
+
+      Rails.logger.info "here"
+      Rails.logger.info obj
+      Rails.logger.info ">>>>>>>>>>>>>>>> updating"
     raise ApiFail.new obj.errors.messages unless obj.update(params[get_model_str].permit!)
+    Rails.logger.info ">>>>>>>>>>>>>>>> updating ok"
+    Rails.logger.info obj
     render_success get_object_serialized(obj)
   end
   
@@ -171,11 +185,11 @@ class ApiController < ActionController::API
       raise ApiUnauthorized.new if jwt_token.nil?
       @user = User.find_by_jwt_token jwt_token
 
-Rails.logger.info ">>>>>"
-Rails.logger.info jwt_token
-Rails.logger.info ">>>>>"
-Rails.logger.info @user.inspect
-Rails.logger.info ">>>>>"
+#Rails.logger.info ">>>>>"
+#Rails.logger.info jwt_token
+#Rails.logger.info ">>>>>"
+#Rails.logger.info @user.inspect
+#Rails.logger.info ">>>>>"
 
       raise ApiUnauthorized.new if @user.nil?
       raise ApiFail.new 'this account is locked due to repeated login failures' if @user.locked?

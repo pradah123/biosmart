@@ -1,14 +1,31 @@
 {
-  "application.js": "/packs/js/application-2ec9e7b9ec2a06fccdd7.js",
-  "application.js.map": "/packs/js/application-2ec9e7b9ec2a06fccdd7.js.map",
+  "application.js": "/packs/js/application-82ba891faabba6c76da5.js",
+  "application.js.map": "/packs/js/application-82ba891faabba6c76da5.js.map",
   "entrypoints": {
     "application": {
       "js": [
-        "/packs/js/application-2ec9e7b9ec2a06fccdd7.js"
+        "/packs/js/application-82ba891faabba6c76da5.js"
       ],
       "js.map": [
-        "/packs/js/application-2ec9e7b9ec2a06fccdd7.js.map"
+        "/packs/js/application-82ba891faabba6c76da5.js.map"
+      ]
+    },
+    "rails_admin": {
+      "js": [
+        "/packs/js/rails_admin-20654ef9b89df14d7b70.js"
+      ],
+      "js.map": [
+        "/packs/js/rails_admin-20654ef9b89df14d7b70.js.map"
       ]
     }
-  }
+  },
+  "media/webfonts/fa-solid-900.eot": "/packs/media/webfonts/fa-solid-900-9bbb245e.eot",
+  "media/webfonts/fa-solid-900.svg": "/packs/media/webfonts/fa-solid-900-7a8b4f13.svg",
+  "media/webfonts/fa-solid-900.ttf": "/packs/media/webfonts/fa-solid-900-be9ee23c.ttf",
+  "media/webfonts/fa-solid-900.woff": "/packs/media/webfonts/fa-solid-900-eeccf4f6.woff",
+  "media/webfonts/fa-solid-900.woff2": "/packs/media/webfonts/fa-solid-900-1551f4f6.woff2",
+  "rails_admin.js": "/packs/js/rails_admin-20654ef9b89df14d7b70.js",
+  "rails_admin.js.map": "/packs/js/rails_admin-20654ef9b89df14d7b70.js.map",
+  "vendors~actioncable.js": "/packs/js/vendors~actioncable-c6c256ac2bf94b91cd9f.chunk.js",
+  "vendors~actioncable.js.map": "/packs/js/vendors~actioncable-c6c256ac2bf94b91cd9f.chunk.js.map"
 }

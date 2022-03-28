@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   get '/', to: 'pages#top'
   get '/regions', to: 'pages#regions'
   get '/contests', to: 'pages#contests'
+  get '/participants', to: 'pages#participations'
   get '/users', to: 'pages#users'
   get '/region/:id', to: 'pages#region'
   get '/contest/:id', to: 'pages#contest'
@@ -17,9 +18,11 @@ Rails.application.routes.draw do
       post '/user/login', to: 'user#login'
       post '/user/logout', to: 'user#logout'
       
-      resources :participants
-      resources :regions
-      resources :contests
+      post '/contest', to: 'contest#create'
+      put '/contest', to: 'contest#update'
+      delete '/contest', to: 'contest#destroy'      
+
+     
     end
   end
 

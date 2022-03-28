@@ -1,0 +1,81 @@
+<% modalid = participation.nil? ? 'new' : participation.id %>
+
+<div class="modal fade participation-modal participation-modal-<%= modalid %>" tabindex="-1" id="<%= id %>" data-id="<%= participation.nil? ? '' : participation.id %>">
+  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title fw-heavy"><%= title %></h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row justify-content-center mb-5">
+          <div class="col-6 col-lg-4">
+            <div class="input-group">
+              <select class="form-select status_participation">
+                <option value="submitted" <%= participation && participation.submitted? ? 'selected' : '' %>>submitted</option>
+                <option value="accepted" <%= participation && participation.accepted? ? 'selected' : '' %>>accepted</option>
+                 <% if @user.admin? %>
+                  <option value="refused" <%= participation && participation.refused? ? 'selected' : '' %>>refuse</option>
+                  <option value="removed_by_admin" <%= participation && participation.removed_by_admin? ? 'selected' : '' %>>remove</option>
+                <% else %>
+                  <option value="removed_by_region" <%= participation && participation.removed_by_region? ? 'selected' : '' %>>remove</option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12 col-lg-4">
+            <div class="input-group">
+              <select class="form-select region_id_participation">
+                <% regions = @user.admin? ? Region.all : @user.regions %>
+                <% regions.each do |r| %>
+                  <option value="<%= r.id %>" <%= participation && participation.region_id==r.id ? 'selected' : '' %>><%= r.name %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="input-group">
+              <select class="form-select contest_id_participation">
+                <% Contest.where(status: Contest.statuses[:online]).all.each do |c| %>
+                  <option value="<%= c.id %>" <%= participation && participation.contest_id==c.id ? 'selected' : '' %>><%= c.title %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="input-group">
+              <select class="form-select data_sources_participation" multiple>
+                <% DataSource.all.each do |ds| %>
+                  <option value="<%= ds.id %>" <%= participation && participation.data_sources.pluck(:id).include?(ds.id) ? 'selected' : '' %>><%= ds.name %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center my-5">
+          <div class="col-8">
+            <div class="form-group">
+              <button class="btn btn-outline-secondary w-100 participation_save_action" data-id="<%= participation.nil? ? 'new' : participation.id %>">Save</button>
+            </div>
+          </div>
+        </div>
+        <div class="row justify-content-center mb-3">
+          <div class="col-8 validation-messages">
+            <span class="text-danger validation-ok organization_name">Title is required.</span>
+            <span class="text-danger validation-ok email">Start date and time is required.</span>
+            <span class="text-danger validation-ok email">End date and time is required.</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div-->
+    </div>
+  </div>
+</div>

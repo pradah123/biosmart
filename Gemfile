@@ -13,7 +13,6 @@ gem 'jbuilder', '~> 2.7'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootsnap', '>= 1.4.4', require: false
 gem 'image_processing', '~> 1.2'
-# gem 'redis', '~> 4.0'
 
 gem 'json', '2.6.0'
 gem 'jsonapi-serializer'
@@ -22,14 +21,19 @@ gem 'rails_admin-i18n'
 gem 'rails_admin_toggleable'
 gem 'rails_admin_globalize_field'
 gem 'jwt'
-gem 'geocoder'
+
+gem 'geokit'
 gem 'rack-attack'
 gem 'rack-cors'
 gem 'httparty'
-gem 'rgeo-geojson'
-gem 'activerecord-postgis-adapter'
-gem 'pg'
 
+
+
+# gem 'redis', '~> 4.0'
+#gem 'geocoder'
+#gem 'rgeo-geojson'
+#gem 'activerecord-postgis-adapter'
+#gem 'pg'
 #gem 'aws-sdk-sqs'
 #gem 'sidekiq'
 #gem 'redis-namespace'
