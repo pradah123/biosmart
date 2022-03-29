@@ -135,6 +135,7 @@ class ApiController < ActionController::API
 
   def create
     begin
+      Rails.logger.info ">>>>>>>>>>>>>>>> creating"
       Rails.logger.info get_model_str
       Rails.logger.info params.inspect
       
@@ -153,12 +154,7 @@ class ApiController < ActionController::API
 
   def update
     obj = get_object
-
-      Rails.logger.info "here"
-      Rails.logger.info obj
-      Rails.logger.info ">>>>>>>>>>>>>>>> updating"
     raise ApiFail.new obj.errors.messages unless obj.update(params[get_model_str].permit!)
-    Rails.logger.info ">>>>>>>>>>>>>>>> updating ok"
     Rails.logger.info obj
     render_success get_object_serialized(obj)
   end
@@ -209,9 +205,7 @@ class ApiController < ActionController::API
     end
 
     def get_object
-      return get_model.find params['id'] if params['id']
-      get_user
-      @user.nil? ? nil : @user
+      get_model.find params[get_model_str]['id']
     end
 
     def get_object_serialized obj

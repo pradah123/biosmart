@@ -22,7 +22,13 @@ Rails.application.routes.draw do
       put '/contest', to: 'contest#update'
       delete '/contest', to: 'contest#destroy'      
 
-     
+      post '/participation', to: 'participation#create'
+      put '/participation', to: 'participation#update'
+      delete '/participation', to: 'participation#destroy'    
+
+      post '/region', to: 'region#create'
+      put '/region', to: 'region#update'
+      delete '/region', to: 'region#destroy'
     end
   end
 

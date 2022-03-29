@@ -3,7 +3,7 @@ class User < ApplicationRecord
 
   has_many :regions
   has_many :contests
-  has_many :participations, through: :contests
+  has_many :participations
 
   after_create :reset_tokens, :send_signup_email
   #after_save :account_activated, if: :saved_change_to_status

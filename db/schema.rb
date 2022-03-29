@@ -79,6 +79,7 @@ ActiveRecord::Schema.define(version: 2022_01_22_074937) do
   end
 
   create_table "participations", force: :cascade do |t|
+    t.integer "user_id"
     t.integer "region_id"
     t.integer "contest_id"
     t.integer "status", default: 0

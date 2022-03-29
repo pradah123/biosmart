@@ -1,7 +1,7 @@
 <% modalid = contest.nil? ? 'new' : contest.id %>
 
 <div class="modal fade contest-modal contest-modal-<%= modalid %>" tabindex="-1" id="<%= id %>" data-id="<%= contest.nil? ? '' : contest.id %>">
-  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+  <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title fw-heavy"><%= title %></h4>

@@ -27,13 +27,14 @@
   	<div class="col-1 text-<%= r.online? ? 'success' : 'muted' %>"><%= r.online? ? '&#10004;'.html_safe: '&#9587;'.html_safe %></div>
   	<div class="col-3">
       <a role="button" class="btn btn-secondary" href="/region/<%= r.id %>" target="_blank">View</a>
-      <a role="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#region<%= r.id %>_modal">Edit</a>
+      <a role="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#region_<%= r.id %>_modal">Edit</a>
     </div>
   </div>
 <% end %>
+
+<%= render partial: 'region_form', locals: { region: nil, id: "region_modal", title: 'Create a Region' } %>
 
 <% @regions.each do |r| %>
   <%= render partial: 'region_form', locals: { region: r, id: "region_#{ r.id }_modal", title: 'Edit Region' } %>
 <% end %>
 
-<%= render partial: 'region_form', locals: { region: nil, id: "region_modal", title: 'Create a Region' } %>

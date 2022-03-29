@@ -57,7 +57,7 @@
         <div class="row">
           <div class="col">
             <% @region.contests.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
-              <%= render partial: 'contest', locals: { c: c } %>
+              <%= render partial: 'contest', locals: { c: c, i: i } %>
             <% end %>
           </div>    
         </div>

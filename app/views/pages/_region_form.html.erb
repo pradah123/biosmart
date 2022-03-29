@@ -1,7 +1,7 @@
 <% modalid = region.nil? ? 'new' : region.id %>
 
 <div class="modal fade region-modal region-modal-<%= modalid %>" tabindex="-1" id="<%= id %>" data-id="<%= region.nil? ? '' : region.id %>">
-  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title fw-heavy"><%= title %></h4>
@@ -59,7 +59,7 @@
             </div>  
             <div class="row">
               <div class="col">  
-                <img src="" class="img-fluid m-3 logo-frame-<%= modalid %>" />
+                <img src="<%= region && region.logo_image ? region.logo_image : '' %>" class="img-fluid m-3 logo-frame-<%= modalid %>" />
               </div>
             </div>
           </div>
@@ -76,7 +76,7 @@
             </div>  
             <div class="row">
               <div class="col">  
-                <img src="" class="img-fluid m-3 header-frame-<%= modalid %>" />
+                <img src="<%= region && region.header_image ? region.header_image : '' %>" class="img-fluid m-3 header-frame-<%= modalid %>" />
               </div>
             </div>
           </div>
@@ -86,59 +86,20 @@
           <div class="col-10">
             <label class="form-label">Region Boundaries</label>
             <div class="row my-3">
-              <div class="col" id="map-<%= modalid %>" style="width:100%; height:400px;">
-                <script>
-                  var _polygons = [];
-                  var _polygon_objects = [];
-
-                  (function() {
-                    const s = { lat: 35.6804, lng : 139.7690 };
-                    const map = new google.maps.Map(document.getElementById("map-<%= modalid %>"), { zoom: 5, center: s, controlSize: 20 });
-                    //const marker = new google.maps.Marker({ position: s, map: map });
-
-                    var drawingManager = new google.maps.drawing.DrawingManager({
-                      drawingControl: true,
-                      drawingControlOptions: { 
-                        position: google.maps.ControlPosition.TOP_CENTER, 
-                        drawingModes: ['polygon'] 
-                      }
-                    });
-                
-                    drawingManager.setMap(map);
-
-                    google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
-                      var colour = _colours[_polygons.length%_colours.length];
-                      polygon.setEditable(true);
-                      polygon.setOptions({ fillColor: colour });
-                     
-                      var points = polygon.getPath();
-                      var pg = []
-                      for (var i = 0; i < points.length; i++) {
-                        var lat = points.getAt(i).lat();
-                        var lng = points.getAt(i).lng();
-                        pg.push({ 'lat': lat, 'lng': lng });
-                        console.log(i+"  : "+lat+","+lng);
-                      }
-                     
-                      var html = "<button class='btn me-5' id='polygon-remove-"+colour+"' style='background-color:"+colour+";' data-polygon-id='"+_polygons.length+"'>Remove Polygon</button>";
-                      $('.polygon_removes').append(html);
-                      console.log(html);
-
-                      _polygon_objects.push(polygon);
-                      _polygons.push(pg);
-                    });
-                    
-                  })();
-                </script>
-              </div>  
+              <div class="col" id="map-<%= id %>" style="width:100%; height:400px;"></div>
             </div>
             <div class="row">
-              <div class="col polygon_removes">
-
+              <div class="col" id="polygon-json-<%= id %>">              
+                <%= render partial: 'polygon', locals: { p: nil, remove_button_disabled: true } %>
+                <% if region && !region.raw_polygon_json.blank? %>
+                  <% JSON.parse(region.raw_polygon_json).map { |json| JSON.generate json }.each do |p| %>
+                    <%= render partial: 'polygon', locals: { p: p, remove_button_disabled: false } %>
+                  <% end %>
+                <% end %>
               </div>
-            </div>  
+            </div>
           </div>
-        </div>  
+        </div>
 
         <div class="row justify-content-center my-5">
           <div class="col-8">

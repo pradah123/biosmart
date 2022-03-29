@@ -1,4 +1,5 @@
 class Participation < ApplicationRecord
+  belongs_to :user
   belongs_to :region
   belongs_to :contest
   has_and_belongs_to_many :data_sources

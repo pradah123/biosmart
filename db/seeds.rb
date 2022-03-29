@@ -9,4 +9,6 @@ DataSource.create! name: 'Questagame'
 DataSource.create! name: 'Ebird'
 DataSource.create! name: 'observation.org'
 
-
+Contest.all.destroy_all
+Contest.create! title: 'Tokyo Sakura Challenge', description: 'Get your flower pictures in!', starts_at: '2022-04-01T00:00', ends_at: '2022-04-15T00:00', status: Contest.statuses[:online]
+Contest.create! title: 'Tokyo Spooky Spring Insects Challenge', description: 'As it gets warmer, they will appear on your balcony...', starts_at: '2022-04-15T00:00', ends_at: '2022-05-15T00:00', status: Contest.statuses[:online]

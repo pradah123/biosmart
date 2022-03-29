@@ -1,7 +1,9 @@
 var _api = '/api/v1';
 var _re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 var _images = {};
-var _colours = ['green', 'yellow', 'blue', 'red'];
+var _colours = ['green', 'yellow', 'blue', 'red', 'cyan', 'DarkGray', 'DarkMagenta', 'HotPink', 'LawnGreen'];
+var _npolygons = 0;
+var _polygons = {};
 
 var _login_modal = new bootstrap.Modal(document.getElementById('login'), { keyboard: true });
 var _signup_modal = new bootstrap.Modal(document.getElementById('signup'), { keyboard: true });
@@ -17,27 +19,30 @@ $(document).ready(function() {
 
 
 function set_up_participations() {
+
   $('.participation_save_action').each(function() {
-    var p = $(this);
-    var id = p.attr('data-id');
-    console.log('participations');
+    var pa = $(this);
+    var id = pa.attr('data-id');
+    var verb = id=='new' ? 'POST' : 'PUT';
    
-    p.click(function() {
+    pa.click(function() {
       var p = {};
+      if(id!='new') p['id'] = parseInt(id);
+      p['user_id'] = _user_id;
       p['status'] = $('.participation-modal-'+id+' .status_participation').val();
+      if(p['status']==null) p['status'] = 'submitted';
       p['region_id'] = $('.participation-modal-'+id+' .region_id_participation').val();
       p['contest_id'] = $('.participation-modal-'+id+' .contest_id_participation').val();
-      p['data_source_ids'] = $('.participation-modal-'+id+' .data_sources_participation').val();
+      p['data_source_ids'] = [];
+      $('input[name="data-sources-'+id+'"]:checked').each(function() { p['data_source_ids'].push(parseInt($(this).val())); });
 
-console.log(p);
-
-      $.post(_api+'/participation' , { participation: p })
+      $.ajax({ url: (_api+'/participation'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'participation': p }) })
       .done(function(data, status) {
         console.log(data);
         if(data['status']=='fail') {
           //if(data['message']['email']!=undefined) $('#'+id+' .email_unique').removeClass('validation-ok');
           //if(data['message']['organization_name']!=undefined) $('#'+id+' .organization_name_unique').removeClass('validation-ok');
-console.log('fail');
+          console.log('fail');
         } else {
           reload();
         }
@@ -50,19 +55,12 @@ console.log('fail');
   });
 }
 
-
-
-
-
-
 function set_up_contests() {
 
   $('.contest_save_action').each(function() {
     var pa = $(this);
     var id = pa.attr('data-id');
-    console.log(id);
     var verb = id=='new' ? 'POST' : 'PUT';
-    console.log('contests');
    
     pa.click(function() {
       var p = {};
@@ -74,15 +72,13 @@ function set_up_contests() {
       p['starts_at'] = $('.contest-modal-'+id+' .starts_at_contest').val();
       p['ends_at'] = $('.contest-modal-'+id+' .ends_at_contest').val();
 
-console.log(p);
-
-      $.ajax({ url: (_api+'/contest'), type: verb, contentType: 'application/json', data: JSON.stringify(p) })
+      $.ajax({ url: (_api+'/contest'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'contest': p }) })
       .done(function(data, status) {
         console.log(data);
         if(data['status']=='fail') {
           //if(data['message']['email']!=undefined) $('#'+id+' .email_unique').removeClass('validation-ok');
           //if(data['message']['organization_name']!=undefined) $('#'+id+' .organization_name_unique').removeClass('validation-ok');
-console.log('fail');
+          console.log('fail');
         } else {
           reload();
         }
@@ -94,15 +90,6 @@ console.log('fail');
 
   });
 }
-
-
-
-
-
-
-
-
-
 
 function set_up_regions() {
   $('#region').on('show.bs.modal', function() { Cookies.set('modal', 'region'); });
@@ -130,6 +117,7 @@ function set_up_regions() {
       i.click(function() { 
         $('.img-fluid.'+image+'-frame-'+frameid).attr('src', '');
         $('.'+image+'-region.'+image+'-frame-'+frameid).val(null);
+        _images[image] = null;
       });
     });        
   }
@@ -149,11 +137,20 @@ function set_up_regions() {
       p['population'] = $('.region-modal-'+id+' .population_region').val();
       p['logo_image_url'] = $('.region-modal-'+id+' .logo_url_region').val();
       p['header_image_url'] = $('.region-modal-'+id+' .header_url_region').val();
-      p['raw_polygon_json'] = JSON.stringify({ polygons: _polygons });
       p['logo_image'] = _images['logo'];
       p['header_image'] = _images['header'];
 
-       $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify(p) })
+      p['raw_polygon_json'] = [];
+      $('.region-modal-'+id+' .polygon-json input').each(function() { 
+        var val = $(this).val().trim();
+        if(val.length) p['raw_polygon_json'].push(val); 
+      });
+      p['raw_polygon_json'] = "["+p['raw_polygon_json'].join(',')+"]";
+
+      console.log(p);
+      console.log('region');
+
+       $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
       .done(function(data, status) {
         console.log(data);
         if(data['status']=='fail') {
@@ -171,15 +168,128 @@ function set_up_regions() {
 
   });
 
-  for( var i=0 ; i<_colours.length ; i++ ) {
-    $(document).on('click', '#polygon-remove-'+_colours[i], function() {
-      var i = parseInt($(this).attr('data-polygon-id'));
-      console.log('removing');
-      _polygon_objects[i].setMap(null);
-      $(this).attr('disabled','disabled');
-    });
-  }
+  $('.region-modal').each(function() {
+    var modalid = $(this).attr('id');
 
+    //const s = { lat: 35.6804, lng: 139.7690 }; 
+    var s = { lat: -25.2744, lng: 133.7751 };
+    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 5, center: s, controlSize: 20 });
+
+    $('#polygon-json-'+modalid+' .polygon-draw').click(function() {
+      console.log('draw clicked changed');
+      draw_polygon($(this).parent().find('input'), map);
+    });
+
+    var drawingManager = new google.maps.drawing.DrawingManager({
+      drawingControl: true,
+      drawingControlOptions: { 
+        position: google.maps.ControlPosition.TOP_CENTER,
+        drawingModes: ['polygon']
+      }
+    });
+
+    drawingManager.setMap(map);
+    google.maps.event.addListener(drawingManager, 'polygoncomplete', write_polygon(modalid));
+    
+    google.maps.event.addListenerOnce(map, 'idle', function() { 
+      var bounds = new google.maps.LatLngBounds(null);
+
+      $('#polygon-json-'+modalid+' .polygon-draw').each(function() { $(this).click(); });
+
+      $('#polygon-json-'+modalid+' .polygon-json input').each(function() {
+        var polygon = get_polygon($(this));
+        if(polygon!=null) {
+          polygon.getPaths().forEach(function(path) {
+            var ar = path.getArray();
+            for(var i=0, l = ar.length; i <l; i++) bounds.extend(ar[i]);  
+          });
+        }  
+      });
+
+      if(bounds.getNorthEast().lat()==-1 && bounds.getSouthWest().lat()==1 && bounds.getNorthEast().lng()==-180 && bounds.getSouthWest().lng()==180) {
+
+      } else {
+        map.setCenter(bounds.getCenter());
+        map.fitBounds(bounds, 0);
+        map.panToBounds(bounds);
+        map.setZoom(6);
+        //console.log('here'); 
+        //console.log(bounds); 
+        //console.log(map.getBounds());
+      }  
+    });
+  });
+
+}
+
+function write_polygon(modalid) {
+  return function(polygon) { 
+    var points = polygon.getPath();
+    var colour = set_parameters(polygon);
+    var geojson_data = [];
+    for (var i = 0; i < points.length; i++) geojson_data.push([points.getAt(i).lng(), points.getAt(i).lat()]);
+    make_html(geojson_data, modalid, colour, polygon);
+  };
+}
+
+function set_parameters(polygon) {
+  var colour = _colours[_npolygons%_colours.length];
+  _npolygons++;
+  polygon.setOptions({ fillColor: colour });
+  //polygon.setEditable(true);
+  return colour;
+}
+
+function make_html(polygon_geojson_data, modalid, colour, polygon) {
+  var geojson = { 'type': 'Polygon', 'coordinates': polygon_geojson_data };
+  var id = '#polygon-json-'+modalid;
+  var new_input = $(id+' .polygon-json').first().clone();
+  $(id).append(new_input);
+  $(id+' .polygon-json input').last().val(JSON.stringify(geojson));
+  $(id+' .polygon-json input').last().prop('readonly', true);
+  $(id+' .polygon-json button.polygon-remove').last().removeAttr('disabled');
+  $(id+' .polygon-json button.polygon-draw').last().prop('disabled', true);
+  $(id+' .polygon-json span.polygon-colour').last().css('background-color', colour);
+  var row = $(id+' .polygon-json').last();
+  $(id+' .polygon-json button.polygon-remove').last().click(function() { 
+    console.log('remove'); 
+    polygon.setMap(null); 
+    row.remove(); 
+  });
+}
+
+function draw_polygon(input, map) {
+  var polygon = get_polygon(input);
+  if(polygon==null) return;
+
+  var colour = set_parameters(polygon);
+  polygon.setMap(map);
+
+  input.parent().find('span.polygon-colour').css('background-color', colour);
+
+  input.parent().find('button.polygon-draw').attr('disabled', 'disabled');
+
+  input.parent().find('button.polygon-remove').click(function() { 
+    console.log('remove'); 
+    polygon.setMap(null); 
+    $(this).parent().parent().parent().remove(); 
+  });
+}
+
+function get_polygon(input) {
+  var polygon_text= input.val().trim();
+  if(polygon_text.length==0) return null;
+
+  //confirm input is json  
+  var polygon_json = JSON.parse(polygon_text);
+  var coordinates = polygon_json['coordinates'];
+
+  var googlemaps_points = [];
+  for( var i = 0 ; i<coordinates.length ; i++ ) googlemaps_points.push({ lng: coordinates[i][0], lat: coordinates[i][1] });
+
+  var polygon = new google.maps.Polygon({ paths: googlemaps_points });
+
+  return polygon;
 }
 
 function getBase64(file, name) {

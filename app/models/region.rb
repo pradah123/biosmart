@@ -18,19 +18,34 @@ class Region < ApplicationRecord
   @lng_max = 0
 
   def prepare_geokit_polygons
+    return if raw_polygon_json.blank?
+
+=begin    
     # make polygon objects ahead of time, for use when deciding if an observation is in the region
     # work out the bounding box contaning all polygons too
 
     @polygons = []
     
-    JSON.parse(raw_polygon_json).each do |polygon|
-      points = [] 
-      polygon.each do |p|
-        points.push Geokit::LatLng.new(p['lat'], p['lng'])
-      end
-      @polygons.push Geokit::Polygon.new(points)
-    end
+#Rails.logger.info raw_polygon_json
+#Rails.logger.info JSON.parse(raw_polygon_json)
 
+    json_arr = JSON.parse raw_polygon_json
+
+    if json_arr
+      json_arr.each do |polygon|
+        points = [] 
+        #Rails.logger.info ">>>>>"
+        #Rails.logger.info polygon     
+        polygon.each do |p|
+          points.push Geokit::LatLng.new(p['lat'], p['lng'])
+        end
+        #Rails.logger.info "%&%&%&%"
+        #Rails.logger.info points      
+        @polygons.push Geokit::Polygon.new(points)
+      end
+    end  
+    #Rails.logger.info @polygons
+=end    
   end  
 
   def assign_observations
@@ -54,6 +69,9 @@ class Region < ApplicationRecord
     return false
   end
 
+  def get_polygons
+    @polygons
+  end
 
 =begin
   def format_for_api(params={})
