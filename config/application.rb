@@ -10,8 +10,7 @@ module Biosmart
   class Application < Rails::Application
     config.load_defaults 6.1
     config.hosts << "localhost"
-    config.hosts << "staging.bioexpertise.org"
-    config.hosts << "biosmart.life"
+    config.hosts << "portal.biosmart.life"
     
     config.assets.compile = true
     config.assets.precompile =  ['*.js', '*.css'] 
