@@ -1,27 +1,17 @@
 <div class="row">
   <div class="col-2 fw-bold fs-vlarge fst-italic d-flex justify-content-center"><%= i %></div>
-  <div class="col">
-    <div class="row">
-	  <div class="col">
-	    <h3><%= c.title %></h3>
-	  </div>
-	  <div class="col d-flex justify-content-end">
-	    <a href="/contest/<%= c.id %>" class="text-muted">more</a>  
-      </div>
-    </div>
-    <div class="row">
-	  <p><%= c.description %></p>
-    </div>
-    <div class="row">
-	  <div class="col d-flex justify-content-center"><%= c.starts_at.strftime '%Y/%m/%d %H:%m' %> - <%= c.ends_at.strftime '%Y/%m/%d %H:%m' %></div>
-	  <div class="col d-flex justify-content-center"><%= c.observations.count %></div>
-	  <div class="col d-flex justify-content-center"><%= c.participations.where(status: Participation.statuses[:accepted]).count %></div>
-    </div>
-    <div class="row">
-	  <div class="col d-flex justify-content-center">Time</div>
-	  <div class="col d-flex justify-content-center">Contestants</div>
-	  <div class="col d-flex justify-content-center">Population</div>
-    </div>	
-  </div>  
+  <div class="col-8 h4"><%= c.title %></div>
+	<div class="col-2 d-flex justify-content-end">
+	  <a href="/contest/<%= c.id %>" class="text-muted">more</a>  
+  </div>
+</div>
+<div class="row my-3">
+	<div class="col-2"></div>
+	<div class="col-10"><%= c.description %></div>
+</div>
+<div class="row mb-5">
+	<div class="col-2"></div>
+	<div class="col-4"><%= c.starts_at.strftime '%Y/%m/%d %H:%m' %> - <%= c.ends_at.strftime '%Y/%m/%d %H:%m' %></div>
+  <div class="col"><%= c.observations.count %> Observations, <%= c.participations.where(status: Participation.statuses[:accepted]).count %> Participants</div>
 </div>
   

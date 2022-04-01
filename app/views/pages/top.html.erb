@@ -1,4 +1,4 @@
-<div class="row justify-content-center">
+<!--div class="row justify-content-center">
   <div class="col-10">
     <div class="row my-3">
       <div class="col" id="map" style="width:100%; height:400px;">
@@ -12,20 +12,30 @@
       </div>  
     </div>
   </div>
-</div>
+</div-->
+
+<div class="row justify-content-center mb-5">
+  <div class="col-10">
+    <div class="row my-5 justify-content-center">
+      <div class="col-6 col-md-4">
+        <img class="img-fluid" src="<%= image_path 'logo.png' %>">
+      </div>      
+    </div>
+  </div>
+</div> 
 
 <div class="row justify-content-center">
   <div class="col-10">
     <div class="row my-3">
       <div class="col">
-      	<div class="row mb-3">
-      	  <h1>Regions Leaderboard</h1>
+      	<div class="row">
+      	  <div class="col h4 text-center proxima section-header mb-3">Regions Leaderboard</div>
       	</div>	
       	<div class="row">
-      	  <div class="col">
-		    <% Region.first(5).each.with_index(1) do |r,i| %>
-		      <%= render partial: 'region', locals: { r: r, i: i } %>
-    		<% end %>
+      	  <div class="col mt-5">
+    		    <% Region.first(5).each.with_index(1) do |r,i| %>
+    		      <%= render partial: 'region', locals: { r: r, i: i } %>
+        		<% end %>
           </div>		
       	</div>
       </div>      
@@ -38,13 +48,13 @@
     <div class="row my-3">
       <div class="col">
       	<div class="row mb-3">
-      	  <h1>Upcoming Contests</h1>
+      	  <div class="col h4 text-center proxima section-header mb-3">Upcoming Contests</div>
       	</div>	
       	<div class="row">
       	  <div class="col">
-		    <% Contest.upcoming.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
- 			  <%= render partial: 'contest', locals: { c: c, i: i } %>
-    		<% end %>
+    		    <% Contest.upcoming.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+     			    <%= render partial: 'contest', locals: { c: c, i: i } %>
+        		<% end %>
           </div>		
       	</div>
       </div>      
@@ -57,39 +67,16 @@
     <div class="row my-3">
       <div class="col">
       	<div class="row mb-3">
-      	  <h1>Completed Contests</h1>
+      	  <div class="col h4 text-center proxima section-header mb-3">Completed Contests</div>
       	</div>	
       	<div class="row">
       	  <div class="col">
-		    <% Contest.past.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
- 			  <%= render partial: 'contest', locals: { c: c, i: i } %>
-    		<% end %>
+    		    <% Contest.past.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+     			    <%= render partial: 'contest', locals: { c: c, i: i } %>
+        		<% end %>
           </div>		
       	</div>
       </div>      
     </div>
   </div>
 </div>
-
-<div class="row justify-content-center">
-  <div class="col-10">
-    <div class="row my-3">
-      <div class="col">
-      	<div class="row mb-3">
-      	  <h1>Recent Sightings</h1>
-      	</div>	
-      	<div class="row">
-      	  <div class="col">
-      	  	<div class="row">
-		      <% Observation.recent.first(20).each.with_index(1) do |o,i| %>
-		        <%= render partial: 'observation', locals: { o: o, i: i } %>
-    		  <% end %>
-    		</div>  
-          </div>
-      	</div>
-      </div>      
-    </div>
-  </div>
-</div> 
-
-

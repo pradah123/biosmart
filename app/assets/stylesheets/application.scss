@@ -14,6 +14,50 @@
  *= require_self
  */
 
+
+
+* {
+  font-family: 'EB Garamond', serif;
+  border-radius: 0px!important;
+  line-height: 1em;
+  -webkit-text-size-adjust: 100%;
+}
+
+.proxima {
+  font-family: 'Montserrat', sans-serif;
+}  
+
+header {
+  background: url(image_path('background.jpeg')) no-repeat center center / cover;    
+}
+
+.fw-home, .fw-header-link { font-size: 13px; font-weight: 300; letter-spacing: 2px; }
+.fw-home { font-size: 20px; }
+
+#footer-links a, #footer-links p { 
+  color: rgba(255,255,255,.4);
+  border-bottom: 1px solid rgba(255,255,255,.4);
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 100;
+  letter-spacing: 0px;
+  line-height: 1.6em;
+}
+
+#footer-links a:hover { color: white; }
+
+
+
+.section-header { 
+  font-weight: 300;
+  color: #bdbdbd; 
+  text-transform: uppercase; 
+  letter-spacing: .3em;
+  line-height: 1.1em;
+}
+
 .validation-ok { color: white; display:none; }
 
 .fw-huge { font-size: 32px; }
+
+
