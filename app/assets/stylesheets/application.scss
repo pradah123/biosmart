@@ -28,7 +28,7 @@
 }  
 
 header {
-  background: url(image_path('background.jpeg')) no-repeat center center / cover;    
+  background: url(/background.jpeg) no-repeat center center / cover;    
 }
 
 .fw-home, .fw-header-link { font-size: 13px; font-weight: 300; letter-spacing: 2px; }
