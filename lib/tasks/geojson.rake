@@ -2,7 +2,7 @@ namespace :geojson do
   task :get, [:relation_id] do |t,args|
   	coordinates = []
 
-  	r = HTTParty.get "https://api.openstreetmap.org/api/0.6/relation/#{args[:way_id]}.json", headers: { 'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36', 'Accept' => 'application/json' }
+  	r = HTTParty.get "https://api.openstreetmap.org/api/0.6/relation/#{args[:way_id]}.json"#, headers: { 'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36', 'Content-Type' => 'application/json' }
   	puts r.inspect
   	members = r['elements']['members']
   	puts "Got relationship, #{members.length} members"

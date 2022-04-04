@@ -9,7 +9,7 @@
       </div>
       <div class="modal-body">
 
-        <div class="row justify-content-center mb-5">
+        <!--div class="row justify-content-center mb-5">
           <div class="col-6 col-lg-4">
             <div class="input-group">
               <select class="form-select status_region">
@@ -18,30 +18,25 @@
               </select>
             </div>
           </div>
-        </div>
+        </div-->
 
         <div class="row">
           <div class="col-12 col-lg-6 mb-3">
             <div class="input-group">
-              <input type="text" class="form-control name_region" placeholder="Region Name" required="required" value="<%= region.nil? ? '' : region.name %>">
+              <input type="text" class="form-control name_region" placeholder="Region Name (required)" required="required" value="<%= region.nil? ? '' : region.name %>">
             </div>
           </div>
           <div class="col-12 col-lg-6 mb-3">
             <div class="input-group">
-              <input type="text" class="form-control description_region" placeholder="Description" required="required" value="<%= region.nil? ? '' : region.description %>">
+              <input type="url" class="form-control region_url_region" placeholder="Region Url" value="<%= region.nil? ? '' : region.region_url %>">
             </div>
           </div>
         </div>
 
         <div class="row">
-          <div class="col-12 col-lg-6 mb-3">
+          <div class="col-12 mb-3">
             <div class="input-group">
-              <input type="url" class="form-control region_url_region" placeholder="Region Url" required="required" value="<%= region.nil? ? '' : region.region_url %>">
-            </div>
-          </div>
-          <div class="col-12 col-lg-6 mb-3">
-            <div class="input-group">
-              <input type="number" class="form-control population_region" step="1000" value="<%= region.nil? ? 0 : region.population %>">
+              <textarea type="text" class="form-control description_region d-flex align-items-stretch" placeholder="Description - (required)" required="required" value="<%= region.nil? ? '' : region.description %>"></textarea>
             </div>
           </div>
         </div>
@@ -50,7 +45,7 @@
           <div class="col-12 col-lg-6 my-5">
             <div class="row">
               <div class="col">    
-                <label for="Image" class="form-label">Logo Image</label>
+                <label for="Image" class="form-label">Logo Image (required)</label>
                 <input type="url" class="form-control logo_url_region" placeholder="Image Url" required="required" value="<%= region.nil? ? '' : region.logo_image_url %>">
                 <div class="w-100 text-center my-3">or</div>
                 <input class="form-control logo-region logo-frame-<%= modalid %>" type="file" data-frame-id="<%= modalid %>">
@@ -110,10 +105,9 @@
         </div>
         <div class="row justify-content-center mb-3">
           <div class="col-8 validation-messages">
-            <span class="text-danger validation-ok organization_name_unique">Organization name is already taken.</span>
-            <span class="text-danger validation-ok email_unique">Email is already taken.</span>
-            <span class="text-danger validation-ok organization_name">Organization name is required.</span>
-            <span class="text-danger validation-ok email">Email is required.</span>
+            <span class="text-danger validation-ok name_region_v">Region name is required.</span>
+            <span class="text-danger validation-ok description_region_v">Description is required.</span>
+            <span class="text-danger validation-ok logo_region_v">Logo is required.</span>
           </div>
         </div>
 

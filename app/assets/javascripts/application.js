@@ -131,14 +131,14 @@ function set_up_regions() {
       var p = {};
       p['user_id'] = _user_id;
       if(id!='new') p['id'] = parseInt(id);
-      p['status'] = $('.region-modal-'+id+' .status_region').val();
-      p['name'] = $('.region-modal-'+id+' .name_region').val();
-      p['description'] = $('.region-modal-'+id+' .description_region').val();
-      p['population'] = $('.region-modal-'+id+' .population_region').val();
+      p['status'] = 'online'; //$('.region-modal-'+id+' .status_region').val();
+      p['name'] = $('.region-modal-'+id+' .name_region').val().trim();
+      p['description'] = $('.region-modal-'+id+' .description_region').val().trim();
+      //p['population'] = $('.region-modal-'+id+' .population_region').val();
       p['logo_image_url'] = $('.region-modal-'+id+' .logo_url_region').val();
       p['header_image_url'] = $('.region-modal-'+id+' .header_url_region').val();
-      p['logo_image'] = _images['logo'];
-      p['header_image'] = _images['header'];
+      p['logo_image'] = _images['logo']==undefined ? '' : _images['logo'];
+      p['header_image'] = _images['header']==undefined ? '' : _images['header'];
 
       p['raw_polygon_json'] = [];
       $('.region-modal-'+id+' .polygon-json input').each(function() { 
@@ -147,22 +147,29 @@ function set_up_regions() {
       });
       p['raw_polygon_json'] = "["+p['raw_polygon_json'].join(',')+"]";
 
-      console.log(p);
-      console.log('region');
+      var failed = false;
+      if(p['name'].length==0) { $('.name_region_v').removeClass('validation-ok'); failed = true; } else { $('.name_region_v').addClass('validation-ok'); }
+      if(p['description'].length==0) { $('.description_region_v').removeClass('validation-ok'); failed = true; } else { $('.description_region_v').addClass('validation-ok'); }
+      if(p['logo_image'].length==0 && p['logo_image_url'].length==0) { $('.logo_region_v').removeClass('validation-ok'); failed = true; } else { $('.logo_region_v').addClass('validation-ok'); }
 
-       $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
-      .done(function(data, status) {
-        console.log(data);
-        if(data['status']=='fail') {
-          //if(data['message']['email']!=undefined) $('#'+id+' .email_unique').removeClass('validation-ok');
-          //if(data['message']['organization_name']!=undefined) $('#'+id+' .organization_name_unique').removeClass('validation-ok');
+      if(failed==false) {  
+        $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
+        .done(function(data, status) {
+         
+          if(data['status']=='fail') {
+            console.log(data);
+            console.log('in fail')
+            //if(data['message']['email']!=undefined) $('#'+id+' .email_unique').removeClass('validation-ok');
+            //if(data['message']['organization_name']!=undefined) $('#'+id+' .organization_name_unique').removeClass('validation-ok');
 
-        } else {
-          reload();
-        }
-      })
-      .fail(function(xhr, status, error) {})
-      .always(function() {});
+          } else {
+            reload();
+          }
+        })
+        .fail(function(xhr, status, error) {})
+        .always(function() {});
+      }
+        
       return false;
     });
 
@@ -176,7 +183,6 @@ function set_up_regions() {
     var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 5, center: s, controlSize: 20 });
 
     $('#polygon-json-'+modalid+' .polygon-draw').click(function() {
-      console.log('draw clicked changed');
       draw_polygon($(this).parent().find('input'), map);
     });
 

@@ -7,24 +7,20 @@
 
 <div class="row my-5">
   <div class="col-3 fw-bold">Region</div>
-  <div class="col-3 fw-bold">Description</div>
-  <div class="col-2 fw-bold">Population</div>
-  <div class="col-1 fw-bold">Online</div>
+  <div class="col-6 fw-bold">Description</div>
   <div class="col-3"></div>
 </div>
 
 <% @regions.each do |r| %>
   <div class="row mb-3">
-  	<div class="col-3">
+  	<div class="col-3 d-flex align-items-center">
       <% if r.region_url %>
         <a href="<%= r.region_url %>"><%= r.name %></a>
       <% else %>
         <%= r.name %>
       <% end %>
     </div>
-  	<div class="col-3"><%= r.description.truncate_words 10 %></div>
-  	<div class="col-2"><%= r.population %></div>
-  	<div class="col-1 text-<%= r.online? ? 'success' : 'muted' %>"><%= r.online? ? '&#10004;'.html_safe: '&#9587;'.html_safe %></div>
+  	<div class="col-6 d-flex align-items-center"><%= r.description.truncate_words 10 %></div>
   	<div class="col-3">
       <a role="button" class="btn btn-secondary" href="/region/<%= r.id %>" target="_blank">View</a>
       <a role="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#region_<%= r.id %>_modal">Edit</a>

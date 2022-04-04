@@ -8,8 +8,21 @@ class Region < ApplicationRecord
 
   enum status: [:online, :offline, :deleted]
 
+  #validates :name, presence: true
+  #validates :description, presence: true
+  #validate :logo_present
+  #validate :header_present
 
 
+
+
+  def logo_present
+    errors.add :logo_image, 'logo image or image url are required' if logo_image.blank? && logo_image_url.blank?
+  end  
+
+  def header_present
+    errors.add :header_image, 'header image or image url are required' if header_image.blank? && header_image_url.blank?
+  end  
 
   @polygons = []
   @lat_min = 0
@@ -73,6 +86,39 @@ class Region < ApplicationRecord
     @polygons
   end
 
+  def self.get_geojson_from_osm relation_id
+    coordinates = []
+
+    r = HTTParty.get "https://api.openstreetmap.org/api/0.6/relation/#{relation_id}.json"
+    members = r['elements'][0]['members']
+    Rails.logger.info "Got relationship, #{members.length} members"
+  
+    members.each do |m|
+      if m['type']=='way'   
+        rr = HTTParty.get "https://api.openstreetmap.org/api/0.6/way/#{m['ref']}.json"
+        Rails.logger.info rr['elements'].inspect
+        nodes = rr['elements'][0]['nodes']
+        Rails.logger.info ">> Got way, #{nodes.length} nodes"
+
+        nodes.each do |n|
+          rrr = HTTParty.get "https://api.openstreetmap.org/api/0.6/node/#{n}.json" 
+          Rails.logger.info ">>>> Got node #{rrr.body['elements'][0].inspect}"
+          c = { lat: rrr.body['elements'][0]['lat'], lng: rrr.body['elements'][0]['lon'] }
+          coordinates.push c
+        end
+
+      elsif m['type']=='node'
+        rr = HTTParty.get "https://api.openstreetmap.org/api/0.6/node/#{n}.json"  
+        c = { lat: rr.body['elements'][0]['lat'], lng: rr.body['elements'][0]['lon'] }
+        coordinates.push c
+
+      end 
+    end
+
+    Rails.logger.info coordinates.inspect
+  end
+
+
 =begin
   def format_for_api(params={})
     data = {
@@ -92,5 +138,7 @@ class Region < ApplicationRecord
     return data
   end
 =end
+
+
 
 end
