@@ -17,8 +17,8 @@
 <div class="row justify-content-center mb-5">
   <div class="col-10">
     <div class="row my-5 justify-content-center">
-      <div class="col-6 col-md-4">
-        <img class="img-fluid" src="/logo.png">
+      <div class="col-8 col-md-6">
+        <img class="img-fluid" src="<%= image_path 'logo.png' %>">
       </div>      
     </div>
   </div>
@@ -28,12 +28,31 @@
   <div class="col-10">
     <div class="row my-3">
       <div class="col">
+        <div class="row mb-3">
+          <div class="col h4 text-center proxima section-header mb-3">Upcoming Contests</div>
+        </div>  
+        <div class="row">
+          <div class="col">
+            <% Contest.upcoming.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+              <%= render partial: 'contest', locals: { c: c, i: i } %>
+            <% end %>
+          </div>    
+        </div>
+      </div>      
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center mt-5">
+  <div class="col-10">
+    <div class="row my-3">
+      <div class="col">
       	<div class="row">
-      	  <div class="col h4 text-center proxima section-header mb-3">Regions Leaderboard</div>
+      	  <div class="col h4 text-center proxima section-header mb-3">Competing Regions</div>
       	</div>	
       	<div class="row">
       	  <div class="col mt-5">
-    		    <% Region.first(5).each.with_index(1) do |r,i| %>
+    		    <% Region.all.each.with_index(1) do |r,i| %>
     		      <%= render partial: 'region', locals: { r: r, i: i } %>
         		<% end %>
           </div>		
@@ -43,26 +62,7 @@
   </div>
 </div> 
 
-<div class="row justify-content-center">
-  <div class="col-10">
-    <div class="row my-3">
-      <div class="col">
-      	<div class="row mb-3">
-      	  <div class="col h4 text-center proxima section-header mb-3">Upcoming Contests</div>
-      	</div>	
-      	<div class="row">
-      	  <div class="col">
-    		    <% Contest.upcoming.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
-     			    <%= render partial: 'contest', locals: { c: c, i: i } %>
-        		<% end %>
-          </div>		
-      	</div>
-      </div>      
-    </div>
-  </div>
-</div>
-
-<div class="row justify-content-center">
+<!--div class="row justify-content-center">
   <div class="col-10">
     <div class="row my-3">
       <div class="col">
@@ -79,4 +79,4 @@
       </div>      
     </div>
   </div>
-</div>
+</div-->

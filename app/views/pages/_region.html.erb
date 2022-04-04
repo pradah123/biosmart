@@ -1,24 +1,24 @@
 <div class="row">
   <div class="col-2 fw-bold fs-vlarge fst-italic d-flex justify-content-center"><%= i %></div>
   <div class="col-2">
-    <img src="<%= r.logo_image %>" class="img-fluid" style="width:60px;">
+    <img src="<%= r.logo_image ? r.logo_image : r.logo_image_url %>" class="img-fluid" style="width:60px;">
   </div>
-  <div class="col-6 h4">
-    <%= r.name %>
+  <div class="col-6">
+    <div class="row">
+      <div class="col h4"><%= r.name %></div>
+    </div>
+    <div class="row my-3">
+      <div class="col h6"><%= r.description ? r.description.html_safe : '' %></div>   
+    </div>
+    <div class="row mb-5">
+      <div class="col-4"></div>
+      <!--div class="col-6">
+        <%#= r.observations.count %> Observations, <%#= r.contests.count %> Contests, Population <%#= number_with_delimiter r.population, delimiter: ',' %>
+      </div-->   
+    </div>      
   </div>
   <div class="col-2 d-flex justify-content-end">
     <a href="/region/<%= r.id %>" class="text-muted">more</a>  
 	</div>
 </div>
-<div class="row my-3">
-  <div class="col-4"></div>
-  <div class="col-6">
-    <%= r.description %>
-  </div>   
-</div>
-<div class="row mb-5">
-  <div class="col-4"></div>
-  <div class="col-6">
-    <%= r.observations.count %> Observations, <%= r.contests.count %> Contests, Population <%= number_with_delimiter r.population, delimiter: ',' %>
-  </div>   
-</div>
+

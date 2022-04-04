@@ -1,14 +1,24 @@
-<div class="row m-0 p-0" style="background: url(<%= @region.header_image %>) no-repeat center center / cover;">
+<div class="row m-0 p-0">
   <div class="col d-flex justify-content-center">
-    <img src="<%= @region.logo_image %>" class="img-fluid" style="width:80px;">
+    <img src="<%= @region.logo_image ? @region.logo_image : @region.logo_image_url %>" class="img-fluid" style="width:80px;">
   </div>
 </div>
 
 <div class="row justify-content-center">
-  <div class="col-12 col-lg-10 d-flex justify-content-center h2 fw-bold">
+  <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark mt-5">
     <%= @region.name %>
   </div>
 </div>
+
+<!--div class="row justify-content-center mb-5">
+  <div class="col-10">
+    <div class="row my-5 justify-content-center">
+      <div class="col-8 col-md-6">
+        <img src="<%= @region.logo_image ? @region.logo_image : @region.logo_image_url %>" class="img-fluid" style="width:60px;">
+      </div>      
+    </div>
+  </div>
+</div--> 
 
 <div class="row justify-content-center">
   <div class="col-10">
@@ -27,12 +37,12 @@
 </div>
 
 <div class="row justify-content-center">
-  <div class="col-12 col-lg-6 d-flex justify-content-center h6">
-    <%= @region.description %>
+  <div class="col-10 my-3 d-flex justify-content-center h6">
+    <%= @region.description.html_safe %>
   </div>
 </div>
 
-<div class="row justify-content-center">
+<!--div class="row justify-content-center">
   <div class="col-12 col-lg-10">
     <div class="row">
       <div class="col d-flex justify-content-center"><%= @region.observations.count %></div>
@@ -45,16 +55,16 @@
       <div class="col d-flex justify-content-center">Population</div>
     </div>  
   </div>
-</div>    
+</div-->    
 
 <div class="row justify-content-center">
   <div class="col-10">
-    <div class="row my-3">
+    <div class="row">
       <div class="col">
-        <div class="row mb-3">
-          <h1>Contests</h1>
+        <div class="row mt-5">
+          <div class="col mb-3 h4 text-center proxima section-header">Contests</div> 
         </div>  
-        <div class="row">
+        <div class="row mt-5">
           <div class="col">
             <% @region.contests.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
               <%= render partial: 'contest', locals: { c: c, i: i } %>

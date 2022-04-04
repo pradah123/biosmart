@@ -10,62 +10,93 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_01_22_074937) do
+ActiveRecord::Schema.define(version: 2022_04_04_041336) do
 
-  #enable_extension "plpgsql"
-  #enable_extension "postgis"
-
-  create_table "users", force: :cascade do |t|
-    t.string "organization_name"
-    t.string "email"
-    t.integer "role", default: 0
-    t.integer "status", default: 0
-
-    t.string "login_code"
-    t.datetime "login_code_expires_at"
-    t.string "jwt_token"
-    t.string "password_digest"
-    t.integer "login_attempts", default: 0
-    t.integer "login_attempts_max", default: 5   
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
   end
 
-  create_table "regions", force: :cascade do |t|
-    t.integer "user_id"
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.integer "record_id", null: false
+    t.integer "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.integer "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "articles", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.integer "category_id"
+    t.integer "author_id"
+    t.integer "status", default: 0
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "url_title"
+    t.text "search_text"
+    t.string "hashcode"
+    t.text "search_text_howto"
+    t.text "search_text_uses"
+    t.integer "views_count", default: 0
+    t.integer "comments_count", default: 0
+    t.integer "ratings_count", default: 0
+    t.float "average_rating", default: 0.0
+    t.datetime "updated_content_at"
+    t.float "ranking_score", default: 0.0
+    t.text "search_text_by"
+  end
+
+  create_table "attachments", force: :cascade do |t|
     t.string "name"
-    t.string "description"
-    t.text "raw_polygon_json"
-    t.string "region_url"
-    t.integer "population"
-    t.text "header_image"
-    t.text "logo_image"
-    t.string "header_image_url"
-    t.string "logo_image_url"
-    t.integer "status", default: 0
-    #t.geography "multi_polygon", limit: { srid: 4326, type: "multi_polygon", geographic: true }
+    t.text "data"
+    t.integer "article_id"
+    t.integer "order"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "observations", force: :cascade do |t|
-    t.float "lat"
-    t.float "lng"
-    t.integer "data_source_id"
-    t.datetime "observed_at"
+  create_table "categories", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.integer "parent_category_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "level"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.integer "article_id"
+    t.integer "commentor_id"
+    t.text "comment"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
-
-  create_table "observations_regions", force: :cascade do |t|
-    t.integer "region_id"
-    t.integer "observation_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end  
-
-
-
 
   create_table "contests", force: :cascade do |t|
     t.integer "user_id"
@@ -78,11 +109,16 @@ ActiveRecord::Schema.define(version: 2022_01_22_074937) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "participations", force: :cascade do |t|
-    t.integer "user_id"
-    t.integer "region_id"
+  create_table "contests_observations", force: :cascade do |t|
     t.integer "contest_id"
-    t.integer "status", default: 0
+    t.integer "observation_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "contests_participations", force: :cascade do |t|
+    t.integer "contest_id"
+    t.integer "participation_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
@@ -100,81 +136,107 @@ ActiveRecord::Schema.define(version: 2022_01_22_074937) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "ingredients", force: :cascade do |t|
+    t.text "description"
+    t.integer "article_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "order"
+  end
+
+  create_table "ingredients_steps", id: false, force: :cascade do |t|
+    t.integer "ingredient_id", null: false
+    t.integer "step_id", null: false
+  end
+
+  create_table "observations", force: :cascade do |t|
+    t.float "lat"
+    t.float "lng"
+    t.integer "data_source_id"
+    t.datetime "observed_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "observations_participations", force: :cascade do |t|
     t.integer "observation_id"
     t.integer "participation_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-  end  
+  end
 
-  create_table "contests_observations", force: :cascade do |t|
-    t.integer "contest_id"
+  create_table "observations_regions", force: :cascade do |t|
+    t.integer "region_id"
     t.integer "observation_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
 
-
-
-
-
-=begin
-  create_table "downloadable_regions", force: :cascade do |t|
-    t.string "app_id"
-    t.jsonb "params", default: "{}", null: false
+  create_table "participations", force: :cascade do |t|
+    t.integer "user_id"
     t.integer "region_id"
+    t.integer "contest_id"
+    t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.datetime "deleted_at"
   end
 
-  create_table "observations", force: :cascade do |t|
-    t.string "unique_id"
-    t.string "sname"
-    t.string "cname"
-    t.string "loc_text"
-    t.datetime "obs_dttm"
-    t.integer "obs_count", default: 1
-    t.text "json"
-    t.geography "location", limit: {:srid=>4326, :type=>"st_point", :geographic=>true}
-    t.string "app_id"
-    t.string "username"
-    t.string "user_id"
-    t.integer "quality_level"
-    t.integer "location_accuracy"
-    t.integer "identifications_count", default: 0
-    t.integer "photos_count", default: 0
-    t.datetime "deleted_at"
-
-    t.string "clean_sname"
-    t.jsonb "more", default: "{}"
-    t.index "((more -> 'lat'::text))", name: "index_observations_on_more_lat"
-    t.index "((more -> 'lng'::text))", name: "index_observations_on_more_lng"
-    t.index "((more -> 'locId'::text))", name: "index_observations_on_more_locId"
-    t.index "((more -> 'obsDt'::text))", name: "index_observations_on_more_obsDt"
-    t.index "((more -> 'obsTime'::text))", name: "index_observations_on_more_obsTime"
-    t.index "((more -> 'subId'::text))", name: "index_observations_on_more_subId"
-    t.index ["app_id"], name: "index_observations_on_app_id"
-    t.index ["clean_sname"], name: "index_observations_on_clean_sname"
-    t.index ["location"], name: "index_observations_on_location", using: :gist
-    t.index ["unique_id"], name: "index_observations_on_unique_id", unique: true
-  end
-
-  create_table "photos", force: :cascade do |t|
-    t.string "image_thumb_url"
-    t.string "image_large_url"
-    t.string "license_code"
-    t.string "attribution"
-    t.string "license_name"
-    t.string "license_url"
-    t.datetime "deleted_at"
-    t.bigint "observation_id", null: false
+  create_table "ratings", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "article_id"
+    t.float "rating"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "unique_id"
-    t.index ["observation_id"], name: "index_photos_on_observation_id"
-    t.index ["unique_id"], name: "index_photos_on_unique_id", unique: true
   end
-=end
 
+  create_table "regions", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "name"
+    t.string "description"
+    t.text "raw_polygon_json"
+    t.string "region_url"
+    t.integer "population"
+    t.text "header_image"
+    t.text "logo_image"
+    t.string "header_image_url"
+    t.string "logo_image_url"
+    t.integer "status", default: 0
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "inaturalist_place_id"
+  end
+
+  create_table "steps", force: :cascade do |t|
+    t.integer "order"
+    t.integer "article_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "title"
+    t.text "instruction"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "organization_name"
+    t.string "email"
+    t.integer "role", default: 0
+    t.integer "status", default: 0
+    t.string "login_code"
+    t.datetime "login_code_expires_at"
+    t.string "jwt_token"
+    t.string "password_digest"
+    t.integer "login_attempts", default: 0
+    t.integer "login_attempts_max", default: 5
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "views", force: :cascade do |t|
+    t.integer "article_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "user_id"
+  end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
 end
