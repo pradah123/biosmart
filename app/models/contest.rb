@@ -1,6 +1,7 @@
 class Contest < ApplicationRecord
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :desc }
+  scope :in_progress, -> { where 'starts_at < ? AND ends_at > ?', Time.now }
   scope :upcoming, -> { where 'starts_at > ?', Time.now } 
   scope :past, -> { where 'ends_at < ?', Time.now } 
 
@@ -9,22 +10,44 @@ class Contest < ApplicationRecord
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
-  after_save :assign_observations, if: :saved_change_to_starts_at || :saved_change_to_ends_at
-
   enum status: [:online, :offline, :deleted, :completed]
 
-  def assign_observations
-    
-    # observations in a contest are the aggregate observations from 
-    # all accepted participations
+  def add_observation obs
+    added = false
+    if obs.observed_at>=starts_at && obs.observed_at<ends_at # in the period of the contest
 
-    observations.clear
-   
-    participations.where(status: Participation.statuses[:accepted]).each do |p|
-      p.assign_observations # if the contest dates change, the participating observations also change
-      observations << p.observations
+      participations.in_competition.each do |participation|
+        if participation.data_sources.contains?(obs.data_source) # from one of the requested data sources
+
+          polygons = participation.region.get_geokit_polygons
+          polygons.each do |polygon|
+            if polygon.contains?(Geokit::LatLng.new obs.lat, obs.lng) # inside one of the region's polygons
+
+              # this observation is in this contest
+              # add references for this observation to contest, participation, and region
+              #
+              observations << obs      
+              participation.observations << obs
+              participation.region.observations << obs
+
+              added = true
+              break
+            end
+          end
+
+        end    
+      end
+
     end
-
+    added
   end
 
-end
+  def remove_observation obs
+    observations.where(observation_id: obs.id).delete_all
+    participations.in_competition.each do |participation|
+      participation.observations.where(observation_id: obs.id).delete_all
+      participation.region.observations.where(observation_id: obs.id).delete_all
+    end  
+  end  
+
+end  

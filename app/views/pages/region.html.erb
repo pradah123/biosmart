@@ -24,15 +24,10 @@
   <div class="row justify-content-center">
     <div class="col-10">
       <div class="row my-3">
-        <div class="col" id="map" style="width:100%; height:400px;">
-          <script>
-            (function() {
-              const s = { lat: 35.6804, lng : 139.7690 };
-              const map = new google.maps.Map(document.getElementById("map"), { zoom: 5, center: s, controlSize: 20 });
-              const marker = new google.maps.Marker({ position: s, map: map });
-            })();
-          </script>
-        </div>  
+        <div class="col" id="region-map" style="width:100%; height:400px;"></div>  
+        <script>  
+          var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
+        </script>
       </div>
     </div>
   </div>

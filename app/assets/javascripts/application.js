@@ -14,9 +14,49 @@ $(document).ready(function() {
   set_up_regions();
   set_up_contests();
   set_up_participations();
+  set_up_region_page();
 });
 
+function set_up_region_page() {
+  if($('#region-map').length==0) return; 
 
+  var s = { lat: -25.2744, lng: 133.7751 };
+  var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 5, center: s, controlSize: 20 });
+
+  console.log(_polygon_json);
+    
+  google.maps.event.addListenerOnce(map, 'idle', function() { 
+    var bounds = new google.maps.LatLngBounds(null);
+
+    for( var i = 0 ; i<_polygon_json.length ; i++ ) {
+      console.log(i);
+
+      var coordinates = _polygon_json[i]['coordinates'];
+      var googlemaps_points = [];
+      for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
+      var polygon = new google.maps.Polygon({ paths: googlemaps_points });
+      polygon.setMap(map);
+
+      polygon.getPaths().forEach(function(path) {
+        var ar = path.getArray();
+        for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);  
+      });
+    }  
+
+    if(bounds.getNorthEast().lat()==-1 && bounds.getSouthWest().lat()==1 && bounds.getNorthEast().lng()==-180 && bounds.getSouthWest().lng()==180) {
+
+    } else {
+      map.setCenter(bounds.getCenter());
+      map.fitBounds(bounds, 0);
+      map.panToBounds(bounds);
+      //map.setZoom(6);
+        //console.log('here'); 
+        //console.log(bounds); 
+        //console.log(map.getBounds());
+    }  
+  });
+
+}
 
 function set_up_participations() {
 
@@ -137,7 +177,11 @@ function set_up_regions() {
       //p['population'] = $('.region-modal-'+id+' .population_region').val();
       p['logo_image_url'] = $('.region-modal-'+id+' .logo_url_region').val();
       p['header_image_url'] = $('.region-modal-'+id+' .header_url_region').val();
-      p['logo_image'] = _images['logo']==undefined ? '' : _images['logo'];
+      
+      p['logo_image'] = $('img.logo-frame-'+id).attr('src');
+      p['logo_image'] = _images['logo']==undefined ? p['logo_image'] : _images['logo'];
+      
+      p['header_image'] = $('img.header-frame-'+id).attr('src');
       p['header_image'] = _images['header']==undefined ? '' : _images['header'];
 
       p['raw_polygon_json'] = [];
@@ -145,14 +189,26 @@ function set_up_regions() {
         var val = $(this).val().trim();
         if(val.length) p['raw_polygon_json'].push(val); 
       });
-      p['raw_polygon_json'] = "["+p['raw_polygon_json'].join(',')+"]";
 
       var failed = false;
       if(p['name'].length==0) { $('.name_region_v').removeClass('validation-ok'); failed = true; } else { $('.name_region_v').addClass('validation-ok'); }
       if(p['description'].length==0) { $('.description_region_v').removeClass('validation-ok'); failed = true; } else { $('.description_region_v').addClass('validation-ok'); }
       if(p['logo_image'].length==0 && p['logo_image_url'].length==0) { $('.logo_region_v').removeClass('validation-ok'); failed = true; } else { $('.logo_region_v').addClass('validation-ok'); }
 
+      //var valid_json = true; 
+      //$.each(p['raw_polygon_json'], function() {
+      //  var polygon = $(this);
+      //
+      //  try { 
+      //    var j = JSON.parse(polygon); 
+      //    if(polygon['coordinates']==undefined) valid_json = false;
+      //  } catch(e) { valid_json = false; }
+      //});
+      //if(valid_json==false) { $('.polygon_json_region_v').removeClass('validation-ok'); failed = true; } else { $('.polygon_json_region_v').addClass('validation-ok'); }
+
       if(failed==false) {  
+        p['raw_polygon_json'] = "["+p['raw_polygon_json'].join(',')+"]";
+
         $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
         .done(function(data, status) {
          

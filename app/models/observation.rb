@@ -6,21 +6,16 @@ class Observation < ApplicationRecord
   has_and_belongs_to_many :contests
   belongs_to :data_source
 
-  after_save :assign_to_regions
+  after_create :assign_to_contests
+  after_save :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
 
-  def assign_to_regions
+  def assign_to_contests
+    Contest.in_progress.each { |c| c.add_observation self }
+  end
 
-    # add this observation to a region if it lies within the region
-
-    Region.all.each do |r|
-      regions << r if r.region_contains(lat, lng)
-    end
-
-    # if the observed time falls within a contest, add it to the participation object
-
-    Participations.where(observed_at: (contest.starts_at..contest.ends_at)).each do |p|
-      p.observations << self if p.data_sources.contains?(data_source)
-    end
+  def update_to_contests
+    Contest.in_progress.each { |c| c.remove_observation self }
+    Contest.in_progress.each { |c| added = c.add_observation self }
   end
     
 end
