@@ -94,13 +94,7 @@ class Region < ApplicationRecord
   end
 
 
-  rails_admin do 
-    weight 0
-
-    object_label_method do
-      :get_label
-    end
-
+  rails_admin do
     list do
       field :id
       field :name          
