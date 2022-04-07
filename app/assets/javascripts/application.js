@@ -29,8 +29,6 @@ function set_up_region_page() {
     var bounds = new google.maps.LatLngBounds(null);
 
     for( var i = 0 ; i<_polygon_json.length ; i++ ) {
-      console.log(i);
-
       var coordinates = _polygon_json[i]['coordinates'];
       var googlemaps_points = [];
       for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
@@ -49,10 +47,6 @@ function set_up_region_page() {
       map.setCenter(bounds.getCenter());
       map.fitBounds(bounds, 0);
       map.panToBounds(bounds);
-      //map.setZoom(6);
-        //console.log('here'); 
-        //console.log(bounds); 
-        //console.log(map.getBounds());
     }  
   });
 
@@ -195,18 +189,12 @@ function set_up_regions() {
       if(p['description'].length==0) { $('.description_region_v').removeClass('validation-ok'); failed = true; } else { $('.description_region_v').addClass('validation-ok'); }
       if(p['logo_image'].length==0 && p['logo_image_url'].length==0) { $('.logo_region_v').removeClass('validation-ok'); failed = true; } else { $('.logo_region_v').addClass('validation-ok'); }
 
-      //var valid_json = true; 
-      //$.each(p['raw_polygon_json'], function() {
-      //  var polygon = $(this);
-      //
-      //  try { 
-      //    var j = JSON.parse(polygon); 
-      //    if(polygon['coordinates']==undefined) valid_json = false;
-      //  } catch(e) { valid_json = false; }
-      //});
-      //if(valid_json==false) { $('.polygon_json_region_v').removeClass('validation-ok'); failed = true; } else { $('.polygon_json_region_v').addClass('validation-ok'); }
-
-      if(failed==false) {  
+      for( var i = 0 ; i <p['raw_polygon_json'].length ; i++ ) { 
+        if(!validate_polygon_json(p['raw_polygon_json'][i])) { $('.polygon_json_region_v').removeClass('validation-ok'); failed = true; break; }  
+        else { $('.polygon_json_region_v').addClass('validation-ok'); }
+      }
+     
+      if(failed==false) {
         p['raw_polygon_json'] = "["+p['raw_polygon_json'].join(',')+"]";
 
         $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
@@ -239,6 +227,7 @@ function set_up_regions() {
     var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 5, center: s, controlSize: 20 });
 
     $('#polygon-json-'+modalid+' .polygon-draw').click(function() {
+      // validate json
       draw_polygon($(this).parent().find('input'), map);
     });
 
@@ -282,6 +271,29 @@ function set_up_regions() {
     });
   });
 
+}
+
+function validate_polygon_json(str) {
+  try {
+    console.log('validate');
+    console.log(str);
+    json = JSON.parse(str);
+
+    if(json['type']==null || json['type']==undefined || json['type']!='Polygon') return false;
+    if(json['coordinates']==null || json['coordinates']==undefined || !Array.isArray(json['coordinates'])) return false;
+
+    $.each(json['coordinates'], function() {
+      var lnglat = $(this);
+      if(!Array.isArray(lnglat) || lnglat.length!=2) return false;
+      if(typeof(lnglat[0])!='number' || lnglat[0]<-180.0 || lnglat[0]>180.0) return false;
+      if(typeof(lnglat[1])!='number' || lnglat[0]<-90.0 || lnglat[0]>90.0) return false;
+    });
+
+    return true;
+  } catch (e) {
+    console.log('thrown')
+  }
+  return false;
 }
 
 function write_polygon(modalid) {

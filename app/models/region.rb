@@ -94,6 +94,23 @@ class Region < ApplicationRecord
   end
 
 
+  rails_admin do 
+    weight 0
+
+    object_label_method do
+      :get_label
+    end
+
+    list do
+      field :id
+      field :name          
+      field :description
+      field :raw_polygon_json
+    end
+  end  
+
+
+
 
 
 =begin
