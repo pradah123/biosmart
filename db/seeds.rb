@@ -26,16 +26,16 @@ Region.all.each do |r|
 end
 
 range = [117.0,153.0],[-31.0,-19.0]
-nobs = 100
+nobs = 20000
 Observation.all.destroy_all
 nobs.times do
   Observation.create! observed_at: (Time.now + rand(2*24*60).minutes), data_source_id: ds.sample.id, lng: (range[0][0]+rand*(range[0][1]-range[0][0])), lat: (range[1][0]+rand*(range[1][1]-range[1][0])) 
 end
 
-nobs = 100
+nobs = 200
 nobs.times do
-  obs = Observation.create! observed_at: "2021-01-02".to_datetime, data_source_id: ds.sample.id, lng: (range[0][0]+rand*(range[0][1]-range[0][0])), lat: (range[1][0]+rand*(range[1][1]-range[1][0])) 
-  c2.add_observation obs, false
+  obs = Observation.create! observed_at: ("2021-01-02".to_datetime + rand(1000).minutes), data_source_id: ds.sample.id, lng: (range[0][0]+rand*(range[0][1]-range[0][0])), lat: (range[1][0]+rand*(range[1][1]-range[1][0])) 
+  c1.add_observation obs, false
 end
 
 

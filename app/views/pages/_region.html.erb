@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row mt-5">
   <div class="col-3">
     <img src="<%= r.logo_image ? r.logo_image : r.logo_image_url %>" class="img-fluid" style="width:60px;">
   </div>
@@ -8,16 +8,11 @@
     </div>
     <div class="row my-3">
       <div class="col h6"><%= r.description ? r.description.html_safe : '' %></div>   
-    </div>
-    <div class="row mb-5">
-      <div class="col-4"></div>
-      <!--div class="col-6">
-        <%#= r.observations.count %> Observations, <%#= r.contests.count %> Contests, Population <%#= number_with_delimiter r.population, delimiter: ',' %>
-      </div-->   
-    </div>      
+    </div>    
   </div>
   <div class="col-2 d-flex justify-content-end">
     <a href="/region/<%= r.id %>" class="text-muted">more</a>  
 	</div>
 </div>
+<%= render partial: 'statistics', locals: { object: observations_object } %>
 

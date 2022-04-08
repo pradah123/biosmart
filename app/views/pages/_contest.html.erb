@@ -37,22 +37,9 @@
     	if (distance < 0) { learInterval(x); document.getElementById("countdown-<%= c.id %>").innerHTML = ""; }
 		}, 1000);
 	 })();
-</script>  	
+</script>
 <% end %>
 
 <% if c.starts_at<Time.now %>
-	<div class="row">
-	  <div class="col p-3">
-	    <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2"><%= r.nil? ? c.observations.count : Participation.where(region_id: r.id, contest_id: c.id).first.observations.count %><br/>Sightings</div> 
-	  </div>
-	  <div class="col p-3">
-	    <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2"><%= r.nil? ? c.identifications_count : r.identifications_count %><br/>Identifications</div> 
-	  </div>
-	  <div class="col p-3">
-	    <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2"><%= r.nil? ? c.species_count : r.species_count %><br/>Species</div> 
-	  </div>
-	  <div class="col p-3">
-	    <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2"><%= r.nil? ? c.participants_count : r.participants_count %><br/>Participants</div> 
-	  </div>
-	</div>
+	<%= render partial: 'statistics', locals: { object: observations_object } %>
 <% end %>

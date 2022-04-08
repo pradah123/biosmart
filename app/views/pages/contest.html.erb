@@ -1,6 +1,6 @@
 
 <div class="row justify-content-center">
-  <div class="col-12 col-lg-10 d-flex justify-content-center h2 fw-bold">
+  <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
     <%= @contest.title %>
   </div>
 </div>
@@ -11,57 +11,39 @@
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-10">
-    <div class="row my-3">
-      <div class="col" id="map" style="width:100%; height:400px;">
-        <script>
-          (function() {
-            const s = { lat: 35.6804, lng : 139.7690 };
-            const map = new google.maps.Map(document.getElementById("map"), { zoom: 5, center: s, controlSize: 20 });
-            const marker = new google.maps.Marker({ position: s, map: map });
-          })();
+<% if @contest.regions.count>0 %>
+
+  <div class="row justify-content-center mt-5">
+    <div class="col-10">
+      <div class="row my-3">
+        <div class="col" id="contest-map" style="width:100%; height:400px;"></div>  
+        <script>  
+          <% data = '['+@contest.regions.map { |r| r.raw_polygon_json }.join(',')+']'; %>
+          var _regions_json = <%= data.html_safe %>;
+          var _observations = <%= JSON.generate(@contest.observations.map { |o| { lat: o.lat, lng: o.lng } }).html_safe %>;
         </script>
-      </div>  
+      </div>
     </div>
   </div>
-</div>
 
-<div class="row justify-content-center">
-  <div class="col-10">
-    <div class="row my-3">
-      <div class="col">
-      	<div class="row mb-3">
-      	  <h1>Regions Leaderboard</h1>
-      	</div>	
-      	<div class="row">
-      	  <div class="col">
-    		    <% @contest.regions.each.with_index(1) do |r,i| %>
-    		      <%= render partial: 'region', locals: { r: r, i: i } %>
-        		<% end %>
+  <div class="row justify-content-center mt-5">
+    <div class="col-10">
+      <div class="row my-3">
+        <div class="col">
+          <div class="row">
+            <div class="col h4 text-center proxima section-header mb-3">Competing Regions</div>
+          </div>  
+          <div class="row">
+            <div class="col mt-5">
+              <% @contest.regions.each.with_index(1) do |r,i| %>
+                <%= render partial: 'region', locals: { r: r, i: i, observations_object: r.participations.where(contest_id: @contest.id).first } %>
+              <% end %>
+            </div>    
           </div>
-      	</div>
-      </div>      
+        </div>      
+      </div>
     </div>
   </div>
-</div>
+<% end %>
 
-<div class="row justify-content-center">
-  <div class="col-10">
-    <div class="row my-3">
-      <div class="col">
-      	<div class="row mb-3">
-      	  <h1>Recent Sightings</h1>
-      	</div>	
-      	<div class="row">
-      	  <div class="col">
-    		    <% @contest.observations.each.with_index(1) do |o,i| %>
-    		      <%= render partial: 'observation', locals: { o: o, i: i } %>
-        		<% end %>
-          </div>
-      	</div>
-      </div>      
-    </div>
-  </div>
-</div> 
-
+<%= render partial: 'recent_sightings', locals: { observations: @contest.observations.first(33) } %>

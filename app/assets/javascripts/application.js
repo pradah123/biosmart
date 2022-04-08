@@ -16,7 +16,58 @@ $(document).ready(function() {
   set_up_contests();
   set_up_participations();
   set_up_region_page();
+  set_up_contest_page();
 });
+
+
+function set_up_contest_page() {
+  if($('#contest-map').length==0) return; 
+
+  var s = { lat: -25.2744, lng: 133.7751 };
+  var map = new google.maps.Map(document.getElementById('contest-map'), { zoom: 5, center: s, controlSize: 20 });
+  var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
+    
+  google.maps.event.addListenerOnce(map, 'idle', function() { 
+    var bounds = new google.maps.LatLngBounds(null);
+
+    for( var k = 0 ; k < _regions_json.length ; k++ ) {
+      var polygon_json = _regions_json[k];
+
+      for( var i = 0 ; i<polygon_json.length ; i++ ) {
+        var coordinates = polygon_json[i]['coordinates'];
+        var googlemaps_points = [];
+        for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
+        var polygon = new google.maps.Polygon({ paths: googlemaps_points, fillColor: _colours[k*_regions_json.length + i] });
+        polygon.setMap(map);
+
+        polygon.getPaths().forEach(function(path) {
+          var ar = path.getArray();
+          for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);  
+        });
+      }  
+    }  
+
+    if(bounds.getNorthEast().lat()==-1 && bounds.getSouthWest().lat()==1 && bounds.getNorthEast().lng()==-180 && bounds.getSouthWest().lng()==180) {
+
+    } else {
+      map.setCenter(bounds.getCenter());
+      map.fitBounds(bounds, 0);
+      map.panToBounds(bounds);
+    }
+
+    if(_observations!=undefined) {
+      var markers = [];
+      for( var i = 0 ; i<_observations.length ; i++ ) {
+        var marker = new google.maps.Marker({ position: _observations[i], title: "Observation" });
+        marker.setMap(map);
+        marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
+        markers.push(marker);
+      } 
+      new markerClusterer.MarkerClusterer({ markers, map });
+    }
+  });
+
+}
 
 function set_up_region_page() {
   if($('#region-map').length==0) return; 

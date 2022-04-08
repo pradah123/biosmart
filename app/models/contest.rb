@@ -16,21 +16,15 @@ class Contest < ApplicationRecord
     Rails.logger.info "assigning to contest #{id}, obs #{obs.id}"
 
     added = false
-    if time_check==false || (obs.observed_at>=starts_at && obs.observed_at<ends_at) # in the period of the contest
-      Rails.logger.info "    >>> right time frame"
-
+    if time_check==false || (obs.observed_at>=starts_at && obs.observed_at<ends_at) # in the period of the contestß
       participations.in_competition.each do |participation|
-        Rails.logger.info "    >>> participation #{participation.id}"
         if participation.data_sources.include?(obs.data_source) # from one of the requested data sources
-          Rails.logger.info "    >>>>> right data source"
 
           polygons = participation.region.get_geokit_polygons
 
           polygons.each do |polygon|
-            Rails.logger.info "    >>>>>> checking in polygon #{polygon.inspect} from region #{participation.region.name}"
-            Rails.logger.info "    >>>>>> #{obs.lng} #{obs.lat}"
             if polygon.contains?(Geokit::LatLng.new obs.lat, obs.lng) # inside one of the region's polygons
-              Rails.logger.info "\n\n\n\n\n    >>>>>> inside\n\n\n\n\n"
+              
               # this observation is in this contest
               # add references for this observation to contest, participation, and region
               #
@@ -45,7 +39,6 @@ class Contest < ApplicationRecord
 
         end    
       end
-
     end
     added
   end
