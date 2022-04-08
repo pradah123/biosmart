@@ -8,14 +8,11 @@ class Region < ApplicationRecord
 
   def get_geokit_polygons
     polygons = []
-    json_arr = JSON.parse raw_polygon_json
-    if json_arr
-      json_arr.each do |polygon|
-        points = [] 
-        polygon.each do |p|
-          points.push Geokit::LatLng.new(p['lat'], p['lng'])
-        end 
-        @polygons.push Geokit::Polygon.new(points)
+    json = JSON.parse raw_polygon_json
+    if json
+      json.each do |polygon|
+        points = polygon['coordinates'].map { |c| Geokit::LatLng.new c[1], c[0] }  
+        polygons.push Geokit::Polygon.new(points)
       end
     end  
     polygons

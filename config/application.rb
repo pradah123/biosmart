@@ -15,6 +15,7 @@ module Biosmart
     config.assets.compile = true
     config.assets.precompile =  ['*.js', '*.css'] 
     config.assets.paths << Rails.root.join("app", "assets", "javascripts")
+    config.assets.paths << Rails.root.join("app", "assets", "stylesheets")
 
     config.action_controller.forgery_protection_origin_check = false
     config.middleware.use ActionDispatch::Cookies

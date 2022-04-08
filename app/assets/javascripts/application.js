@@ -1,3 +1,4 @@
+
 var _api = '/api/v1';
 var _re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 var _images = {};
@@ -22,8 +23,7 @@ function set_up_region_page() {
 
   var s = { lat: -25.2744, lng: 133.7751 };
   var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 5, center: s, controlSize: 20 });
-
-  console.log(_polygon_json);
+  var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
     var bounds = new google.maps.LatLngBounds(null);
@@ -47,7 +47,18 @@ function set_up_region_page() {
       map.setCenter(bounds.getCenter());
       map.fitBounds(bounds, 0);
       map.panToBounds(bounds);
-    }  
+    }
+
+    if(_observations!=undefined) {
+      var markers = [];
+      for( var i = 0 ; i<_observations.length ; i++ ) {
+        var marker = new google.maps.Marker({ position: _observations[i], title: "Observation" });
+        marker.setMap(map);
+        marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
+        markers.push(marker);
+      } 
+      new markerClusterer.MarkerClusterer({ markers, map });
+    }
   });
 
 }

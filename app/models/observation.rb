@@ -7,7 +7,7 @@ class Observation < ApplicationRecord
   belongs_to :data_source
 
   after_create :assign_to_contests
-  after_save :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
+  after_update :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
 
   def assign_to_contests
     Contest.in_progress.each { |c| c.add_observation self }

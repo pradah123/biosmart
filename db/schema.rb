@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_04_041336) do
+ActiveRecord::Schema.define(version: 2022_04_08_013555) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -107,6 +107,10 @@ ActiveRecord::Schema.define(version: 2022_04_04_041336) do
     t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "sightings_count", default: 0
+    t.integer "identifications_count", default: 0
+    t.integer "species_count", default: 0
+    t.integer "participants_count", default: 0
   end
 
   create_table "contests_observations", force: :cascade do |t|
@@ -179,6 +183,10 @@ ActiveRecord::Schema.define(version: 2022_04_04_041336) do
     t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "sightings_count", default: 0
+    t.integer "identifications_count", default: 0
+    t.integer "species_count", default: 0
+    t.integer "participants_count", default: 0
   end
 
   create_table "ratings", force: :cascade do |t|
@@ -204,6 +212,10 @@ ActiveRecord::Schema.define(version: 2022_04_04_041336) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "inaturalist_place_id"
+    t.integer "sightings_count", default: 0
+    t.integer "identifications_count", default: 0
+    t.integer "species_count", default: 0
+    t.integer "participants_count", default: 0
   end
 
   create_table "steps", force: :cascade do |t|
