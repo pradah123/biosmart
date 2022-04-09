@@ -11,7 +11,8 @@ module Biosmart
     config.load_defaults 6.1
     config.hosts << "localhost"
     config.hosts << "portal.biosmart.life"
-    
+    config.hosts << "portal-staging.biosmart.life"
+
     config.assets.compile = true
     config.assets.precompile =  ['*.js', '*.css'] 
     config.assets.paths << Rails.root.join("app", "assets", "javascripts")

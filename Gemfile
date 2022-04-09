@@ -21,6 +21,7 @@ gem 'rails_admin-i18n'
 gem 'rails_admin_toggleable'
 gem 'rails_admin_globalize_field'
 gem 'jwt'
+gem 'pg'
 
 gem 'geokit'
 gem 'rack-attack'
