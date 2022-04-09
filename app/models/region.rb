@@ -18,6 +18,42 @@ class Region < ApplicationRecord
     polygons
   end
 
+  def save_to_file
+    unless logo_image.nil?
+      filename = "#{Rails.root}/public/region-#{id}-logo.png"
+      i = logo_image.index 'base64,'
+      unless i.nil?
+        data = logo_image[i+7, logo_image.length]
+        data_decoded = Base64.decode64 data
+        File.open(filename, "wb") do |f| 
+          f.write data_decoded
+        end
+      end
+    end  
+    
+    unless header_image.nil?
+      filename = "#{Rails.root}/public/region-#{id}-header.png"
+      i = header_image.index 'base64,'
+      unless i.nil?
+        data = header_image[i+7, header_image.length]
+        data_decoded = Base64.decode64 data
+        File.open(filename, "wb") do |f| 
+          f.write data_decoded
+        end
+      end 
+    end       
+
+  end  
+
+
+
+
+
+
+
+
+
+
   def self.get_multipolygon_from_geojson geojson
     mp = 'MULTIPOLYGON['
 

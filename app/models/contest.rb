@@ -12,11 +12,11 @@ class Contest < ApplicationRecord
 
   enum status: [:online, :offline, :deleted, :completed]
 
-  def add_observation obs, time_check=true
+  def add_observation obs
     Rails.logger.info "assigning to contest #{id}, obs #{obs.id}"
 
     added = false
-    if time_check==false || (obs.observed_at>=starts_at && obs.observed_at<ends_at) # in the period of the contestß
+    if obs.observed_at>=starts_at && obs.observed_at<ends_at # in the period of the contestß
       participations.in_competition.each do |participation|
         if participation.data_sources.include?(obs.data_source) # from one of the requested data sources
 

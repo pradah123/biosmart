@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_09_020029) do
+ActiveRecord::Schema.define(version: 2022_04_09_114027) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -162,8 +162,11 @@ ActiveRecord::Schema.define(version: 2022_04_09_020029) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "unique_id"
     t.string "image_link"
-    t.string "observation_link"
-    t.string "species"
+    t.string "scientific_name"
+    t.string "common_name"
+    t.string "accepted_name"
+    t.integer "identifications_count", default: 0
+    t.string "external_link"
   end
 
   create_table "observations_participations", force: :cascade do |t|
