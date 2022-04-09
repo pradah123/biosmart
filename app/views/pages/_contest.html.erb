@@ -2,14 +2,16 @@
 <div class="row">
   <div class="col">
   	<div class="row">
-  		<div class="col h4"><%= c.title %></div>
+  		<div class="col h4"><a href="/contest/<%= c.id %>" class="contest-title-link"><%= c.title %></a></div>
     </div>
   	<div class="row">
   		<div class="col h6"><%= c.starts_at.strftime '%Y/%m/%d' %> - <%= c.ends_at.strftime '%Y/%m/%d' %></div>
     </div>
   </div>   		
 	<div class="col-2 d-flex justify-content-end">
-	  <a href="/contest/<%= c.id %>" class="text-muted">more</a>
+    <% if show_more_link==true %>
+      <a href="/region/<%= observations_object.id %>/contest/<%= c.id %>" class="text-muted">region stats</a>  
+    <% end %>
   </div>
 </div>
 <div class="row mt-3">

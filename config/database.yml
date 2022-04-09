@@ -4,16 +4,6 @@ default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
 
-#default: &default
-#  adapter: postgis
-#  encoding: unicode
-#  pool: 10
-#  username: 'postgres'
-#  password: 'postgres'
-#  database: 'biosmart'
-#  port: 5432
-#  sslmode: 'prefer'
-
 development:
   <<: *default
   database: db/development.sqlite3

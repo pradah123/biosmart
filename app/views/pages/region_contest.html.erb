@@ -1,0 +1,39 @@
+  <div class="col d-flex justify-content-center">
+    <img src="<%= @region.logo_image ? @region.logo_image : @region.logo_image_url %>" class="img-fluid" style="width:80px;">
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
+    <%= @region.name %>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10 d-flex justify-content-center section-header h5 text-dark text-center mt-5">
+    competing in
+  </div>
+</div>
+
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
+    <%= @contest.title %>
+  </div>
+</div>
+
+<% if !@region.raw_polygon_json.blank? && @region.raw_polygon_json!='[]' %>
+  <div class="row justify-content-center mt-5">
+    <div class="col-10">
+      <div class="row my-3">
+        <div class="col" id="region-map" style="width:100%; height:400px;"></div>  
+        <script>  
+          var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
+          var _observations = <%= JSON.generate(@participation.observations.map { |o| { lat: o.lat, lng: o.lng } }).html_safe %>;
+        </script>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%= render partial: 'recent_sightings', locals: { observations: @participation.observations.first(33) } %>

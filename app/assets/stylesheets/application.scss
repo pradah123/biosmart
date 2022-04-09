@@ -53,6 +53,10 @@ header {
 .footer-link:hover { color: rgb(225, 186, 71); border-color: black; }
 
 
+.region-title-link, .contest-title-link { color: black; }
+.region-title-link:hover, .contest-title-link:hover { color: rgba(0,0,0,0.6); }
+
+
 .section-header { 
   font-weight: 300;
   color: #bdbdbd; 

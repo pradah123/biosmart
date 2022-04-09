@@ -4,15 +4,18 @@
   </div>
   <div class="col-7">
     <div class="row">
-      <div class="col h4"><%= r.name %></div>
+      <div class="col h4"><a href="/region/<%= r.id %>" class="region-title-link"><%= r.name %></a></div>
     </div>
     <div class="row my-3">
       <div class="col h6"><%= r.description ? r.description.html_safe : '' %></div>   
     </div>    
   </div>
   <div class="col-2 d-flex justify-content-end">
-    <a href="/region/<%= r.id %>" class="text-muted">more</a>  
+    <% if show_more_link==true %>
+      <a href="/region/<%= r.id %>/contest/<%= observations_object.contest_id %>" class="text-muted">contest stats</a>  
+    <% end %>  
 	</div>
 </div>
+
 <%= render partial: 'statistics', locals: { object: observations_object } %>
 

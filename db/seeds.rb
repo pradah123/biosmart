@@ -1,3 +1,21 @@
+
+
+
+User.all.delete_all
+
+# get users
+
+
+
+Region.all.destroy_all
+
+
+
+
+
+
+
+
 User.all.destroy_all
 u0 = User.create! organization_name: 'Biosmart Admin', email: 'admin@earthguardians.life', password: '123456', role: 'admin'
 

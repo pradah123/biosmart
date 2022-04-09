@@ -36,7 +36,7 @@
           <div class="row">
             <div class="col mt-5">
               <% @contest.regions.each.with_index(1) do |r,i| %>
-                <%= render partial: 'region', locals: { r: r, i: i, observations_object: r.participations.where(contest_id: @contest.id).first } %>
+                <%= render partial: 'region', locals: { r: r, i: i, observations_object: r.participations.where(contest_id: @contest.id).first, show_more_link: true } %>
               <% end %>
             </div>    
           </div>
