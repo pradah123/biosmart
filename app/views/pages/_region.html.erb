@@ -1,18 +1,15 @@
 <div class="row mt-5">
-  <div class="col-3">
-    <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="img-fluid" style="width:60px;">
+  <div class="col-2">
+    <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="img-fluid" style="width:70px;">
   </div>
-  <div class="col-7">
+  <div class="col-8">
     <div class="row">
       <div class="col h4"><a href="/region/<%= r.id %>" class="region-title-link"><%= r.name %></a></div>
-    </div>
-    <div class="row my-3">
-      <div class="col h6"><%= r.description ? r.description.truncate_words(50, omission: '... ').html_safe : '' %></div>   
-    </div>    
+    </div>   
   </div>
   <div class="col-2 d-flex justify-content-end">
     <% if show_more_link==true %>
-      <a href="/region/<%= r.id %>/contest/<%= observations_object.contest_id %>" class="text-muted">contest stats</a>  
+      <a href="/region/<%= r.id %>/contest/<%= observations_object.contest_id %>" class="text-muted d-flex align-middle">contest stats</a>  
     <% end %>  
 	</div>
 </div>
