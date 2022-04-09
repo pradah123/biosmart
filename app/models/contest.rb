@@ -25,6 +25,7 @@ class Contest < ApplicationRecord
           polygons.each do |polygon|
             if polygon.contains?(Geokit::LatLng.new obs.lat, obs.lng) # inside one of the region's polygons
               
+              #
               # this observation is in this contest
               # add references for this observation to contest, participation, and region
               #

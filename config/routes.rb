@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get '/users', to: 'pages#users'
   get '/region/:id', to: 'pages#region'
   get '/contest/:id', to: 'pages#contest'
+  get '/region/:region_id/contest/:contest_id', to: 'pages#region_contest'
  
   namespace :api do
     namespace :v1 do
@@ -29,6 +30,9 @@ Rails.application.routes.draw do
       post '/region', to: 'region#create'
       put '/region', to: 'region#update'
       delete '/region', to: 'region#destroy'
+
+      get '/region/polygons', to: 'region#polygons'
+      post '/observations', to: 'observation#bulk_create'
     end
   end
 

@@ -8,16 +8,24 @@ class PagesController < ApplicationController
       render :top 
     else
       @regions = @user.admin? ? Region.all : @user.regions
-    end  
+    end
   end
 
   def contests
     if @user.nil?
-      render :top 
+      render :top
     else
       @contests = @user.admin? ? Contest.all : @user.contests
       @contests_through_regions = @user.regions.map { |r| r.contests }.flatten.uniq
-    end  
+    end
+  end
+
+  def region_contests
+    @region = Region.find_by_id params[:region_id]
+    render :top if @region.nil?
+    @contest = @region.contests.where id: params[:contest_id]
+    render :top if @contest.empty?
+    @contest = @contest.first
   end
 
   def participations
