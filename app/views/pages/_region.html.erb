@@ -7,7 +7,7 @@
       <div class="col h4"><a href="/region/<%= r.id %>" class="region-title-link"><%= r.name %></a></div>
     </div>
     <div class="row my-3">
-      <div class="col h6"><%= r.description ? r.description.html_safe : '' %></div>   
+      <div class="col h6"><%= r.description ? r.description.truncate_words(50, omission: '... ').html_safe : '' %></div>   
     </div>    
   </div>
   <div class="col-2 d-flex justify-content-end">
