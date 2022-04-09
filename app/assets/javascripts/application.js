@@ -23,8 +23,8 @@ $(document).ready(function() {
 function set_up_contest_page() {
   if($('#contest-map').length==0) return; 
 
-  var s = { lat: -25.2744, lng: 133.7751 };
-  var map = new google.maps.Map(document.getElementById('contest-map'), { zoom: 5, center: s, controlSize: 20 });
+  var s = { lat: 0, lng: 0 };
+  var map = new google.maps.Map(document.getElementById('contest-map'), { zoom: 3, center: s, controlSize: 20 });
   var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
@@ -72,8 +72,8 @@ function set_up_contest_page() {
 function set_up_region_page() {
   if($('#region-map').length==0) return; 
 
-  var s = { lat: -25.2744, lng: 133.7751 };
-  var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 5, center: s, controlSize: 20 });
+  var s = { lat: 0, lng: 0 };
+  var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 3, center: s, controlSize: 20 });
   var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
@@ -284,9 +284,9 @@ function set_up_regions() {
   $('.region-modal').each(function() {
     var modalid = $(this).attr('id');
 
-    //const s = { lat: 35.6804, lng: 139.7690 }; 
-    var s = { lat: -25.2744, lng: 133.7751 };
-    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 5, center: s, controlSize: 20 });
+   
+    var s = { lat: 0, lng: 0 };
+    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 3, center: s, controlSize: 20 });
 
     $('#polygon-json-'+modalid+' .polygon-draw').click(function() {
       // validate json
