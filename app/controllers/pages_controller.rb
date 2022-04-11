@@ -22,19 +22,23 @@ class PagesController < ApplicationController
 
   def region_contest
     @region = Region.find_by_id params[:region_id]
-    render :top if @region.nil?
+    if @region.nil?
+      render :top 
+      return
+    end  
     
     @contest = Contest.find_by_id params[:contest_id]
-    render :top if @contest.nil?
+    if @contest.nil?
+      render :top 
+      return
+    end  
 
     @participation = Participation.where region_id: @region.id, contest_id: @contest.id
-    render :top if @participation.empty?
+    if @participation.empty?
+      render :top 
+      return
+    end  
     @participation = @participation.first
-
-    Rails.logger.info "\n\n\n\n"
-    Rails.logger.info @region
-    Rails.logger.info @contest
-    Rails.logger.info @participation
   end
 
   def participations

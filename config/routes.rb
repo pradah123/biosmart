@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
     
-  mount RailsAdmin::Engine, at: '/dashboard', as: 'rails_admin'
+  mount RailsAdmin::Engine, at: '/dashboard/admin', as: 'rails_admin'
+  match "/dashboard/delayed_job" => DelayedJobWeb, :anchor => false, :via => [:get, :post]
 
   get '/', to: 'pages#top'
   get '/regions', to: 'pages#regions'
@@ -32,6 +33,7 @@ Rails.application.routes.draw do
       delete '/region', to: 'region#destroy'
 
       get '/region/polygons', to: 'region#polygons'
+      get '/region/data/:region_id/:contest_id', to: 'region#data'
       post '/observations', to: 'observation#bulk_create'
     end
   end

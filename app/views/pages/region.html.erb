@@ -1,8 +1,19 @@
-<div class="row m-0 p-0">
-  <div class="col d-flex justify-content-center">
-    <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid" style="width:80px;">
+<% if @region.header_image_url.blank? && @region.header_image.blank? %>s
+  <div class="row m-0 p-0">
+    <div class="col d-flex justify-content-center">
+      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid" style="width:80px;">
+    </div>
   </div>
-</div>
+<% else %>
+  <div class="row m-0 p-0">
+    <div class="col-4 d-flex justify-content-center">
+      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid" style="height:160px;">
+    </div>
+    <div class="col d-flex justify-content-center">
+      <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid" style="height:160px;">
+    </div>    
+  </div>
+<% end %>  
 
 <div class="row justify-content-center">
   <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
@@ -28,22 +39,7 @@
   <div class="col-10 my-5 d-flex justify-content-center h6">
     <%= @region.description.html_safe %>
   </div>
-</div>
-
-<!--div class="row justify-content-center">
-  <div class="col-12 col-lg-10">
-    <div class="row">
-      <div class="col d-flex justify-content-center"><%= @region.observations.count %></div>
-      <div class="col d-flex justify-content-center"><%= @region.contests.count %></div>
-      <div class="col d-flex justify-content-center"><%= number_with_delimiter @region.population, delimiter: ',' %></div>
-    </div>
-    <div class="row">
-      <div class="col d-flex justify-content-center">Observations</div>
-      <div class="col d-flex justify-content-center">Contests</div>
-      <div class="col d-flex justify-content-center">Population</div>
-    </div>  
-  </div>
-</div-->    
+</div> 
 
 <% if @region.contests.in_progress.count>0 %>
   <div class="row justify-content-center mt-5">

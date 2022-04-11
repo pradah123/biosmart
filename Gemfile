@@ -23,22 +23,15 @@ gem 'rails_admin_globalize_field'
 gem 'jwt'
 gem 'pg'
 
+gem 'delayed_job'
+gem 'delayed_job_active_record'
+gem 'delayed_job_web'
+gem 'daemons'
+
 gem 'geokit'
 gem 'rack-attack'
 gem 'rack-cors'
 gem 'httparty'
-
-
-
-# gem 'redis', '~> 4.0'
-#gem 'geocoder'
-#gem 'rgeo-geojson'
-#gem 'activerecord-postgis-adapter'
-#gem 'pg'
-#gem 'aws-sdk-sqs'
-#gem 'sidekiq'
-#gem 'redis-namespace'
-#gem 'raygun4ruby'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

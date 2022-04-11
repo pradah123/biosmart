@@ -21,6 +21,9 @@ module Biosmart
     config.action_controller.forgery_protection_origin_check = false
     config.middleware.use ActionDispatch::Cookies
     config.action_dispatch.cookies_same_site_protection = :strict
+
+    config.active_job.queue_adapter = :delayed_job
+    config.active_job.queue_name_prefix = "observations_#{Rails.env}"    
     
     #config.action_mailer.delivery_method = :smtp
     #config.action_mailer.smtp_settings = {

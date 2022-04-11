@@ -1,4 +1,5 @@
 class Participation < ApplicationRecord
+  include CountableStatistics
   scope :in_competition, -> { where status: Participation.statuses[:accepted] }
   belongs_to :user
   belongs_to :region

@@ -1,4 +1,6 @@
 class Contest < ApplicationRecord
+  include CountableStatistics
+    
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :desc }
   scope :in_progress, -> { where 'starts_at < ? AND ends_at > ?', Time.now, Time.now }
@@ -13,9 +15,8 @@ class Contest < ApplicationRecord
   enum status: [:online, :offline, :deleted, :completed]
 
   def add_observation obs
-    Rails.logger.info "assigning to contest #{id}, obs #{obs.id}"
-
     added = false
+
     if obs.observed_at>=starts_at && obs.observed_at<ends_at # in the period of the contestß
       participations.in_competition.each do |participation|
         if participation.data_sources.include?(obs.data_source) # from one of the requested data sources
@@ -41,6 +42,7 @@ class Contest < ApplicationRecord
         end    
       end
     end
+
     added
   end
 

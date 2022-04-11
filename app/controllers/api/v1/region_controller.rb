@@ -35,6 +35,35 @@ module Api::V1
       render json: data
     end  
 
+    def data
+      r = Region.find_by_id params[:region_id]
+      c = Contest.find_by_id params[:contest_id]
+
+      error_message = nil
+      error_message = { status: 'error', message: "no region found with that id" } if r.nil?
+      error_message = { status: 'error', message: "no contest found with that id" } if c.nil?
+      unless error_message.nil?
+        render json: error_message
+        return
+      end  
+
+      p = r.participations.find_by_contest_id c.id
+      if p.nil?
+        render json: { status: 'error', message: "region not a contestant in this contest" }
+        return
+      end  
+          
+      data = { 
+        name: r.name,
+        observations: p.get_nobservations,
+        species: p.get_nspecies,
+        identifications: p.get_nidentifications,
+        participants: p.get_nparticipants
+      }
+
+      render json: data
+    end  
+
   end
 end 
 
