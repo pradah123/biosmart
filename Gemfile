@@ -32,6 +32,10 @@ gem 'geokit'
 gem 'rack-attack'
 gem 'rack-cors'
 gem 'httparty'
+gem 'dry-transformer'
+gem 'dry-struct'
+gem 'dotenv'
+gem 'timezone_finder'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

@@ -3,6 +3,7 @@ class Region < ApplicationRecord
   
   belongs_to :user
   has_many :participations
+  has_may :subregions
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
 
