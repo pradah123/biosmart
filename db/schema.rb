@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_10_033033) do
+ActiveRecord::Schema.define(version: 2022_04_11_123826) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -185,6 +185,16 @@ ActiveRecord::Schema.define(version: 2022_04_10_033033) do
     t.integer "participants_count", default: 0
   end
 
+  create_table "subregions", force: :cascade do |t|
+    t.string "params_json"
+    t.integer "region_id", null: false
+    t.integer "data_source_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["data_source_id"], name: "index_subregions_on_data_source_id"
+    t.index ["region_id"], name: "index_subregions_on_region_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "organization_name"
     t.string "email"
@@ -209,4 +219,6 @@ ActiveRecord::Schema.define(version: 2022_04_10_033033) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "subregions", "data_sources"
+  add_foreign_key "subregions", "regions"
 end

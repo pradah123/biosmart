@@ -94,3 +94,4 @@ bower.json
 # Ignore pow environment settings
 .powenv
 
+ubuntu-xenial-16.04-cloudimg-console.log
