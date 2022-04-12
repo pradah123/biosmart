@@ -34,6 +34,8 @@ gem 'rack-cors'
 gem 'httparty'
 gem 'dry-transformer'
 gem 'dry-struct'
+gem 'dry-initializer'
+gem 'dry-types'
 gem 'dotenv'
 gem 'timezone_finder'
 

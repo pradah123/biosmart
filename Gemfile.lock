@@ -105,6 +105,7 @@ GEM
     dry-core (0.7.1)
       concurrent-ruby (~> 1.0)
     dry-inflector (0.2.1)
+    dry-initializer (3.1.1)
     dry-logic (1.2.0)
       concurrent-ruby (~> 1.0)
       dry-core (~> 0.5, >= 0.5)
@@ -328,8 +329,10 @@ DEPENDENCIES
   delayed_job_active_record
   delayed_job_web
   dotenv
+  dry-initializer
   dry-struct
   dry-transformer
+  dry-types
   geokit
   httparty
   image_processing (~> 1.2)
