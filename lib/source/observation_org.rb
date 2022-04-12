@@ -24,6 +24,7 @@ module Source
       params = Source::ObservationOrg.dry_initializer.attributes(self)
       params.delete(:count)
       params.delete(:location_id)
+      params.delete(:data_source_id)
 
       return params
     end

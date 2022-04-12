@@ -23,7 +23,9 @@ module Source
     option :sort, default: proc { 'date' }, reader: :private, type: Types::Strict::String
     
     def get_params()
-      return Source::Ebird.dry_initializer.attributes(self)
+      params = Source::Ebird.dry_initializer.attributes(self)
+      params.delete(:data_source_id)
+      return params
     end
 
     def populate_structures()

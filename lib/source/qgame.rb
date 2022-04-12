@@ -23,6 +23,7 @@ module Source
     def get_params()
       params = Source::QGame.dry_initializer.attributes(self)
       params.delete(:count)
+      params.delete(:data_source_id)
       if category_ids.present?
         params[:category_ids] = category_ids
       end

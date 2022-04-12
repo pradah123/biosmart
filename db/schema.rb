@@ -186,7 +186,7 @@ ActiveRecord::Schema.define(version: 2022_04_11_123826) do
   end
 
   create_table "subregions", force: :cascade do |t|
-    t.string "params_json"
+    t.string "params_json", default: "{}"
     t.integer "region_id", null: false
     t.integer "data_source_id", null: false
     t.datetime "created_at", precision: 6, null: false
@@ -219,6 +219,6 @@ ActiveRecord::Schema.define(version: 2022_04_11_123826) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "subregions", "data_sources"
-  add_foreign_key "subregions", "regions"
+  add_foreign_key "subregions", "data_sources", on_delete: :cascade
+  add_foreign_key "subregions", "regions", on_delete: :cascade
 end

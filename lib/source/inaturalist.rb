@@ -28,7 +28,7 @@ module Source
     def get_params()
       params = Source::Inaturalist.dry_initializer.attributes(self)
       params.delete(:total_results)
-      params.delete(:done)
+      params.delete(:data_source_id)
       if iconic_taxa.present?
         params[:iconic_taxa] = iconic_taxa
       end
@@ -45,7 +45,7 @@ module Source
       response = HTTParty.get(
         API_URL,
         query: get_params(),
-        # debug_output: $stdout
+        debug_output: $stdout
       )
       if response.success? && !response.body.nil?
         begin
