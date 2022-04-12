@@ -21,7 +21,7 @@ ds3 = DataSource.create! name: 'observation.org'
 ds = [ds0, ds1, ds2, ds3]
 
 Subregion.all.destroy_all
-Subregion.create! region_id: r0.id, data_source_id: ds0.id, params_json: {"geo": true, "lat": -26.902477, "lng": 149.150391, "order": "desc", "radius": 100, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+Subregion.create! region_id: r0.id, data_source_id: ds0.id, params_json: {"geo": true, "lat": -26.902477, "lng": 149.150391, "order": "desc", "radius": 500, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
 
 Region.all.each do |r|
   [c0.id, c1.id, c2.id].each do |cid|

@@ -45,15 +45,13 @@ class DataSource < ApplicationRecord
     params = subregion.get_params_dict()
     params[:d1] = starts_at.strftime('%F')
     params[:d2] = ends_at.strftime('%F')
-    page = 1
+    inat = ::Source::Inaturalist.new(id, **params)
     loop do
-      Rails.logger.info "Fetching page #{params[:page]}"
-      inat = ::Source::Inaturalist.new(id, **params)
+      break if inat.done()
       observations = inat.get_observations()
       Rails.logger.info observations
       ObservationsCreateJob.perform_later self, observations
-      break if page < inat.total_pages()
-      params[:page] = page+1
+      inat.increment_page()
     end
   end 
 

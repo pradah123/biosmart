@@ -11,7 +11,7 @@ module Source
     API_URL = 'https://api.inaturalist.org/v1/observations'.freeze
     
     param :data_source_id, reader: :private, type: Types::Coercible::Integer
-    param :total_results, default: proc { 0 }, reader: :private
+    param :total_results, default: proc { nil }, reader: :private
 
     option :d1, reader: :private, type: Types::Strict::String
     option :d2, reader: :private, type: Types::Strict::String
@@ -36,8 +36,14 @@ module Source
       return params
     end
 
-    def total_pages()
-      return (total_results.to_f / per_page.to_f).ceil
+    def increment_page()
+        @page += 1
+    end
+
+    def done()
+        Rails.logger.info "----- #{@total_results} -----"
+        return  !@total_results.nil? && 
+                (@page * @per_page > @total_results)
     end
 
     def get_observations()
@@ -45,15 +51,16 @@ module Source
       response = HTTParty.get(
         API_URL,
         query: get_params(),
-        debug_output: $stdout
+        # debug_output: $stdout
       )
       if response.success? && !response.body.nil?
         begin
           result = JSON.parse(response.body, symbolize_names: true)
-          total_results = result[:total_results]
+          @total_results = result[:total_results]
+          Rails.logger.info "->->--- #{@total_results} ---<-<-"
           t = Inaturalist::Transformer.new()
           biosmart_obs = result[:results].map{|inat_obs| 
-            t.call(inat_obs).merge({data_source_id: data_source_id})
+            t.call(inat_obs).merge({data_source_id: @data_source_id})
         }
         rescue JSON::ParserError => e
           # Trello 37: Track json parse exception via Raygun.
