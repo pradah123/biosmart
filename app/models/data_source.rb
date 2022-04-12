@@ -62,10 +62,8 @@ class DataSource < ApplicationRecord
     params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)
     loop do
       ebird = ::Source::Ebird.new(id, **params)
-      observations = qgame.get_observations()
+      observations = ebird.get_observations()
       ObservationsCreateJob.perform_later self, observations
-      break if qgame.done()
-      params[:offset] = qgame.next_offset()
     end
   end
 
@@ -74,12 +72,12 @@ class DataSource < ApplicationRecord
     params = subregion.get_params_dict()
     params[:start_dttm] = starts_at.strftime('%F')
     params[:end_dttm] = ends_at.strftime('%F')
+    qgame = ::Source::QGame.new(id, **params)
     loop do
-      qgame = ::Source::QGame.new(id, **params)
+      break if qgame.done()
       observations = qgame.get_observations()
       ObservationsCreateJob.perform_later self, observations
-      break if qgame.done()
-      params[:offset] = qgame.next_offset()
+      qgame.increment_offset()
     end
   end 
   

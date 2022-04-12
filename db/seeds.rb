@@ -15,13 +15,14 @@ r2 = Region.create! user_id: u0.id, name: 'West Australia Polygon', description:
 
 DataSource.all.destroy_all
 ds0 = DataSource.create! name: 'inaturalist'
-ds1 = DataSource.create! name: 'questagame'
+ds1 = DataSource.create! name: 'qgame'
 ds2 = DataSource.create! name: 'ebird'
 ds3 = DataSource.create! name: 'observation.org'
 ds = [ds0, ds1, ds2, ds3]
 
 Subregion.all.destroy_all
 Subregion.create! region_id: r0.id, data_source_id: ds0.id, params_json: {"geo": true, "lat": -26.902477, "lng": 149.150391, "order": "desc", "radius": 500, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+Subregion.create! region_id: r0.id, data_source_id: ds1.id, params_json: {offset: 0, limit: 50, multipolygon: "MULTIPOLYGON(((142.19097066650392 -10.4509001277642, 142.80620504150392 -39.610625551048116, 153.96831441650392 -38.58753569964612, 155.72612691650392 -10.623716938914194, 142.19097066650392 -10.4509001277642)))"}.to_json
 
 Region.all.each do |r|
   [c0.id, c1.id, c2.id].each do |cid|
