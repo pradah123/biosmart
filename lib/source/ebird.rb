@@ -26,8 +26,7 @@ module Source
       return Source::Ebird.dry_initializer.attributes(self)
     end
 
-    def get_observations()
-      biosmart_obs = []
+    def populate_structures()
       # response = HTTParty.get(
       #     'https://jsonkeeper.com/b/H7JA'
       # )
@@ -51,54 +50,69 @@ module Source
             }
             @sub_ids.append(r[:subId])
           end
-          @sub_ids.uniq.each do |sub_id|
-            response = HTTParty.get(
-              SUB_ID_URL % [sub_id],
-              headers:{'X-eBirdApiToken' => ENV.fetch('EBIRD_TOKEN')},
-              # debug_output: $stdout
-            )
-            if response.success? && !response.body.nil?
-              checklist_result = JSON.parse(response.body, symbolize_names: true)
-              loc_id = checklist_result[:locId]
-              creator_name = checklist_result[:userDisplayName]
-              checklist_result[:obs].each do |obs|
-                species_code = obs[:speciesCode]
-                if @loc_id_map[loc_id].blank? ||
-                   @species_code_map[species_code].blank?
-                then
-                  next
-                end
-                lat = @loc_id_map[loc_id][:lat]
-                lng = @loc_id_map[loc_id][:lng]
-                scientific_name = @species_code_map[species_code][:sname]
-                common_name = @species_code_map[species_code][:cname]
-                (date, time) = obs[:obsDt].split(' ')
-                obs = {
-                  unique_id: obs[:obsId],
-                  lat: lat,
-                  lng: lng,
-                  creator_name: creator_name,
-                  scientific_name: scientific_name,
-                  common_name: common_name,
-                  observed_at: ::Utils.get_utc_time(
-                    lat: lat, lng: lng, date_s: date, time_s: time
-                  ),
-                  accepted_name: scientific_name,
-                  identifications_count: 1,
-                  data_source_id: data_source_id
-                }
-                biosmart_obs.push(obs)
-              end
-            end
-          end
         rescue JSON::ParserError => e
           # Trello 37: Track json parse exception via Raygun.
           # Avoid moving to dead & failed queue
           # Raygun.track_exception(e)
         end
+      end
+    end
 
-        return biosmart_obs
-      end      
-    end    
+    def transform(obs, loc_id, creator_name)
+      species_code = obs[:speciesCode]
+      if @loc_id_map[loc_id].blank? ||
+          @species_code_map[species_code].blank?
+      then
+        return nil
+      end
+      lat = @loc_id_map[loc_id][:lat]
+      lng = @loc_id_map[loc_id][:lng]
+      scientific_name = @species_code_map[species_code][:sname]
+      common_name = @species_code_map[species_code][:cname]
+      (date, time) = obs[:obsDt].split(' ')
+      return {
+        unique_id: obs[:obsId],
+        lat: lat,
+        lng: lng,
+        creator_name: creator_name,
+        scientific_name: scientific_name,
+        common_name: common_name,
+        observed_at: ::Utils.get_utc_time(
+          lat: lat, lng: lng, date_s: date, time_s: time
+        ),
+        accepted_name: scientific_name,
+        identifications_count: 1,
+        data_source_id: data_source_id
+      }
+    end
+
+    def get_observations()
+      biosmart_obs = []
+      populate_structures()
+      begin
+        @sub_ids.uniq.each do |sub_id|
+          response = HTTParty.get(
+            SUB_ID_URL % [sub_id],
+            headers:{'X-eBirdApiToken' => ENV.fetch('EBIRD_TOKEN')},
+            # debug_output: $stdout
+          )
+          if response.success? && !response.body.nil?
+            checklist_result = JSON.parse(response.body, symbolize_names: true)
+            loc_id = checklist_result[:locId]
+            creator_name = checklist_result[:userDisplayName]
+            checklist_result[:obs].each do |obs|
+              ebird_obs = transform(obs, loc_id, creator_name)
+              biosmart_obs.push(ebird_obs) if ebird_obs.present?
+            end
+          end
+        end
+      rescue JSON::ParserError => e
+        # Trello 37: Track json parse exception via Raygun.
+        # Avoid moving to dead & failed queue
+        # Raygun.track_exception(e)
+      end
+
+      return biosmart_obs
+    end
   end
 end
