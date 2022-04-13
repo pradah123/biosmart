@@ -10,7 +10,6 @@ module Source
 
     API_URL = 'https://api.questagame.com/api/sightings'.freeze
     
-    param :data_source_id, reader: :private, type: Types::Coercible::Integer
     param :count, default: proc { nil }, reader: :private
 
     option :start_dttm, reader: :private, type: Types::Strict::String
@@ -23,7 +22,6 @@ module Source
     def get_params()
       params = Source::QGame.dry_initializer.attributes(self)
       params.delete(:count)
-      params.delete(:data_source_id)
       if category_ids.present?
         params[:category_ids] = category_ids
       end
@@ -47,7 +45,7 @@ module Source
           t = Source::QGame::Transformer.new()
           @count = result.count
           biosmart_obs = result.map{|qgame_obs| 
-            t.call(qgame_obs).merge({data_source_id: @data_source_id})
+            t.call(qgame_obs)
           }
         rescue JSON::ParserError => e
           # Trello 37: Track json parse exception via Raygun.

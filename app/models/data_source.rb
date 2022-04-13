@@ -32,7 +32,7 @@ class DataSource < ApplicationRecord
     params[:date_after] = starts_at.strftime('%F')
     params[:date_before] = ends_at.strftime('%F')
     loop do
-      ob_org = ::Source::ObservationOrg.new(id, **params)
+      ob_org = ::Source::ObservationOrg.new(**params)
       observations = ob_org.get_observations()
       ObservationsCreateJob.perform_later self, observations
       break if ob_org.done()
@@ -45,7 +45,7 @@ class DataSource < ApplicationRecord
     params = subregion.get_params_dict()
     params[:d1] = starts_at.strftime('%F')
     params[:d2] = ends_at.strftime('%F')
-    inat = ::Source::Inaturalist.new(id, **params)
+    inat = ::Source::Inaturalist.new(**params)
     loop do
       break if inat.done()
       observations = inat.get_observations()
@@ -61,7 +61,7 @@ class DataSource < ApplicationRecord
     params = subregion.get_params_dict()
     params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)
     loop do
-      ebird = ::Source::Ebird.new(id, **params)
+      ebird = ::Source::Ebird.new(**params)
       observations = ebird.get_observations()
       ObservationsCreateJob.perform_later self, observations
     end
@@ -72,7 +72,7 @@ class DataSource < ApplicationRecord
     params = subregion.get_params_dict()
     params[:start_dttm] = starts_at.strftime('%F')
     params[:end_dttm] = ends_at.strftime('%F')
-    qgame = ::Source::QGame.new(id, **params)
+    qgame = ::Source::QGame.new(**params)
     loop do
       break if qgame.done()
       observations = qgame.get_observations()

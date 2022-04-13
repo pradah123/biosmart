@@ -11,7 +11,6 @@ module Source
     OBS_URL = 'https://api.ebird.org/v2/data/obs/geo/recent'.freeze
     SUB_ID_URL = 'https://api.ebird.org/v2/product/checklist/view/%s'.freeze
 
-    param :data_source_id, reader: :private, type: Types::Coercible::Integer
     param :species_code_map, reader: :private, default: proc { {} }
     param :loc_id_map, reader: :private, default: proc { {} }
     param :sub_ids, reader: :private, default: proc { [] }
@@ -24,7 +23,6 @@ module Source
     
     def get_params()
       params = Source::Ebird.dry_initializer.attributes(self)
-      params.delete(:data_source_id)
       return params
     end
 
@@ -84,7 +82,6 @@ module Source
         ),
         accepted_name: scientific_name,
         identifications_count: 1,
-        data_source_id: data_source_id
       }
     end
 

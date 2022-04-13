@@ -11,7 +11,6 @@ module Source
 
     API_URL = 'https://observation.org/api/v1/locations/%s/observations'.freeze
 
-    param :data_source_id, reader: :private, type: Types::Coercible::Integer
     param :count, default: proc { 0 }, reader: :private
 
     option :date_after, reader: :private, type: Types::Strict::String
@@ -24,8 +23,7 @@ module Source
       params = Source::ObservationOrg.dry_initializer.attributes(self)
       params.delete(:count)
       params.delete(:location_id)
-      params.delete(:data_source_id)
-
+      
       return params
     end
     
@@ -45,9 +43,7 @@ module Source
           result = JSON.parse(response.body, symbolize_names: true)
           t = Source::ObservationOrg::Transformer.new()
           count = result[:count]
-          biosmart_obs = result[:results].map{|obs_org_obs| 
-            t.call(obs_org_obs).merge({data_source_id: data_source_id})
-        }
+          biosmart_obs = result[:results].map{|obs_org_obs| t.call(obs_org_obs)}
         rescue JSON::ParserError => e
           # Trello 37: Track json parse exception via Raygun.
           # Avoid moving to dead & failed queue

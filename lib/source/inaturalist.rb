@@ -10,7 +10,6 @@ module Source
 
     API_URL = 'https://api.inaturalist.org/v1/observations'.freeze
     
-    param :data_source_id, reader: :private, type: Types::Coercible::Integer
     param :total_results, default: proc { nil }, reader: :private
 
     option :d1, reader: :private, type: Types::Strict::String
@@ -28,7 +27,6 @@ module Source
     def get_params()
       params = Source::Inaturalist.dry_initializer.attributes(self)
       params.delete(:total_results)
-      params.delete(:data_source_id)
       if iconic_taxa.present?
         params[:iconic_taxa] = iconic_taxa
       end
@@ -41,7 +39,6 @@ module Source
     end
 
     def done()
-        Rails.logger.info "----- #{@total_results} -----"
         return  !@total_results.nil? && 
                 (@page * @per_page > @total_results)
     end
@@ -57,11 +54,8 @@ module Source
         begin
           result = JSON.parse(response.body, symbolize_names: true)
           @total_results = result[:total_results]
-          Rails.logger.info "->->--- #{@total_results} ---<-<-"
           t = Inaturalist::Transformer.new()
-          biosmart_obs = result[:results].map{|inat_obs| 
-            t.call(inat_obs).merge({data_source_id: @data_source_id})
-        }
+          biosmart_obs = result[:results].map{|inat_obs| t.call(inat_obs)}
         rescue JSON::ParserError => e
           # Trello 37: Track json parse exception via Raygun.
           # Avoid moving to dead & failed queue
