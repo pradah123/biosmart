@@ -49,7 +49,6 @@ class DataSource < ApplicationRecord
     loop do
       break if inat.done()
       observations = inat.get_observations()
-      Rails.logger.info observations
       ObservationsCreateJob.perform_later self, observations
       inat.increment_page()
     end
