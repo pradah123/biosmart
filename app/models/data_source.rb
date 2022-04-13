@@ -21,7 +21,7 @@ class DataSource < ApplicationRecord
       when 'observation.org'
         fetch_observations_dot_org sr, starts_at, ends_at
       else
-        self.send "fetch_#{name}", region
+        self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
       end
     end
   end
@@ -40,7 +40,7 @@ class DataSource < ApplicationRecord
     end 
   end 
 
-  def fetch_inat subregion, starts_at, ends_at
+  def fetch_inat subregion, starts_at, ends_at # PRW: we should change this to fetch_inaturalist to be consistent
     # fetch logic here
     params = subregion.get_params_dict()
     params[:d1] = starts_at.strftime('%F')
