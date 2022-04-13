@@ -8,8 +8,16 @@ class Region < ApplicationRecord
   has_and_belongs_to_many :observations
 
   after_save :update_polygon_cache
+  after_create :compute_subregions 
+  after_update :compute_subregions if :saved_change_to_raw_polygon_json
 
   enum status: [:online, :deleted]
+
+  def compute_subregions
+    # Peter: we should put the subregion computation here
+  end
+
+
 
   @@polygons_cache = {}
 
