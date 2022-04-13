@@ -57,14 +57,11 @@ class DataSource < ApplicationRecord
 
   def fetch_ebird subregion, starts_at, ends_at
     # fetch logic here
-    data_source_id = subregion.data_source_id
     params = subregion.get_params_dict()
     params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)
-    loop do
-      ebird = ::Source::Ebird.new(**params)
-      observations = ebird.get_observations()
-      ObservationsCreateJob.perform_later self, observations
-    end
+    ebird = ::Source::Ebird.new(**params)
+    observations = ebird.get_observations()
+    ObservationsCreateJob.perform_later self, observations    
   end
 
   def fetch_qgame subregion, starts_at, ends_at
