@@ -7,8 +7,26 @@ class Region < ApplicationRecord
   has_and_belongs_to_many :observations
 
   after_save :update_polygon_cache
+  after_create :compute_subregions 
+  after_update :compute_subregions if :saved_change_to_raw_polygon_json
+  after_save :adjust_start_and_end_times, if: :saved_change_to_raw_polygon_json
 
   enum status: [:online, :deleted]
+
+  def compute_subregions
+    # Peter: we should put the subregion computation here
+  end
+
+  def adjust_start_and_end_times
+    # compute centre of the region
+    # use google api to get the timezone difference in minutes
+    # https://maps.googleapis.com/maps/api/timezone/json?location=39.6034810%2C-119.6822510&timestamp=1331161200&key=AIzaSyDyMJQSW8bBRxhAMYnQcJstMOlKXCnY0WM
+    #timezone_mins = 0
+    #participations.each { |p| p.set_utc_start_and_end_times timezone_mins }
+  end  
+
+
+
 
   @@polygons_cache = {}
 
