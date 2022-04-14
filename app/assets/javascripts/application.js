@@ -24,7 +24,7 @@ function set_up_contest_page() {
   if($('#contest-map').length==0) return; 
 
   var s = { lat: 0, lng: 0 };
-  var map = new google.maps.Map(document.getElementById('contest-map'), { zoom: 3, center: s, controlSize: 20 });
+  var map = new google.maps.Map(document.getElementById('contest-map'), { zoom: 2, center: s, controlSize: 20 });
   var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
@@ -73,7 +73,7 @@ function set_up_region_page() {
   if($('#region-map').length==0) return; 
 
   var s = { lat: 0, lng: 0 };
-  var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 3, center: s, controlSize: 20 });
+  var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 2, center: s, controlSize: 20 });
   var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
@@ -286,7 +286,7 @@ function set_up_regions() {
 
    
     var s = { lat: 0, lng: 0 };
-    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 3, center: s, controlSize: 20 });
+    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 2, center: s, controlSize: 20 });
 
     $('#polygon-json-'+modalid+' .polygon-draw').click(function() {
       // validate json

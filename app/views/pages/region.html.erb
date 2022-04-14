@@ -1,4 +1,4 @@
-<% if @region.header_image_url.blank? && @region.header_image.blank? %>s
+<% if @region.header_image_url.blank? && @region.header_image.blank? %>
   <div class="row m-0 p-0">
     <div class="col d-flex justify-content-center">
       <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid" style="width:80px;">

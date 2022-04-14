@@ -34,7 +34,7 @@ header {
 .fw-home, .fw-header-link { font-size: 13px; font-weight: 300; letter-spacing: 2px; }
 .fw-home { font-size: 20px; }
 
-#footer-links a, #footer-links p, .footer-link { 
+#footer-links a, #footer-links p, #footer-links, .footer-link { 
   color: rgba(255,255,255,.4);
   text-decoration: none;
   font-size: 18px;
@@ -43,7 +43,7 @@ header {
   line-height: 1.6em;
 }
 
-#footer-links p { text-align: center; white-space: pre-wrap; }
+#footer-links p, #footer-links { text-align: center; white-space: pre-wrap; }
 #footer-links a { border-bottom: 1px solid rgba(255,255,255,.4); text-decoration: none; }
 
 #footer-links a:hover { color: white; border-color: white }
