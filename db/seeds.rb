@@ -1,5 +1,163 @@
 
+ebird = DataSource.where(name: 'ebird').first
+inat = DataSource.where(name: 'inaturalist').first
+obs_org = DataSource.where(name: 'observation.org').first
+qgame = DataSource.where(name: 'qgame').first
 
+### Lane County, Oregon | inaturalist, ebird ###
+r = Region.where(name: 'Lane County, Oregon').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 43.858297, "lng": -123.024902, "order": "desc", "radius": 107, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 44.004669106432225, lng: -122.23114013671876, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 44.19402066387343, lng: -123.84063720703126, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 43.95328204198018, lng: -123.07159423828126, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 43.520671902437606, lng: -122.43164062500001, dist: 36, sort: "date"}.to_json
+
+### Lexington-Fayette County ###
+r = Region.where(name: 'Lexington-Fayette County').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 38.031867, "lng": -84.469757, "order": "desc", "radius": 25, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 38.031867, lng: -84.469757, dist: 25, sort: "date"}.to_json
+
+### Baton Rouge ###
+r = Region.where(name: 'Baton Rouge').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 30.330213, "lng": -90.994263, "order": "desc", "radius": 110, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 30.718226523201352, lng: -91.45019531250001, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 30.600093873550072, lng: -90.4888916015625, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 30.05958569970824, lng: -91.05468750000001, dist: 50, sort: "date"}.to_json
+
+### District of São Paulo ###
+r = Region.where(name: 'District of São Paulo').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": -22.614011, "lng": -48.625488, "order": "desc", "radius": 470, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+
+### Maribor ###
+#r = Region.where(name: 'Maribor').first
+# inat
+#Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 46.544222, "lng": #15.652771, "order": "desc", "radius": 7, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+#Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 46.544222, lng: 15.652771, dist: 7, sort: "date"}.to_json
+
+### Kiel-Region ###
+r = Region.where(name: 'Kiel-Region').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 54.30049911593032, "lng": 9.978332519531252, "order": "desc", "radius": 50, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# observation.org
+Subregion.create! region_id: r.id, data_source_id: obs_org.id, params_json: {location_id: 679283, limit: 100, offset: 0}.to_json
+
+### Birmingham & the Black Country ###
+#r = Region.where(name: 'Birmingham & the Black Country').first
+# inat
+#Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 52.521234766555516, "lng": -1.9885253906250002, "order": "desc", "radius": 18, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+#Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 52.521234766555516, lng: -1.9885253906250002, dist: 18, sort: "date"}.to_json
+
+### Madison County Kentucky ###
+r = Region.where(name: 'Madison County Kentucky').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 37.71207219310847, "lng": -84.25827026367189, "order": "desc", "radius": 26, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 37.71207219310847, lng: -84.25827026367189, dist: 26, sort: "date"}.to_json
+# qgame
+Subregion.create! region_id: r.id, data_source_id: qgame.id, params_json: {offset: 0, limit: 50, multipolygon:'MULTIPOLYGON(((-84.52171052169197 37.76568684235297,-84.3473025627076 37.52755491909357,-84.1770144767701 37.519930809695694,-84.1440554923951 37.551511333054584,-84.06028474044197 37.55477752038945,-84.10697663497322 37.65052197979284,-84.07401765059822 37.67661271423812,-84.07951081466072 37.75048664747074,-84.10697663497322 37.77545674687104,-84.07676423262947 37.802588596843265,-84.09736359786385 37.81886292463833,-84.11796296309822 37.81018372953148,-84.12620270919197 37.81777808105049,-84.07951081466072 37.85465381782838,-84.09873688887947 37.86224359286392,-84.13169587325447 37.86224359286392,-84.18525422286385 37.87525281749493,-84.21821320723885 37.86766438226059,-84.2594119377076 37.88934355205613,-84.27177155684822 37.92076701299965,-84.33494294356697 37.896929753945095,-84.34867585372322 37.878504764754936,-84.37888825606697 37.90234799094713,-84.36103547286385 37.85248516713605,-84.39536774825447 37.83730282615514,-84.4187136955201 37.872000726671686,-84.4461795158326 37.84380992644923,-84.47639191817635 37.85248516713605,-84.4626590080201 37.79824817031284,-84.48600495528572 37.80150351412199)))'}.to_json
+
+### City of Surrey ###
+r = Region.where(name: 'City of Surrey').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 49.10354459139271, "lng": -122.79144287109376, "order": "desc", "radius": 15, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 49.10354459139271, lng: -122.79144287109376, dist: 15, sort: "date"}.to_json
+
+### Saskatoon and Area City Nature Challenge CNCYXE ###
+r = Region.where(name: 'Saskatoon and Area City Nature Challenge CNCYXE').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 52.12168505384983, "lng": -106.63055419921875, "order": "desc", "radius": 55, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 52.13180209119313, lng: -106.98486328125001, dist: 42, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 52.13854550670474, lng: -106.3751220703125, dist: 45, sort: "date"}.to_json
+# observation.org
+Subregion.create! region_id: r.id, data_source_id: obs_org.id, params_json: {location_id: 679259, limit: 100, offset: 0}.to_json
+# qgame
+Subregion.create! region_id: r.id, data_source_id: qgame.id, params_json: {offset: 0, limit: 50, multipolygon: 'MULTIPOLYGON(((-107.23518476969546 52.411654088614355,-107.23793135172671 51.80608737917637,-106.01570234782046 51.81457797969881,-106.02119551188296 52.42505502090727,-107.23518476969546 52.411654088614355)))'}.to_json
+
+### Thailand ###
+# r = Region.where(name: 'Thailand').first
+
+### Área Metropolitana del Valle de Aburrá ###
+r = Region.where(name: 'Área Metropolitana del Valle de Aburrá').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 6.25387182486021, "lng": -75.46783447265626, "order": "desc", "radius": 39, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 6.25387182486021, lng: -75.46783447265626, dist: 39, sort: "date"}.to_json
+
+### Greater Philadelphia Area ###
+r = Region.where(name: 'Greater Philadelphia Area').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 40.0360265298117, "lng": -75.01190185546876, "order": "desc", "radius": 76, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 40.19146303804063, lng: -75.28656005859376, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 39.84896648439069, lng: -74.8595952987671, dist: 50, sort: "date"}.to_json
+
+### Cleveland-Akron-Canton-Toledo ###
+r = Region.where(name: 'Cleveland-Akron-Canton-Toledo').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, "lat": 41.376808565702355, "lng": -81.99096679687501, "order": "desc", "radius": 158, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.492120839687786, lng: -83.30383300781251, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.644183479397455, lng: -80.91430664062501, dist: 41, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.31907562295139, lng: -81.5185546875, dist: 43, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.368564136809695, lng: -82.61718750000001, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 40.59031322124504, lng: -81.34346008300783, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.12074559016745, lng: -82.03491210937501, dist: 24, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.054501963290505, lng: -81.10656738281251, dist: 13, sort: "date"}.to_json
+
+### Greater Boston ###
+r = Region.where(name: 'Greater Boston').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, lat: 42.06560675405716, lng: -70.58715820312501, "order": "desc", "radius": 110, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.521977220877126, lng: -70.38637876510622, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 42.374778361114195, lng: -71.28479003906251, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 42.64608143458068, lng: -70.58715820312501, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 42.06560675405716, lng: -70.58166503906251, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.93088998442502, lng: -69.93896484375001, dist: 21, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 41.881831370505594, lng: -71.24084472656251, dist: 18, sort: "date"}.to_json
+
+### Greater Montreal Area ###
+r = Region.where(name: 'Greater Montreal Area').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, lat: 45.663966415824056, lng: -73.67706298828126, "order": "desc", "radius": 56, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 45.54675503088241, lng: -73.84185791015626, dist: 38, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 45.7387765043515, lng: -73.26507568359376, dist: 40, sort: "date"}.to_json
+
+### Veracruz Metropolitano ###
+r = Region.where(name: 'Veracruz Metropolitano').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, lat: 19.08937336235217, lng: -96.07818603515626, "order": "desc", "radius": 29, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 19.08937336235217, lng: -96.07818603515626, dist: 29, sort: "date"}.to_json
+
+### Mendoza UNICIPIO ###
+r = Region.where(name: 'Mendoza UNICIPIO').first
+# inat
+Subregion.create! region_id: r.id, data_source_id: inat.id, params_json: {"geo": true, lat: -32.63012300670739, lng: -68.66455078125001, "order": "desc", "radius": 160, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
+# ebird
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.90265033334125, lng: -69.99389648437501, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.9164853473144, lng: -67.55493164062501, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.245328614045995, lng: -68.05480957031251, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.366043209760214, lng: -69.26330566406251, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -33.040903117240916, lng: -69.29626464843751, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.93492866908232, lng: -68.46130371093751, dist: 50, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.4031537914036, lng: -68.66455078125001, dist: 15, sort: "date"}.to_json
+Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.393877575286446, lng: -67.35717773437501, dist: 24, sort: "date"}.to_json
+
+=begin
 User.all.destroy_all
 u0 = User.create! organization_name: 'Biosmart Admin', email: 'admin@earthguardians.life', password: '123456', role: 'admin'
 
@@ -50,9 +208,7 @@ nobs = 20
 nobs.times do
   obs = Observation.create! observed_at: ("2021-01-02".to_datetime + rand(1000).minutes), data_source_id: ds.sample.id, lng: (range[0][0]+rand*(range[0][1]-range[0][0])), lat: (range[1][0]+rand*(range[1][1]-range[1][0])), scientific_name: "A", accepted_name: "AA", common_name: "a", unique_id: "abc#{ rand(1000000) }"
 end
-
-
-
+=end
 
 =begin
 User.all.destroy_all

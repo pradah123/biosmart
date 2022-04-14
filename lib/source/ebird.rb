@@ -1,4 +1,5 @@
 require_relative '../common/utils.rb'
+require_relative './schema/observation.rb'
 
 module Types
   include Dry.Types()
@@ -37,38 +38,34 @@ module Source
         # debug_output: $stdout
       )
       if response.success? && !response.body.nil?
-        begin
-          result = JSON.parse(response.body, symbolize_names: true)
-          result.each do |r|
-            @species_code_map[r[:speciesCode]] = {
-              sname: r[:sciName],
-              cname: r[:comName]
-            }
-            @loc_id_map[r[:locId]] = {
-              lat: lat,
-              lng: lng
-            }
-            @sub_ids.append(r[:subId])
-          end
-        rescue JSON::ParserError => e
-          # Trello 37: Track json parse exception via Raygun.
-          # Avoid moving to dead & failed queue
-          # Raygun.track_exception(e)
+        result = JSON.parse(response.body, symbolize_names: true)
+        result.each do |r|
+          @species_code_map[r[:speciesCode]] = {
+            sname: r[:sciName],
+            cname: r[:comName]
+          }
+          @loc_id_map[r[:locId]] = {
+            lat: lat,
+            lng: lng
+          }
+          @sub_ids.append(r[:subId])
         end
       end
     end
 
     def transform(obs, loc_id, creator_name)
       species_code = obs[:speciesCode]
-      if @loc_id_map[loc_id].blank? ||
-          @species_code_map[species_code].blank?
-      then
+      if @loc_id_map[loc_id].blank?
         return nil
       end
       lat = @loc_id_map[loc_id][:lat]
       lng = @loc_id_map[loc_id][:lng]
-      scientific_name = @species_code_map[species_code][:sname]
-      common_name = @species_code_map[species_code][:cname]
+      scientific_name = species_code
+      common_name = nil
+      if @species_code_map[species_code].present?
+        scientific_name = @species_code_map[species_code][:sname]
+        common_name = @species_code_map[species_code][:cname]
+      end      
       (date, time) = obs[:obsDt].split(' ')
       return {
         unique_id: obs[:obsId],
@@ -88,27 +85,34 @@ module Source
     def get_observations()
       biosmart_obs = []
       populate_structures()
-      begin
-        @sub_ids.uniq.each do |sub_id|
-          response = HTTParty.get(
-            SUB_ID_URL % [sub_id],
-            headers:{'X-eBirdApiToken' => ENV.fetch('EBIRD_TOKEN')},
-            # debug_output: $stdout
-          )
-          if response.success? && !response.body.nil?
-            checklist_result = JSON.parse(response.body, symbolize_names: true)
-            loc_id = checklist_result[:locId]
-            creator_name = checklist_result[:userDisplayName]
-            checklist_result[:obs].each do |obs|
-              ebird_obs = transform(obs, loc_id, creator_name)
-              biosmart_obs.push(ebird_obs) if ebird_obs.present?
+      @sub_ids.uniq.each do |sub_id|
+        response = HTTParty.get(
+          SUB_ID_URL % [sub_id],
+          headers:{'X-eBirdApiToken' => ENV.fetch('EBIRD_TOKEN')},
+          # debug_output: $stdout
+        )
+        if response.success? && !response.body.nil?
+          checklist_result = JSON.parse(response.body, symbolize_names: true)
+          loc_id = checklist_result[:locId]
+          creator_name = checklist_result[:userDisplayName]
+          checklist_result[:obs].each do |obs|
+            transformed_obs = transform(obs, loc_id, creator_name)
+            if transformed_obs.present?
+              validation_result = Source::Schema::ObservationSchema.call(transformed_obs)
+              if validation_result.failure?
+                Delayed::Worker.logger.info "Source::Ebird.get_observations: #{obs}"
+                Delayed::Worker.logger.error 'Source::Ebird.get_observations: ' + 
+                  "#{validation_result.errors.to_h.merge(unique_id: transformed_obs[:unique_id])}"
+                next
+              end
+              biosmart_obs.push(transformed_obs)
+            else
+              Delayed::Worker.logger.info "--- #{loc_id}, #{obs[:speciesCode]} ---"
+              Delayed::Worker.logger.info "#{@loc_id_map}"
+              Delayed::Worker.logger.info "#{@species_code_map}"
             end
           end
         end
-      rescue JSON::ParserError => e
-        # Trello 37: Track json parse exception via Raygun.
-        # Avoid moving to dead & failed queue
-        # Raygun.track_exception(e)
       end
 
       return biosmart_obs

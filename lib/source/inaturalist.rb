@@ -1,4 +1,5 @@
 require_relative './inaturalist/transformer.rb'
+require_relative './schema/observation.rb'
 
 module Types
   include Dry.Types()
@@ -51,15 +52,19 @@ module Source
         # debug_output: $stdout
       )
       if response.success? && !response.body.nil?
-        begin
-          result = JSON.parse(response.body, symbolize_names: true)
-          @total_results = result[:total_results]
-          t = Inaturalist::Transformer.new()
-          biosmart_obs = result[:results].map{|inat_obs| t.call(inat_obs)}
-        rescue JSON::ParserError => e
-          # Trello 37: Track json parse exception via Raygun.
-          # Avoid moving to dead & failed queue
-          # Raygun.track_exception(e)
+        result = JSON.parse(response.body, symbolize_names: true)
+        @total_results = result[:total_results]
+        t = Inaturalist::Transformer.new()
+        result[:results].each do |inat_obs|
+          transformed_obs = t.call(inat_obs)
+          validation_result = Source::Schema::ObservationSchema.call(transformed_obs)
+          if validation_result.failure?
+            Delayed::Worker.logger.info "Source::Inaturalist.get_observations: #{inat_obs}"
+            Delayed::Worker.logger.error 'Source::Inaturalist.get_observations: ' + 
+              "#{validation_result.errors.to_h.merge(unique_id: transformed_obs[:unique_id])}"
+            next
+          end
+          biosmart_obs.append(transformed_obs)
         end
       end
 

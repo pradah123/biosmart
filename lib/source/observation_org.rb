@@ -39,15 +39,19 @@ module Source
         # debug_output: $stdout
       )
       if response.success? && !response.body.nil?
-        begin
-          result = JSON.parse(response.body, symbolize_names: true)
-          t = Source::ObservationOrg::Transformer.new()
-          count = result[:count]
-          biosmart_obs = result[:results].map{|obs_org_obs| t.call(obs_org_obs)}
-        rescue JSON::ParserError => e
-          # Trello 37: Track json parse exception via Raygun.
-          # Avoid moving to dead & failed queue
-          # Raygun.track_exception(e)
+        result = JSON.parse(response.body, symbolize_names: true)
+        t = Source::ObservationOrg::Transformer.new()
+        count = result[:count]
+        result[:results].each do |obs_org_obs|
+          transformed_obs = t.call(obs_org_obs)
+          validation_result = Source::Schema::ObservationSchema.call(transformed_obs)
+          if validation_result.failure?
+            Delayed::Worker.logger.error "Source::ObservationOrg.get_observations: #{obs_org_obs}"
+            Delayed::Worker.logger.error 'Source::ObservationOrg.get_observations: ' + 
+              "#{validation_result.errors.to_h.merge(unique_id: transformed_obs[:unique_id])}"
+            next
+          end
+          biosmart_obs.push(transformed_obs)
         end
       end
 

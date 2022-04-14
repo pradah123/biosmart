@@ -23,6 +23,6 @@ module Utils
       )
     end
     
-    return utc_dttm
+    return utc_dttm.to_s
   end
 end

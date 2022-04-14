@@ -50,7 +50,7 @@ module Source
         rename_keys id: :unique_id
         populate_species_details()
         rename_keys submitted_by_name: :creator_name
-        map_value :date, -> v { DateTime.parse(v).new_offset(0) }
+        map_value :date, -> v { DateTime.parse(v).new_offset(0).strftime('%Y-%m-%d %H:%M') }
         rename_keys date: :observed_at
         # convert_to_utc(:lat, :lng, :date, :time, :observed_at)
         map_value :expert_comments, -> v { v.count }

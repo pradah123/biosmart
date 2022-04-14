@@ -63,54 +63,6 @@ ActiveRecord::Schema.define(version: 2022_04_11_123826) do
     t.integer "job_id"
   end
 
-  create_table "articles", force: :cascade do |t|
-    t.string "title"
-    t.text "description"
-    t.integer "category_id"
-    t.integer "author_id"
-    t.integer "status", default: 0
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.string "url_title"
-    t.text "search_text"
-    t.string "hashcode"
-    t.text "search_text_howto"
-    t.text "search_text_uses"
-    t.integer "views_count", default: 0
-    t.integer "comments_count", default: 0
-    t.integer "ratings_count", default: 0
-    t.float "average_rating", default: 0.0
-    t.datetime "updated_content_at"
-    t.float "ranking_score", default: 0.0
-    t.text "search_text_by"
-  end
-
-  create_table "attachments", force: :cascade do |t|
-    t.string "name"
-    t.text "data"
-    t.integer "article_id"
-    t.integer "order"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
-  create_table "categories", force: :cascade do |t|
-    t.string "name"
-    t.text "description"
-    t.integer "parent_category_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.integer "level"
-  end
-
-  create_table "comments", force: :cascade do |t|
-    t.integer "article_id"
-    t.integer "commentor_id"
-    t.text "comment"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
   create_table "contests", force: :cascade do |t|
     t.integer "user_id"
     t.string "title"
@@ -168,19 +120,6 @@ ActiveRecord::Schema.define(version: 2022_04_11_123826) do
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
   end
 
-  create_table "ingredients", force: :cascade do |t|
-    t.text "description"
-    t.integer "article_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.integer "order"
-  end
-
-  create_table "ingredients_steps", id: false, force: :cascade do |t|
-    t.integer "ingredient_id", null: false
-    t.integer "step_id", null: false
-  end
-
   create_table "observations", force: :cascade do |t|
     t.float "lat"
     t.float "lng"
@@ -225,14 +164,6 @@ ActiveRecord::Schema.define(version: 2022_04_11_123826) do
     t.integer "participants_count", default: 0
   end
 
-  create_table "ratings", force: :cascade do |t|
-    t.integer "user_id"
-    t.integer "article_id"
-    t.float "rating"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
   create_table "regions", force: :cascade do |t|
     t.integer "user_id"
     t.string "name"
@@ -252,15 +183,6 @@ ActiveRecord::Schema.define(version: 2022_04_11_123826) do
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
     t.integer "participants_count", default: 0
-  end
-
-  create_table "steps", force: :cascade do |t|
-    t.integer "order"
-    t.integer "article_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.string "title"
-    t.text "instruction"
   end
 
   create_table "subregions", force: :cascade do |t|

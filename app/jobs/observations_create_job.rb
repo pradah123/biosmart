@@ -7,6 +7,7 @@ class ObservationsCreateJob < ApplicationJob
     nupdates = 0
     nupdates_no_change = 0
     nupdates_failed = 0
+    nfields_updated = 0
     ncreates = 0
     ncreates_failed = 0
 

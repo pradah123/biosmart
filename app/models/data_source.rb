@@ -28,52 +28,72 @@ class DataSource < ApplicationRecord
 
   def fetch_observations_dot_org subregion, starts_at, ends_at
     # fetch logic here
-    params = subregion.get_params_dict()
-    params[:date_after] = starts_at.strftime('%F')
-    params[:date_before] = ends_at.strftime('%F')
-    loop do
-      ob_org = ::Source::ObservationOrg.new(**params)
-      observations = ob_org.get_observations()
-      ObservationsCreateJob.perform_later self, observations
-      break if ob_org.done()
-      params[:offset] = ob_org.next_offset()
-    end 
+    Delayed::Worker.logger.info "fetch_observations_dot_org(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = subregion.get_params_dict()
+      params[:date_after] = starts_at.strftime('%F')
+      params[:date_before] = ends_at.strftime('%F')
+      loop do      
+          ob_org = ::Source::ObservationOrg.new(**params)
+          observations = ob_org.get_observations()
+          ObservationsCreateJob.perform_later self, observations
+          break if ob_org.done()
+          params[:offset] = ob_org.next_offset()
+      end
+    rescue => e
+      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"      
+    end
   end 
 
   def fetch_inat subregion, starts_at, ends_at # PRW: we should change this to fetch_inaturalist to be consistent
     # fetch logic here
-    params = subregion.get_params_dict()
-    params[:d1] = starts_at.strftime('%F')
-    params[:d2] = ends_at.strftime('%F')
-    inat = ::Source::Inaturalist.new(**params)
-    loop do
-      break if inat.done()
-      observations = inat.get_observations()
-      ObservationsCreateJob.perform_later self, observations
-      inat.increment_page()
+    Delayed::Worker.logger.info "fetch_inat(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = subregion.get_params_dict()
+      params[:d1] = starts_at.strftime('%F')
+      params[:d2] = ends_at.strftime('%F')
+      inat = ::Source::Inaturalist.new(**params)
+      loop do
+        break if inat.done()
+        observations = inat.get_observations()
+        ObservationsCreateJob.perform_later self, observations
+        inat.increment_page()
+      end
+    rescue => e
+      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"
     end
   end 
 
   def fetch_ebird subregion, starts_at, ends_at
     # fetch logic here
-    params = subregion.get_params_dict()
-    params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)
-    ebird = ::Source::Ebird.new(**params)
-    observations = ebird.get_observations()
-    ObservationsCreateJob.perform_later self, observations    
+    Delayed::Worker.logger.info "fetch_ebird(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = subregion.get_params_dict()
+      params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)    
+      ebird = ::Source::Ebird.new(**params)
+      observations = ebird.get_observations()
+      ObservationsCreateJob.perform_later self, observations
+    rescue => e
+      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"
+    end
   end
 
   def fetch_qgame subregion, starts_at, ends_at
     # fetch logic here
-    params = subregion.get_params_dict()
-    params[:start_dttm] = starts_at.strftime('%F')
-    params[:end_dttm] = ends_at.strftime('%F')
-    qgame = ::Source::QGame.new(**params)
-    loop do
-      break if qgame.done()
-      observations = qgame.get_observations()
-      ObservationsCreateJob.perform_later self, observations
-      qgame.increment_offset()
+    Delayed::Worker.logger.info "fetch_qgame(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = subregion.get_params_dict()
+      params[:start_dttm] = starts_at.strftime('%F')
+      params[:end_dttm] = ends_at.strftime('%F')
+      qgame = ::Source::QGame.new(**params)    
+      loop do      
+          break if qgame.done()
+          observations = qgame.get_observations()
+          ObservationsCreateJob.perform_later self, observations
+          qgame.increment_offset()
+      end
+    rescue => e
+      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"
     end
   end 
   

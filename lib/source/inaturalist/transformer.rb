@@ -24,7 +24,7 @@ module Source
                 hash[:observed_on] || 
                 hash[:created_at]
         hash.merge({
-          key => DateTime.parse(dttm).new_offset(0)
+          key => DateTime.parse(dttm).new_offset(0).strftime('%Y-%m-%d %H:%M')
         })
       end
     end

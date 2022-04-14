@@ -36,7 +36,8 @@ gem 'dry-transformer'
 gem 'dry-struct'
 gem 'dry-initializer'
 gem 'dry-types'
-gem 'dotenv-rails', groups: [:development, :test]
+gem 'dry-schema'
+gem 'dotenv-rails'
 gem 'timezone_finder'
 
 group :development, :test do
