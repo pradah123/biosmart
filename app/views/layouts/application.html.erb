@@ -53,7 +53,7 @@
           <div class="col-12 col-lg-5 p-0 m-0 logo-header position-relative">
             <% if @user %>
               <a href="#" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white" data-bs-toggle="modal" data-bs-target="#profile" id="profile_button" role="button">Profile: <%= @user.organization_name %></a>
-              <a href="/participants" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <%= @participations.nil? ? '' : 'text-decoration-underline' %>" role="button">Contest Participation</a>
+              <!--a href="/participants" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <#%= @participations.nil? ? '' : 'text-decoration-underline' %>" role="button">Contest Participation</a-->
               <a href="/regions" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <%= @regions.nil? ? '' : 'text-decoration-underline' %>" role="button">Regions</a>
         
               <% if @user.admin? %>
