@@ -54,6 +54,8 @@ module Source
           end
           biosmart_obs.push(transformed_obs)
         end
+      else
+        @count = 0      
       end
 
       return biosmart_obs
