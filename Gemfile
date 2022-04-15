@@ -27,7 +27,7 @@ gem 'delayed_job'
 gem 'delayed_job_active_record'
 gem 'delayed_job_web'
 gem 'daemons'
-
+gem 'rexml'
 gem 'geokit'
 gem 'rack-attack'
 gem 'rack-cors'
@@ -45,6 +45,12 @@ group :development, :test do
 end
 
 group :development do
+  gem 'capistrano'
+  gem 'capistrano-bundler'
+  gem 'capistrano-rails'
+  gem 'capistrano-rvm'
+  gem 'capistrano3-puma'
+  gem 'capistrano3-delayed-job', '~> 1.0'
   gem 'web-console', '>= 4.1.0'
   #gem 'rack-mini-profiler', '~> 2.0'
   gem 'listen', '~> 3.3'
