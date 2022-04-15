@@ -4,9 +4,7 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   #host = Rails.application.credentials.production_domain
-  config.action_mailer.default_url_options = { host: host }
-
-
+  # config.action_mailer.default_url_options = { host: host }
 
   # Code is not reloaded between requests.
   config.cache_classes = true
