@@ -1,5 +1,6 @@
 class Observation < ApplicationRecord
   scope :recent, -> { order created_at: :desc }
+  scope :recent_with_images, -> { where.not(image_link: nil).order(created_at: :desc) }
 
   has_and_belongs_to_many :regions
   has_and_belongs_to_many :participations
