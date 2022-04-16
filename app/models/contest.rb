@@ -3,7 +3,7 @@ class Contest < ApplicationRecord
     
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :asc }
-  scope :in_progress, -> { where 'starts_at < ? AND ends_at > ?', Time.now, Time.now }
+  scope :in_progress, -> { where 'starts_at < ? AND final_at > ?', Time.now, Time.now }
   #scope :in_progress, -> { where 'utc_starts_at < ? AND utc_ends_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'starts_at > ?', Time.now } 
   scope :past, -> { where 'ends_at < ?', Time.now } 
