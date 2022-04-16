@@ -54,7 +54,7 @@ module Api::V1
       end  
           
       data = { 
-        name: r.name,
+        title: r.name,
         observations: p.get_nobservations,
         species: p.get_nspecies,
         identifications: p.get_nidentifications,
@@ -66,4 +66,3 @@ module Api::V1
 
   end
 end 
-
