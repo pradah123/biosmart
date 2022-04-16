@@ -87,4 +87,4 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: Observation.recent.all.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: Observation.recent_with_images.all.first(33) } %>

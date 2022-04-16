@@ -1,14 +1,16 @@
 #!/usr/bin/env puma
 
-directory '/home/ubuntu/biosmart-staging/current'
-rackup "/home/ubuntu/biosmart-staging/current/config.ru"
+rails_env = ENV.fetch("RAILS_ENV", "development")
+
+directory '/vagrant/biosmart-api'
+rackup "/vagrant/biosmart-api/config.ru"
 environment 'test'
 
 tag ''
 
-pidfile "/home/ubuntu/biosmart-staging/shared/tmp/pids/puma.pid"
-state_path "/home/ubuntu/biosmart-staging/shared/tmp/pids/puma.state"
-stdout_redirect '/home/ubuntu/biosmart-staging/shared/log/puma_access.log', '/home/ubuntu/biosmart-staging/shared/log/puma_error.log', true
+pidfile "/vagrant/biosmart-api/tmp/pids/puma.pid"
+state_path "/vagrant/biosmart-api/tmp/pids/puma.state"
+stdout_redirect '/vagrant/biosmart-api/log/puma_access.log', '/vagrant/biosmart-api/log/puma_error.log', true
 worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
 
 workers ENV.fetch("WEB_CONCURRENCY") { 2 }
@@ -21,7 +23,7 @@ threads min_threads_count, max_threads_count
 preload_app!
 rackup      DefaultRackup
 
-bind 'unix:///home/ubuntu/biosmart-staging/shared/tmp/sockets/puma.sock'
+bind 'unix:///vagrant/biosmart-api/shared/sockets/puma.sock'
 
 restart_command 'bundle exec puma'
 
