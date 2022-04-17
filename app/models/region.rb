@@ -14,6 +14,10 @@ class Region < ApplicationRecord
 
   enum status: [:online, :deleted]
 
+  def recent_observations_with_images
+    observations.where.not(image_link: nil).order(created_at: :desc)
+  end
+
   def compute_subregions
     # Peter: we should put the subregion computation here
   end

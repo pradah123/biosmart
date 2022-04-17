@@ -32,4 +32,4 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @contest.observations.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: @contest.recent_observations_with_images.first(33) } %>
