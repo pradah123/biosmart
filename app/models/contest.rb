@@ -7,13 +7,17 @@ class Contest < ApplicationRecord
   #scope :in_progress, -> { where 'utc_starts_at < ? AND utc_ends_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'starts_at > ?', Time.now } 
   scope :past, -> { where 'ends_at < ?', Time.now } 
-
+  
   belongs_to :user, optional: true
   has_many :participations
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
   enum status: [:online, :offline, :deleted, :completed]
+
+  def recent_observations_with_images
+    observations.where.not(image_link: nil).order(created_at: :desc)
+  end
 
   def set_utc_start_and_end_times
     #update_attribute! utc_starts_at: (participations.pluck(:utc_starts_at).min)
