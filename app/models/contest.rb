@@ -6,7 +6,7 @@ class Contest < ApplicationRecord
   scope :in_progress, -> { where 'starts_at < ? AND final_at > ?', Time.now, Time.now }
   #scope :in_progress, -> { where 'utc_starts_at < ? AND utc_ends_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'starts_at > ?', Time.now } 
-  scope :past, -> { where 'ends_at < ?', Time.now } 
+  scope :past, -> { where 'final_at < ?', Time.now } 
   
   belongs_to :user, optional: true
   has_many :participations
