@@ -7,6 +7,7 @@ set :repo_url, "git@gitlab.com:earthguardians1/biosmart-api.git"
 set :branch, ->{ fetch(:branch) }
 
 set :rvm_custom_path, '/usr/share/rvm'
+set :rvm_map_bins, fetch(:rvm_map_bins, []).push('rails')
 
 # Default value for :linked_files is []
 append :linked_files, "config/database.yml", 'config/master.key', '.env', 'config/puma.rb'
@@ -36,3 +37,6 @@ set :ssh_options, {
 }
 
 set :delayed_job_workers, 2
+
+after 'deploy:symlink:release', 'assets:compile'
+after 'puma:restart', 'deploy:restart'
