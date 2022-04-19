@@ -60,8 +60,8 @@ class Contest < ApplicationRecord
   def remove_observation obs
     observations.where(id: obs.id).delete_all
     participations.in_competition.each do |participation|
-      participation.observations.where(id: obs.id).clear
-      participation.region.observations.where(id: obs.id).clear
+      participation.observations.where(id: obs.id).delete_all
+      participation.region.observations.where(id: obs.id).delete_all
     end  
   end  
 
