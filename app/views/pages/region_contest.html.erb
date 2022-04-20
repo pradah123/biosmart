@@ -42,4 +42,4 @@
   </div>
 </div>
 
-<%= render partial: 'recent_sightings', locals: { observations: @participation.observations.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: @participation.observations.has_image.has_scientific_name.recent.first(33) } %>

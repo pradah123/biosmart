@@ -21,4 +21,15 @@ class Participation < ApplicationRecord
     #contest.set_utc_start_and_end_times
   end
 
+  rails_admin do
+    list do
+      field :id
+      field :region          
+      field :contest
+      field :status
+      field :data_sources
+      field :created_at     
+    end
+  end  
+
 end
