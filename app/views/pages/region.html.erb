@@ -65,7 +65,7 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @region.recent_observations_with_images.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: @region.observations.has_image.has_scientific_name.recent.first(33) } %>
 
 <% if @region.contests.upcoming.count>0 %>
   <div class="row justify-content-center mt-5">
@@ -109,5 +109,5 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @region.observations.has_image.has_scientific_name.recent.first(33) } %>
+
 
