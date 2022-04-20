@@ -29,7 +29,7 @@ module Source
         map_value :id, -> v { "#{APP_ID}-#{v}" }
         rename_keys id: :unique_id
         unwrap :point, [:coordinates]
-        map_value :coordinates, -> v { {lat: v.first, lng: v.last} }                        
+        map_value :coordinates, -> v { {lat: v.last, lng: v.first} }
         unwrap :coordinates, [:lat, :lng]
         unwrap :species_detail, [:scientific_name, :name]
         copy_keys scientific_name: :accepted_name
