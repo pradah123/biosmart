@@ -29,6 +29,11 @@ class DataSource < ApplicationRecord
   def fetch_observations_dot_org subregion, starts_at, ends_at
     # fetch logic here
     Delayed::Worker.logger.info "fetch_observations_dot_org(#{subregion.id}, #{starts_at}, #{ends_at})"
+
+# Peter: we need the begin-rescue around the api call inside the function, not 
+# around the creation job. otherwise we can't get the correct error messages on the creation
+# of observations
+
     begin
       params = subregion.get_params_dict()
       params[:date_after] = starts_at.strftime('%F')

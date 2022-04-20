@@ -3,11 +3,11 @@
     <img class="card-img-top position-relative d-flex text-center align-middle" src="<%= o.image_link %>" style="height:200px;">
     <div class="card-body">
       <h5 class="card-title w-100 text-center text-dark fw-bold"><%= o.scientific_name %></h5>
-      <div class="card-title w-100 text-center text-muted h6"><%= o.creator_name || 'No Name' %></div>
+      <div class="card-title w-100 text-center text-muted h6"><%= o.creator_name.nil? ? '' : o.creator_name %></div>
       <div class="card-title w-100 text-center text-muted h6"><%= o.observed_at.strftime '%Y-%m-%d %H:%M' %></div>
     </div>
     <div class="card-img-overlay h-100 d-flex flex-column justify-content-end card-overlay-opacity">
-      <a href="" class="w-100 h-100"></a>
+      <a class="w-100 h-100 gallery-link" data-image-urls="['<%= o.image_link %>']"></a>
     </div>
   </div>
 </div> 

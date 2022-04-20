@@ -11,6 +11,8 @@
   </div>
 </div>
 
+<%= render partial: 'statistics', locals: { object: @contest } %>
+
 <% if @contest.regions.count>0 %>
   <div class="row justify-content-center mt-5">
     <div class="col-10">
@@ -21,8 +23,8 @@
           </div>  
           <div class="row">
             <div class="col mt-5">
-              <% @contest.regions.each.with_index(1) do |r,i| %>
-                <%= render partial: 'region', locals: { r: r, i: i, observations_object: r.participations.where(contest_id: @contest.id).first, show_more_link: true } %>
+              <% @contest.participations.sort { |p0, p1| p1.get_nobservations <=> p0.get_nobservations }.each.with_index(1) do |p,i| %>
+                <%= render partial: 'region', locals: { r: p.region, i: i, observations_object: p, show_more_link: true } %>
               <% end %>
             </div>    
           </div>
@@ -32,4 +34,4 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @contest.recent_observations_with_images.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: @contest.observations.has_image.has_scientific_name.recent.first(33) } %>

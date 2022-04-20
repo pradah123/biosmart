@@ -3,34 +3,38 @@ class Contest < ApplicationRecord
     
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :asc }
-  scope :in_progress, -> { where 'starts_at < ? AND final_at > ?', Time.now, Time.now }
+  scope :in_progress, -> { where 'starts_at < ? AND last_submission_accepted_at > ?', Time.now, Time.now }
   #scope :in_progress, -> { where 'utc_starts_at < ? AND utc_ends_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'starts_at > ?', Time.now } 
-  scope :past, -> { where 'final_at < ?', Time.now } 
+  scope :past, -> { where 'last_submission_accepted_at < ?', Time.now }
   
   belongs_to :user, optional: true
   has_many :participations
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
-  enum status: [:online, :offline, :deleted, :completed]
+  after_create :set_utc_start_and_end_times
+  after_save :set_last_submission_accepted_at
 
-  def recent_observations_with_images
-    observations.where.not(image_link: nil).order(created_at: :desc)
-  end
+  enum status: [:online, :offline, :deleted, :completed]
 
   def set_utc_start_and_end_times
     #update_attribute! utc_starts_at: (participations.pluck(:utc_starts_at).min)
     #update_attribute! utc_ends_at: (participations.pluck(:utc_ends_at).min)
   end  
 
+  def set_last_submission_accepted_at
+    update_column :last_submission_accepted_at, ends_at if last_submission_accepted_at.nil?
+  end  
+
   def add_observation obs
     added = false
 
-    if obs.observed_at>=starts_at && obs.observed_at<ends_at # in the period of the contest
+    if obs.observed_at>=starts_at && obs.observed_at<ends_at && obs.created_at>=starts_at && obs.created_at<last_submission_accepted_at # in the period of the contest
       participations.in_competition.each do |participation|
         if participation.data_sources.include?(obs.data_source) # from one of the requested data sources
-          #if obs.observed_at>=participation.utc_starts_at && obs.observed_at<participation.utc_ends_at # in the period of the contest
+          #if obs.observed_at>=participation.utc_starts_at && obs.observed_at<participation.utc_ends_at && 
+          #    obs.created_at>=participation.utc_starts_at && obs.created_at<participation.utc_last_submission_accepted_at # in the period of the contest
           
           polygons = participation.region.get_geokit_polygons
 
@@ -63,6 +67,19 @@ class Contest < ApplicationRecord
       participation.observations.where(id: obs.id).delete_all
       participation.region.observations.where(id: obs.id).delete_all
     end  
+  end  
+
+
+  rails_admin do
+    list do
+      field :id
+      field :title          
+      field :user
+      field :starts_at
+      field :ends_at
+      field :last_submission_accepted_at    
+      field :created_at              
+    end
   end  
 
 end  

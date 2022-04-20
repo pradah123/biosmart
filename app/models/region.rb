@@ -14,10 +14,6 @@ class Region < ApplicationRecord
 
   enum status: [:online, :deleted]
 
-  def recent_observations_with_images
-    observations.where.not(image_link: nil).order(created_at: :desc)
-  end
-
   def compute_subregions
     # Peter: we should put the subregion computation here
   end
@@ -57,7 +53,23 @@ class Region < ApplicationRecord
     @@polygons_cache[key]
   end
 
-  def self.get_geojson_string_from_multipolygon multipolygon
+  
+
+  def self.get_multipolygon_from_raw_polygon_json_string raw_polygon_json_string 
+    polygon_geojson = JSON.generate raw_polygon_json_string 
+
+    polygon_strings = []
+    polygon_geojson.each do |rpj|
+      coordinates = rpj['coordinates'].map { |c| "#{c['lng']} #{c['lat']}" }.join ', '
+      polygon_strings.push "((#{ coordinates }))"
+    end
+
+    "MULTIPOLYGON( #{ polygon_strings.join ', ' } )"
+  end
+
+  def self.get_raw_polygon_json_string_from_multipolygon multipolygon
+    raw_polygon_json = ""
+=begin
     geojson_string = ''
     polygons = multipolygon.gsub('MULTIPOLYGON((', '').gsub('))', '').split '('
 
@@ -83,11 +95,14 @@ class Region < ApplicationRecord
     Rails.logger.info geojson
 
     JSON.generate geojson
+=end
+    raw_polygon_json  
   end
 
   def self.get_geojson_from_osm relation_id
     coordinates = []
 
+=begin
     r = HTTParty.get "https://api.openstreetmap.org/api/0.6/relation/#{relation_id}.json"
     members = r['elements'][0]['members']
     Rails.logger.info "Got relationship, #{members.length} members"
@@ -113,9 +128,13 @@ class Region < ApplicationRecord
 
       end 
     end
+=end
 
-    Rails.logger.info coordinates.inspect
+    coordinates
   end
+
+
+
 
   def self.save_img str, id, name
     filename = "#{Rails.root}/public/region-#{id}-#{name}.png"
@@ -154,12 +173,15 @@ class Region < ApplicationRecord
     end
   end  
 
+
+
   rails_admin do
     list do
       field :id
       field :name          
       field :description
       field :raw_polygon_json
+      field :created_at      
     end
   end
 

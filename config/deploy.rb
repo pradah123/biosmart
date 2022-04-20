@@ -31,8 +31,8 @@ set :ssh_options, {
   forward_agent: true,
   auth_methods: ["publickey"],
   keys: [
-    '/home/ubuntu/.ssh/keys/biosmart-staging.pem',
-    '/home/ubuntu/.ssh/keys/bee-staging.pem'
+    '../biosmart-staging.pem',
+    '../bee-staging.pem'
   ]
 }
 

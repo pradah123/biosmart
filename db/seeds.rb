@@ -1,4 +1,4 @@
-
+=begin
 ebird = DataSource.where(name: 'ebird').first
 inat = DataSource.where(name: 'inaturalist').first
 obs_org = DataSource.where(name: 'observation.org').first
@@ -156,13 +156,13 @@ Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 
 Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.93492866908232, lng: -68.46130371093751, dist: 50, sort: "date"}.to_json
 Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.4031537914036, lng: -68.66455078125001, dist: 15, sort: "date"}.to_json
 Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.393877575286446, lng: -67.35717773437501, dist: 24, sort: "date"}.to_json
+=end
 
-=begin
 User.all.destroy_all
 u0 = User.create! organization_name: 'Biosmart Admin', email: 'admin@earthguardians.life', password: '123456', role: 'admin'
 
 Contest.all.destroy_all
-c0 = Contest.create! title: 'New Contest', description: 'This is going to be the biggest ever!', starts_at: (Time.now - 1.days), ends_at: (Time.now + 9.days), status: Contest.statuses[:online]
+c0 = Contest.create! title: 'New Contest', description: 'This is going to be the biggest ever!', starts_at: (Time.now - 1.days), ends_at: (Time.now + 9.days), last_submission_accepted_at: (Time.now + 11.days), status: Contest.statuses[:online]
 c1 = Contest.create! title: 'Contest 2021', description: 'Our first effort, and good fun all round.', starts_at: "2021-01-01".to_datetime, ends_at: "2021-12-31".to_datetime, status: Contest.statuses[:online]
 c2 = Contest.create! title: 'Next Contest 2023', description: 'A new format for next year, check out the new competition rules.', starts_at: "2023-01-01".to_datetime, ends_at: "2023-06-30".to_datetime, status: Contest.statuses[:online]
 
@@ -179,6 +179,7 @@ ds2 = DataSource.create! name: 'ebird'
 ds3 = DataSource.create! name: 'observation.org'
 ds = [ds0, ds1, ds2, ds3]
 
+=begin
 Subregion.all.destroy_all
 # For iNat
 Subregion.create! region_id: r0.id, data_source_id: ds0.id, params_json: {"geo": true, "lat": -26.902477, "lng": 149.150391, "order": "desc", "radius": 500, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
@@ -188,6 +189,7 @@ Subregion.create! region_id: r0.id, data_source_id: ds1.id, params_json: {offset
 Subregion.create! region_id: r3.id, data_source_id: ds3.id, params_json: {location_id: 679283, limit: 100, offset: 0}.to_json
 # For eBird
 Subregion.create! region_id: r3.id, data_source_id: ds2.id, params_json: {lat: 54.321329, lng: 10.019531, dist: 50, sort: "date"}.to_json
+=end
 
 Region.all.each do |r|
   [c0.id, c1.id, c2.id].each do |cid|
@@ -208,7 +210,7 @@ nobs = 20
 nobs.times do
   obs = Observation.create! observed_at: ("2021-01-02".to_datetime + rand(1000).minutes), data_source_id: ds.sample.id, lng: (range[0][0]+rand*(range[0][1]-range[0][0])), lat: (range[1][0]+rand*(range[1][1]-range[1][0])), scientific_name: "A", accepted_name: "AA", common_name: "a", unique_id: "abc#{ rand(1000000) }"
 end
-=end
+
 
 =begin
 User.all.destroy_all
