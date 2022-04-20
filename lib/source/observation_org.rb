@@ -31,7 +31,7 @@ module Source
       access_token = Source::ObservationOrg::Auth.get_access_token()
       biosmart_obs = []
       response = HTTParty.get(
-        API_URL % [location_id],
+        API_URL % [@location_id],
         query: get_params(),
         headers: {
             'Authorization' => "Bearer #{access_token}"
@@ -41,7 +41,7 @@ module Source
       if response.success? && !response.body.nil?
         result = JSON.parse(response.body, symbolize_names: true)
         t = Source::ObservationOrg::Transformer.new()
-        count = result[:count]
+        @count = result[:count]
         result[:results].each do |obs_org_obs|
           transformed_obs = t.call(obs_org_obs)
           validation_result = Source::Schema::ObservationSchema.call(transformed_obs)
@@ -59,11 +59,12 @@ module Source
     end
 
     def done()
-        return offset >= count
+        return @offset >= @count
     end
 
-    def next_offset()
-        offset += limit
+    def increment_offset()
+      @offset += @limit
     end
+
   end
 end
