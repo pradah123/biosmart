@@ -38,12 +38,12 @@ class DataSource < ApplicationRecord
       params = subregion.get_params_dict()
       params[:date_after] = starts_at.strftime('%F')
       params[:date_before] = ends_at.strftime('%F')
-      loop do      
-          ob_org = ::Source::ObservationOrg.new(**params)
+      ob_org = ::Source::ObservationOrg.new(**params)
+      loop do                
           observations = ob_org.get_observations()
           ObservationsCreateJob.perform_later self, observations
           break if ob_org.done()
-          params[:offset] = ob_org.next_offset()
+          ob_org.increment_offset()
       end
     rescue => e
       Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"      
