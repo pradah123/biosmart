@@ -1,16 +1,7 @@
-<% if @region.header_image_url.blank? && @region.header_image.blank? %>
+<% if !@region.header_image_url.blank? || !@region.header_image.blank? %>
   <div class="row m-0 p-0">
     <div class="col d-flex justify-content-center">
-      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid" style="width:80px;">
-    </div>
-  </div>
-<% else %>
-  <div class="row m-0 p-0">
-    <div class="col-4 d-flex justify-content-center">
-      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid" style="height:160px;">
-    </div>
-    <div class="col d-flex justify-content-center">
-      <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid" style="height:160px;">
+      <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid">
     </div>    
   </div>
 <% end %>  
@@ -36,9 +27,9 @@
 <% end %>
 
 <div class="row justify-content-center">
-  <div class="col-10 my-5 d-flex justify-content-center h6">
+  <div class="col-10 my-5 h6">
     <% if @region.logo_image_url || @region.logo_image %>
-      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="img-fluid me-3 mb-3" style="height:160px;">
+      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="height:160px;">
     <% end %>  
     <%= @region.description.html_safe %>
   </div>
