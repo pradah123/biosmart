@@ -35,6 +35,8 @@
   </div>
 </div>
 
+<%= render partial: 'statistics', locals: { object: @region } %>
+
 <% if @region.contests.in_progress.count>0 %>
   <div class="row justify-content-center mt-5">
     <div class="col-10">
@@ -55,8 +57,6 @@
     </div>
   </div>
 <% end %>
-
-<%= render partial: 'recent_sightings', locals: { observations: @region.observations.has_image.has_scientific_name.recent.first(33) } %>
 
 <% if @region.contests.upcoming.count>0 %>
   <div class="row justify-content-center mt-5">
@@ -100,5 +100,6 @@
   </div>
 <% end %>
 
+<%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?region_id=#{ @region.id }" } %>
 
 

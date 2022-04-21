@@ -1,3 +1,5 @@
+
+<div class="row justify-content-center">
   <div class="col d-flex justify-content-center">
     <img src="<%= @region.logo_image ? @region.logo_image : @region.logo_image_url %>" class="img-fluid" style="width:80px;">
   </div>
@@ -42,4 +44,4 @@
   </div>
 </div>
 
-<%= render partial: 'recent_sightings', locals: { observations: @participation.observations.has_image.has_scientific_name.recent.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }&region_id=#{ @region.id }" } %>

@@ -17,10 +17,10 @@
 <% @participations.each do |p| %>
   <div class="row mb-3">
   	<div class="col-2">
-      <a href="/region/<%= p.region.id %>"><%= p.region.name %></a>
+      <a href="<%= p.region.get_path %>"><%= p.region.name %></a>
     </div>
   	<div class="col-2">
-      <a href="/contest/<%= p.contest.id %>"><%= p.contest.title %></a>
+      <a href="<%= p.contest.get_path %>"><%= p.contest.title %></a>
     </div>
   	<div class="col-2"><%= p.contest.observations.count %></div>
     <div class="col-2"><%= p.data_sources.pluck(:name).join ', ' %></div>

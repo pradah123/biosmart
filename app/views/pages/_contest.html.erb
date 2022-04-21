@@ -2,18 +2,18 @@
 <div class="row">
   <div class="col">
   	<div class="row">
-  		<div class="col h4"><a href="/contest/<%= c.id %>" class="contest-title-link"><%= c.title %></a></div>
+  		<div class="col h4"><a href="<%= c.get_path %>" class="contest-title-link"><%= c.title %></a></div>
     </div>	  
   	<div class="row mt-3">
-  		<div class="col d-flex text-center h6"><%= c.starts_at.strftime '%Y/%m/%d' %> to <%= c.ends_at.strftime '%Y/%m/%d' %></div>
+  		<div class="col h6"><%= c.starts_at.strftime '%Y/%m/%d' %> to <%= c.ends_at.strftime '%Y/%m/%d' %></div>
     </div>
   	<div class="row mb-3">
-  		<div class="col d-flex justify-content-center h6">observations accepted up to <%= c.last_submission_accepted_at.strftime '%Y/%m/%d' %></div>
+  		<div class="col h6">observations accepted up to <%= c.last_submission_accepted_at.strftime '%Y/%m/%d' %></div>
     </div>
   </div>   		
 	<div class="col-2 d-flex justify-content-end">
     <% if show_more_link==true %>
-      <a href="/region/<%= observations_object.id %>/contest/<%= c.id %>" class="text-muted">region stats</a>  
+      <a href="<%= observations_object.region.get_region_contest_path c  %>" class="text-muted">region stats</a>  
     <% end %>
   </div>
 </div>

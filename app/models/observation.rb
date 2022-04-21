@@ -7,6 +7,7 @@ class Observation < ApplicationRecord
   has_and_belongs_to_many :participations
   has_and_belongs_to_many :contests
   belongs_to :data_source
+  has_many :observation_images
 
   after_create :assign_to_contests
   after_update :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng

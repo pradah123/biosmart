@@ -4,12 +4,12 @@
   </div>
   <div class="col-8">
     <div class="row">
-      <div class="col h4"><a href="/region/<%= r.id %>" class="region-title-link"><%= r.name %></a></div>
+      <div class="col h4"><a href="<%= r.get_path %>" class="region-title-link"><%= r.name %></a></div>
     </div>   
   </div>
   <div class="col-2 d-flex justify-content-end">
     <% if show_more_link==true %>
-      <a href="/region/<%= r.id %>/contest/<%= observations_object.contest_id %>" class="text-muted d-flex align-middle">contest stats</a>  
+      <a href="<%= r.get_region_contest_path observations_object.contest %>" class="text-muted d-flex align-middle">contest stats</a>  
     <% end %>  
 	</div>
 </div>

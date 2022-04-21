@@ -14,6 +14,21 @@ class Region < ApplicationRecord
 
   enum status: [:online, :deleted]
 
+
+  def get_slug
+    name.blank? ? '' : name.downcase.gsub(/ /, '-')
+  end
+    
+  def get_path
+    "/regions/#{id}/#{ get_slug }"
+  end  
+
+  def get_region_contest_path contest
+    "/regions/#{id}/contests/#{ contest.id }/#{ contest.get_slug }/#{ get_slug }"
+  end  
+
+
+
   def compute_subregions
     # Peter: we should put the subregion computation here
   end
@@ -68,9 +83,7 @@ class Region < ApplicationRecord
   end
 
   def self.get_raw_polygon_json_string_from_multipolygon multipolygon
-    raw_polygon_json = ""
-=begin
-    geojson_string = ''
+   
     polygons = multipolygon.gsub('MULTIPOLYGON((', '').gsub('))', '').split '('
 
     geojson = {}
@@ -95,8 +108,6 @@ class Region < ApplicationRecord
     Rails.logger.info geojson
 
     JSON.generate geojson
-=end
-    raw_polygon_json  
   end
 
   def self.get_geojson_from_osm relation_id

@@ -6,7 +6,7 @@ RailsAdmin.config do |config|
   config.asset_source = :webpacker
   config.parent_controller = '::ApplicationController'  
   config.main_app_name = ['Biosmart Admin', '']
-  config.default_items_per_page = 1000
+  config.default_items_per_page = 100
   config.default_associated_collection_limit = 1000
 
   config.actions do

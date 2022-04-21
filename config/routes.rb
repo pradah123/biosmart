@@ -8,10 +8,11 @@ Rails.application.routes.draw do
   get '/contests', to: 'pages#contests'
   get '/participants', to: 'pages#participations'
   get '/users', to: 'pages#users'
-  get '/region/:id', to: 'pages#region'
-  get '/contest/:id', to: 'pages#contest'
-  get '/region/:region_id/contest/:contest_id', to: 'pages#region_contest'
- 
+
+  get '/regions/:region_id/contests/:contest_id/:contest_slug/:region_slug', to: 'pages#region_contest'
+  get '/regions/:id/:slug', to: 'pages#region'
+  get '/contests/:id/:slug', to: 'pages#contest'
+
   namespace :api do
     namespace :v1 do
       post '/user', to: 'user#create'
@@ -34,7 +35,9 @@ Rails.application.routes.draw do
 
       get '/region/polygons', to: 'region#polygons'
       get '/region/data/:region_id/:contest_id', to: 'region#data'
+
       post '/observations', to: 'observation#bulk_create'
+      get '/observations/more', to: 'observation#get_more'
     end
   end
 
