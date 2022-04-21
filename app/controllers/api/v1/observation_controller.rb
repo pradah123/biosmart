@@ -34,12 +34,16 @@ module Api::V1
     def get_more
 
       Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> here"
+      Rails.logger.info params.inspect
 
       if params[:region_id] && params[:contest_id]
+         Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> participation"
         obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
       elsif params[:region_id]
+         Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> region"
         obj = Region.where id: params[:region_id]
       elsif params[:contest_id]
+         Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> contest"
         obj = Contest.where id: params[:contest_id]
       else
         obj = [Observation.all]
