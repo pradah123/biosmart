@@ -25,7 +25,23 @@ class Contest < ApplicationRecord
 
   def set_last_submission_accepted_at
     update_column :last_submission_accepted_at, ends_at if last_submission_accepted_at.nil?
+  end
+
+
+
+  def get_slug
+    title.nil? ? '' : title.downcase.gsub(/ /, '-')
+  end
+    
+  def get_path
+    "/contests/#{id}/#{ get_slug }"
   end  
+
+  def get_region_contest_path region
+    region.get_region_contest_path contest
+  end  
+
+
 
   def add_observation obs
     added = false

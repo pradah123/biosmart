@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_20_045557) do
+ActiveRecord::Schema.define(version: 2022_04_21_021430) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -181,6 +181,16 @@ ActiveRecord::Schema.define(version: 2022_04_20_045557) do
   create_table "ingredients_steps", id: false, force: :cascade do |t|
     t.integer "ingredient_id", null: false
     t.integer "step_id", null: false
+  end
+
+  create_table "observation_images", force: :cascade do |t|
+    t.integer "observation_id"
+    t.string "url"
+    t.string "url_thumbnail"
+    t.string "license_code"
+    t.string "attribution"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "observations", force: :cascade do |t|

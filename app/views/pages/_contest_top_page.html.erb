@@ -2,7 +2,7 @@
 <div class="row mt-5">
   <div class="col">
   	<div class="row">
-  		<div class="col h4 d-flex justify-content-center"><a href="/contest/<%= c.id %>" class="contest-title-link"><%= c.title %></a></div>
+  		<div class="col h4 d-flex justify-content-center"><a href="<%= c.get_path %>" class="contest-title-link"><%= c.title %></a></div>
     </div>
   	<div class="row mt-3">
   		<div class="col d-flex justify-content-center fw-bold h6"><%= c.starts_at.strftime '%Y/%m/%d' %> to <%= c.ends_at.strftime '%Y/%m/%d' %></div>

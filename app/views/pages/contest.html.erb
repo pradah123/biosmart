@@ -34,4 +34,4 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @contest.observations.has_image.has_scientific_name.recent.first(33) } %>
+<%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }" } %>

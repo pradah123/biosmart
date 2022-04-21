@@ -9,6 +9,10 @@ var _polygons = {};
 var _login_modal = new bootstrap.Modal(document.getElementById('login'), { keyboard: true });
 var _signup_modal = new bootstrap.Modal(document.getElementById('signup'), { keyboard: true });
 var _signup_success_modal = new bootstrap.Modal(document.getElementById('signup_success'), { keyboard: true });
+var _gallery_modal = new bootstrap.Modal(document.getElementById('gallery'), { keyboard: true });
+var _gallery_carousel = null;
+
+var _nshow_more = 1
 
 $(document).ready(function() { 
   set_up_authentication();
@@ -17,8 +21,72 @@ $(document).ready(function() {
   set_up_participations();
   set_up_region_page();
   set_up_contest_page();
+  set_up_observations_modal();
 });
 
+
+function set_up_observations_modal() {
+
+  $(document).on('click', '.gallery-link', function() { 
+    var link = $(this);
+
+    link.click(function() {
+      $('#gallery-carousel').html('');
+      var urls = JSON.parse( link.attr('data-image-urls') ); 
+
+      for( var i=0 ; i<urls.length ; i++ ) {
+        var html = '<div class="carousel-item"><div class="card border-0 p-0 m-0">';
+        html += '<img src="'+urls[i]+'" class="card-img d-block w-100" loading="lazy" alt="...">';
+        html += '</div></div>';
+        $('#gallery-carousel').append(html);
+      } 
+
+      $('.carousel-item').first().addClass('active');
+      _gallery_modal.show();
+    });
+      
+  });
+
+  $('#show_more').click(function() {
+    var n = $('.observation').length;
+    var nstart = n
+    var nend = nstart + n/_nshow_more;
+    _nshow_more += 1;
+
+    var params = $(this).attr('data-api-parameters');
+    params += "&nstart="+nstart;
+    params += "&nend="+nend;
+
+    $.get(_api+'/observations/more'+params, function() {})
+    .done(function(data, status) {
+      if(data['data']==undefined || data['data']['observations']==undefined || data['data']['observations'].length==0) {
+        $('#show_more').addClass('d-none');
+      } else {
+        var observations = data['data']['observations']
+        var obs_html = $(".observation").last();
+
+        for( var i = 0 ; i < observations.length ; i++ ) {
+          var obs = observations[i];
+          obs_html.clone().appendTo('#observations-block');
+
+          var new_obs = $('.observation').last();
+          new_obs.find('.card-body').css('background-image', 'url('+obs.image_urls[0]+')');
+          new_obs.find('.scientific_name').text(obs.scientific_name);
+          new_obs.find('.creator_name').text(obs.creator_name);
+          new_obs.find('.observed_at').text(obs.observed_at);
+
+          var url_arr = [];
+          for( var j = 0 ; j < obs.image_urls.length ; j++ )  url_arr.push('"'+obs.image_urls[j]+'"');
+          new_obs.find('.gallery-link').attr('data-image-urls', '['+url_arr.join()+']');
+        }
+      }
+    })
+    .fail(function(xhr, status, error) {})
+    .always(function() {});
+
+    return false;  
+  });
+}
 
 function set_up_contest_page() {
   if($('#contest-map').length==0) return; 
