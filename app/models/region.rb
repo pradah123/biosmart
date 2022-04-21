@@ -68,7 +68,12 @@ class Region < ApplicationRecord
     @@polygons_cache[key]
   end
 
-  
+  def contains? lat, lng
+    get_geokit_polygons.each { |polygon|
+      return true if polygon.contains?(Geokit::LatLng.new lat, lng)
+    }
+    return false    
+  end
 
   def self.get_multipolygon_from_raw_polygon_json_string raw_polygon_json_string 
     polygon_geojson = JSON.generate raw_polygon_json_string 
