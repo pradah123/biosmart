@@ -33,37 +33,28 @@ module Api::V1
       
     def get_more
 
-      Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> here"
-      Rails.logger.info params.inspect
-
       if params[:region_id] && params[:contest_id]
-         Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> participation"
         obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
       elsif params[:region_id]
-         Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> region"
         obj = Region.where id: params[:region_id]
       elsif params[:contest_id]
-         Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> contest"
         obj = Contest.where id: params[:contest_id]
       else
-        obj = [Observation.all]
+        obj = []
       end
 
-Rails.logger.info obj.inspect
-
-      observations = []
       unless obj.blank?
-        Rails.logger.info obj.inspect
         observations = obj.first.observations.has_image.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
-        Rails.logger.info observations.inspect
+      else
+        observations = Observation.all.has_image.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
+      end
 
-        observations = observations.map { |obs| {
-          scientific_name: obs.scientific_name, 
-          creator_name: (obs.creator_name.nil? ? '' : obs.creator_name),
-          observed_at: obs.observed_at.strftime('%Y-%m-%d %H:%M'),
-          image_urls: obs.observation_images.pluck(:url)
-        } }
-      end  
+      observations = observations.map { |obs| {
+        scientific_name: obs.scientific_name, 
+        creator_name: (obs.creator_name.nil? ? '' : obs.creator_name),
+        observed_at: obs.observed_at.strftime('%Y-%m-%d %H:%M'),
+        image_urls: obs.observation_images.pluck(:url)
+      } } 
       
       j = { 'observations': observations }
       render_success j
