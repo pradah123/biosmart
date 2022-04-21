@@ -38,13 +38,13 @@ module Api::V1
       if params[:region_id] && params[:contest_id]
         obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
       elsif params[:region_id]
-        obj = Region.where id: params[:contest_id]
+        obj = Region.where id: params[:region_id]
       elsif params[:contest_id]
         obj = Contest.where id: params[:contest_id]
       else
         obj = [Observation.all]
       end
-      
+
 Rails.logger.info obj.inspect
 
       observations = []
