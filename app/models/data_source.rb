@@ -40,13 +40,16 @@ class DataSource < ApplicationRecord
       params[:date_before] = ends_at.strftime('%F')
       ob_org = ::Source::ObservationOrg.new(**params)
       loop do                
-          observations = ob_org.get_observations()
+          observations = ob_org.get_observations() || []
+          observations = observations.select{ |o| 
+            subregion.region.contains? o[:lat], o[:lng]
+          }
           ObservationsCreateJob.perform_later self, observations
           break if ob_org.done()
           ob_org.increment_offset()
       end
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"      
+      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"      
     end
   end 
 
@@ -60,12 +63,15 @@ class DataSource < ApplicationRecord
       inat = ::Source::Inaturalist.new(**params)
       loop do
         break if inat.done()
-        observations = inat.get_observations()
+        observations = inat.get_observations() || []
+        observations = observations.select{ |o| 
+          subregion.region.contains? o[:lat], o[:lng]
+        }
         ObservationsCreateJob.perform_later self, observations
         inat.increment_page()
       end
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"
+      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
   end 
 
@@ -76,10 +82,13 @@ class DataSource < ApplicationRecord
       params = subregion.get_params_dict()
       params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)    
       ebird = ::Source::Ebird.new(**params)
-      observations = ebird.get_observations()
+      observations = ebird.get_observations() || []
+      observations = observations.select{ |o| 
+        subregion.region.contains? o[:lat], o[:lng]
+      }
       ObservationsCreateJob.perform_later self, observations
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"
+      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
   end
 
@@ -92,13 +101,16 @@ class DataSource < ApplicationRecord
       params[:end_dttm] = ends_at.strftime('%F')
       qgame = ::Source::QGame.new(**params)    
       loop do      
-          break if qgame.done()
-          observations = qgame.get_observations()
-          ObservationsCreateJob.perform_later self, observations
-          qgame.increment_offset()
+        break if qgame.done()
+        observations = qgame.get_observations() || []
+        observations = observations.select{ |o| 
+          subregion.region.contains? o[:lat], o[:lng]
+        }
+        ObservationsCreateJob.perform_later self, observations
+        qgame.increment_offset()
       end
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.backtrace}"
+      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
   end 
   
