@@ -56,6 +56,8 @@ function set_up_observations_modal() {
     var params = $(this).attr('data-api-parameters');
     params += "&nstart="+nstart;
     params += "&nend="+nend;
+console.log('here');
+console.log(params);
 
     $.get(_api+'/observations/more'+params, function() {})
     .done(function(data, status) {
