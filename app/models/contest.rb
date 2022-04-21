@@ -30,7 +30,7 @@ class Contest < ApplicationRecord
 
 
   def get_slug
-    title.nil? ? '' : title.downcase.gsub(/ /, '-')
+    title.nil? ? '' : title.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
   end
     
   def get_path
