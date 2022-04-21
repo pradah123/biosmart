@@ -35,7 +35,7 @@ module Api::V1
 
       Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> here"
 
-      if params[:region_id] && params[:content_id]
+      if params[:region_id] && params[:contest_id]
         obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
       elsif params[:region_id]
         obj = Region.where id: params[:contest_id]
@@ -44,15 +44,20 @@ module Api::V1
       else
         obj = [Observation.all]
       end
+      
+Rails.logger.info obj.inspect
 
       observations = []
       unless obj.blank?
+        Rails.logger.info obj.inspect
         observations = obj.first.observations.has_image.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
-        observations = observations.map { |obs| { 
-          scientific_name: 'ABC', #obs.scientific_name, 
-          creator_name: 'ABC', #(obs.creator_name.nil? ? '' : obs.creator_name),
-          observed_at: Time.now.strftime('%Y-%m-%d %H:%M'), #.obs.observed_at.strftime('%Y-%m-%d %H:%M'),
-          image_urls: ['https://observation.org/media/photo/47894932.jpg'] # obs.observation_images.pluck(:url)
+        Rails.logger.info observations.inspect
+
+        observations = observations.map { |obs| {
+          scientific_name: obs.scientific_name, 
+          creator_name: (obs.creator_name.nil? ? '' : obs.creator_name),
+          observed_at: obs.observed_at.strftime('%Y-%m-%d %H:%M'),
+          image_urls: obs.observation_images.pluck(:url)
         } }
       end  
       
