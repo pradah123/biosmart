@@ -56,13 +56,9 @@ function set_up_observations_modal() {
     var params = $(this).attr('data-api-parameters');
     params += "&nstart="+nstart;
     params += "&nend="+nend;
-console.log('here');
-console.log(params);
 
     $.get(_api+'/observations/more'+params, function() {})
     .done(function(data, status) {
-console.log('inside');
-console.log(data);
       if(data['data']==undefined || data['data']['observations']==undefined || data['data']['observations'].length==0) {
         $('#show_more').addClass('d-none');
       } else {
@@ -71,10 +67,9 @@ console.log(data);
 
         for( var i = 0 ; i < observations.length ; i++ ) {
           var obs = observations[i];
-          obs_html.clone().appendTo('#observations-block');
-console.log(obs);  
+          obs_html.clone().appendTo('#observations-block'); 
           var new_obs = $('.observation').last();
-          new_obs.find('.card-body').css('background-image', 'url('+obs.image_urls[0]+')');
+          new_obs.find('.observation-image').css('background-image', 'url('+obs.image_urls[0]+')');
           new_obs.find('.scientific_name').text(obs.scientific_name);
           new_obs.find('.creator_name').text(obs.creator_name);
           new_obs.find('.observed_at').text(obs.observed_at);

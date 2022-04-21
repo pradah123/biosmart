@@ -33,14 +33,13 @@
   		var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
   		var str = "";
-  		console.log(days);
   		if(days!=0) str += days + " days ";
   		if(days!=0 || hours!=0 ) str += hours + " hours ";
   		if( (days!=0 && hours!=0 ) || minutes!=0) str += minutes + " minutes ";
   		if( (days!=0 && hours!=0 && minutes!=0) || seconds!=0) str += seconds + " seconds"
   		document.getElementById("countdown-<%= c.id %>").innerHTML = str;
 
-    	if (distance < 0) { learInterval(x); document.getElementById("countdown-<%= c.id %>").innerHTML = ""; }
+    	if (distance < 0) { clearInterval(x); document.getElementById("countdown-<%= c.id %>").innerHTML = ""; }
 		}, 1000);
 	 })();
 </script>
