@@ -16,7 +16,7 @@ class Region < ApplicationRecord
 
 
   def get_slug
-    name.blank? ? '' : name.downcase.gsub(/ /, '-')
+    name.blank? ? '' : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
   end
     
   def get_path
