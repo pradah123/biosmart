@@ -2,7 +2,6 @@ require 'timezone_finder'
 
 module Utils
   def self.get_utc_time(lat:, lng:, date_s:, time_s:)
-    Rails.logger.info ">>>>> #{lat}, #{lng} <<<<<"
     if lat == nil
       raise ArgumentError, 'Please provide a valid lat value'
     end
