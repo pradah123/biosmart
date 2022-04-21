@@ -59,6 +59,8 @@ function set_up_observations_modal() {
 
     $.get(_api+'/observations/more'+params, function() {})
     .done(function(data, status) {
+console.log('inside');
+console.log(data);
       if(data['data']==undefined || data['data']['observations']==undefined || data['data']['observations'].length==0) {
         $('#show_more').addClass('d-none');
       } else {
@@ -68,7 +70,7 @@ function set_up_observations_modal() {
         for( var i = 0 ; i < observations.length ; i++ ) {
           var obs = observations[i];
           obs_html.clone().appendTo('#observations-block');
-
+console.log(obs);  
           var new_obs = $('.observation').last();
           new_obs.find('.card-body').css('background-image', 'url('+obs.image_urls[0]+')');
           new_obs.find('.scientific_name').text(obs.scientific_name);
