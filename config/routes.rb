@@ -9,9 +9,9 @@ Rails.application.routes.draw do
   get '/participants', to: 'pages#participations'
   get '/users', to: 'pages#users'
 
-  get '/regions/:region_id/contests/:contest_id/:contest_slug/:region_slug', to: 'pages#region_contest'
-  get '/regions/:id/:slug', to: 'pages#region'
-  get '/contests/:id/:slug', to: 'pages#contest'
+  get '/regions/:region_id/contests/:contest_id(/:contest_slug/:region_slug)', to: 'pages#region_contest'
+  get '/regions/:id(/:slug)', to: 'pages#region'
+  get '/contests/:id(/:slug)', to: 'pages#contest'
 
   namespace :api do
     namespace :v1 do
