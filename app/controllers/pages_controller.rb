@@ -24,28 +24,20 @@ class PagesController < ApplicationController
   end
 
   def region_contest
-    Rails.logger.info "¥n¥n¥n¥n"
-    Rails.logger.info params[:region_id]
-    Rails.logger.info params[:contest_id]    
 
     @region = Region.find_by_id params[:region_id]
-    Rails.logger.info @region
     if @region.nil?
       render :top 
       return
     end
-
-    Rails.logger.info params    
     
     @contest = Contest.find_by_id params[:contest_id]
-    Rails.logger.info @contest
     if @contest.nil?
       render :top 
       return
     end  
 
     @participation = Participation.where region_id: @region.id, contest_id: @contest.id
-    Rails.logger.info @participation
     if @participation.empty?
       render :top 
       return

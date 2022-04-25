@@ -1,11 +1,21 @@
 <% if observations.count>0 %>
-  <div class="row justify-content-center mt-5">
+
+  <div class="row justify-content-center mt-3">
     <div class="col-10">
       <div class="row my-3">
         <div class="col">
         	<div class="row">
-        	  <div class="col h4 text-center proxima section-header mb-3">Recent Sightings</div>
-        	</div>	
+        	  <div class="col h4 text-center proxima section-header mb-3">Recent Observations</div>
+        	</div>
+          <!--div class="row justify-content-center my-5">
+            <div class="col-8">
+              <div class="input-group" id="search">
+                <input type="text" class="form-control" placeholder="Search Observations" autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button"> <img src="<%= asset_path 'cross.svg' %>" class="align-text-top" style="height:24px;"></button>             
+                <button class="btn btn-outline-secondary" type="button"> <img src="<%= asset_path 'search.svg' %>" class="align-text-top" style="height:24px;"></button>
+              </div>
+            </div>
+          </div-->          
         	<div class="row" id="observations-block">
       		  <% observations.each.with_index(1) do |o,i| %>
       		    <%= render partial: 'observation', locals: { o: o, i: i } %>

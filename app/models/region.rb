@@ -80,6 +80,7 @@ class Region < ApplicationRecord
 
     polygon_strings = []
     polygon_geojson.each do |rpj|
+      rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
       coordinates = rpj['coordinates'].map { |c| "#{c['lng']} #{c['lat']}" }.join ', '
       polygon_strings.push "((#{ coordinates }))"
     end

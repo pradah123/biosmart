@@ -28,23 +28,19 @@ $(document).ready(function() {
 function set_up_observations_modal() {
 
   $(document).on('click', '.gallery-link', function() { 
-    var link = $(this);
+    var link = $(this);    
+    $('#gallery-carousel').html('');
+    var urls = JSON.parse( link.attr('data-image-urls') ); 
 
-    link.click(function() {
-      $('#gallery-carousel').html('');
-      var urls = JSON.parse( link.attr('data-image-urls') ); 
+    for( var i=0 ; i<urls.length ; i++ ) {
+      var html = '<div class="carousel-item"><div class="card border-0 p-0 m-0">';
+      html += '<img src="'+urls[i]+'" class="card-img d-block w-100" loading="lazy" alt="...">';
+      html += '</div></div>';
+      $('#gallery-carousel').append(html);
+    } 
 
-      for( var i=0 ; i<urls.length ; i++ ) {
-        var html = '<div class="carousel-item"><div class="card border-0 p-0 m-0">';
-        html += '<img src="'+urls[i]+'" class="card-img d-block w-100" loading="lazy" alt="...">';
-        html += '</div></div>';
-        $('#gallery-carousel').append(html);
-      } 
-
-      $('.carousel-item').first().addClass('active');
-      _gallery_modal.show();
-    });
-      
+    $('.carousel-item').first().addClass('active');
+    _gallery_modal.show();      
   });
 
   $('#show_more').click(function() {
