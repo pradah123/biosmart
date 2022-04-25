@@ -1,7 +1,7 @@
 class Observation < ApplicationRecord
   scope :recent, -> { order created_at: :desc }
   scope :has_image, -> { where.not image_link: nil }
-  scope :has_scientific_name, -> { where.not scientific_name: [nil, 'TBD'] }
+  scope :has_scientific_name, -> { where.not scientific_name: [nil, 'TBD', 'homo sapiens', 'Homo Sapiens', 'Homo sapiens'] }
 
   has_and_belongs_to_many :regions
   has_and_belongs_to_many :participations
