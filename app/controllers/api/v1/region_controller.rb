@@ -58,7 +58,7 @@ module Api::V1
         observations: p.get_nobservations,
         species: p.get_nspecies,
         identifications: p.get_nidentifications,
-        participants: p.get_nparticipants
+        people: p.get_nparticipants
       }
 
       render json: data
