@@ -71,7 +71,6 @@ Rails.logger.info polygon_geojson[:type]
       # loop over circles, and if they have an overlap with the polygon, make a subregion
     end
 
-
   end  
 
 
