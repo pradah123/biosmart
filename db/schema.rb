@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_26_132808) do
+ActiveRecord::Schema.define(version: 2022_04_27_133308) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -202,16 +202,7 @@ ActiveRecord::Schema.define(version: 2022_04_26_132808) do
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
     t.integer "participants_count", default: 0
-    t.string "observation_dot_org_id"
-  end
-
-  create_table "steps", force: :cascade do |t|
-    t.integer "order"
-    t.integer "article_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.string "title"
-    t.text "instruction"
+    t.integer "timezone_offset_mins", default: 0
   end
 
   create_table "subregions", force: :cascade do |t|
@@ -220,14 +211,10 @@ ActiveRecord::Schema.define(version: 2022_04_26_132808) do
     t.integer "data_source_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.float "lat_min"
-    t.float "lat_max"
-    t.float "lng_min"
-    t.float "lng_max"
-    t.float "centre_lat"
-    t.float "centre_lng"
+    t.float "lat"
+    t.float "lng"
     t.float "radius_km"
-    t.float "max_radius_km", default: 50.0
+    t.text "raw_polygon_json"
     t.index ["data_source_id"], name: "index_subregions_on_data_source_id"
     t.index ["region_id"], name: "index_subregions_on_region_id"
   end
