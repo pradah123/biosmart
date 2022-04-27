@@ -2,18 +2,18 @@
 
 rails_env = ENV.fetch("RAILS_ENV", "development")
 
-dir_path = "/Users/peter/Dropbox/Workspace/questagame/biosmart-api"
+dir_path = "."
 
 directory dir_path
 rackup "#{dir_path}/config.ru"
-environment 'test'
+environment rails_env
 
 tag ''
 
 pidfile "#{dir_path}/tmp/pids/puma.pid"
 state_path "#{dir_path}/tmp/pids/puma.state"
 stdout_redirect "#{dir_path}/log/puma_access.log", "#{dir_path}/log/puma_error.log", true
-worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
+worker_timeout 3600 if rails_env == "development"
 
 workers ENV.fetch("WEB_CONCURRENCY") { 2 }
 port ENV.fetch("PORT") { 3000 }

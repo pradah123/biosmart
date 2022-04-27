@@ -49,6 +49,8 @@ module Source
         map_value :id, -> v { "#{APP_ID}-#{v}" }
         rename_keys id: :unique_id
         populate_species_details()
+        map_value :submitted_by_id, -> v { v.to_s }
+        rename_keys submitted_by_id: :creator_id
         rename_keys submitted_by_name: :creator_name
         map_value :date, -> v { DateTime.parse(v).new_offset(0).strftime('%Y-%m-%d %H:%M') }
         rename_keys date: :observed_at
@@ -62,6 +64,7 @@ module Source
           :lat, 
           :lng,
           :scientific_name,
+          :creator_id,
           :common_name,
           :creator_name,
           :image_link,
