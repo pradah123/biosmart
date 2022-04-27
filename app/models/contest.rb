@@ -3,9 +3,8 @@ class Contest < ApplicationRecord
     
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :asc }
-  scope :in_progress, -> { where 'starts_at < ? AND last_submission_accepted_at > ?', Time.now, Time.now }
-  #scope :in_progress, -> { where 'utc_starts_at < ? AND utc_ends_at > ?', Time.now, Time.now }
-  scope :upcoming, -> { where 'starts_at > ?', Time.now } 
+  scope :in_progress, -> { where 'utc_starts_at < ? AND last_submission_accepted_at > ?', Time.now, Time.now }
+  scope :upcoming, -> { where 'utc_starts_at > ?', Time.now } 
   scope :past, -> { where 'last_submission_accepted_at < ?', Time.now }
   
   belongs_to :user, optional: true
@@ -13,15 +12,16 @@ class Contest < ApplicationRecord
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
-  after_create :set_utc_start_and_end_times
   after_save :set_last_submission_accepted_at
 
   enum status: [:online, :offline, :deleted, :completed]
 
   def set_utc_start_and_end_times
-    #update_attribute! utc_starts_at: (participations.pluck(:utc_starts_at).min)
-    #update_attribute! utc_ends_at: (participations.pluck(:utc_ends_at).min)
-  end  
+    if participations.count>0
+      update_column :utc_starts_at, participations.pluck(:starts_at).min
+      update_column :utc_ends_at, participations.pluck(:ends_at).max
+    end
+  end
 
   def set_last_submission_accepted_at
     update_column :last_submission_accepted_at, ends_at if last_submission_accepted_at.nil?
@@ -46,30 +46,36 @@ class Contest < ApplicationRecord
   def add_observation obs
     added = false
 
-    if obs.observed_at>=starts_at && obs.observed_at<ends_at && obs.created_at>=starts_at && obs.created_at<last_submission_accepted_at # in the period of the contest
-      participations.in_competition.each do |participation|
-        if participation.data_sources.include?(obs.data_source) # from one of the requested data sources
-          #if obs.observed_at>=participation.utc_starts_at && obs.observed_at<participation.utc_ends_at && 
-          #    obs.created_at>=participation.utc_starts_at && obs.created_at<participation.utc_last_submission_accepted_at # in the period of the contest
+    participations.in_competition.each do |participation|
+      # from one of the requested data sources
+      if participation.data_sources.include?(obs.data_source) 
+
+        # observed in the period of the contest
+        if obs.observed_at>=participation.starts_at && obs.observed_at<participation.ends_at 
           
-          polygons = participation.region.get_geokit_polygons
+          # submitted in the allowed period  
+          if obs.created_at>=participation.starts_at && obs.created_at<participation.last_submission_accepted_at 
+          
+            polygons = participation.region.get_geokit_polygons
 
-          polygons.each do |polygon|
-            if polygon.contains?(Geokit::LatLng.new obs.lat, obs.lng) # inside one of the region's polygons
+            polygons.each do |polygon|
+              if polygon.contains?(Geokit::LatLng.new obs.lat, obs.lng) # inside one of the region's polygons
               
-              #
-              # this observation is in this contest
-              # add references for this observation to contest, participation, and region
-              #
-              observations << obs      
-              participation.observations << obs
-              participation.region.observations << obs
+                #
+                # this observation is in this contest in time and space
+                # add references for this observation to contest, participation, and region
+                #
 
-              added = true
-              break
+                observations << obs      
+                participation.observations << obs
+                participation.region.observations << obs
+
+                added = true
+                break
+              end
             end
-          end
 
+          end  
         end    
       end
     end

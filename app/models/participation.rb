@@ -7,18 +7,20 @@ class Participation < ApplicationRecord
   has_and_belongs_to_many :data_sources
   has_and_belongs_to_many :observations
   
-  after_save :set_utc_start_and_end_times
+  after_save :set_start_and_end_times
 
   enum status: [:submitted, :accepted, :refused, :removed_by_admin, :removed_by_region] 
 
-  def set_utc_start_and_end_times timezone_mins=0
+  def set_start_and_end_times
     #
-    # contest start and end datetimes are in utc. 
-    # actual start and end are those datetimes in the timezone of the region
+    # contest model start and end datetimes are not utc- they refer to the time in the local time of each region. 
+    # the actual start and end are those datetimes in the timezone of the region, in utc.
     #
-    #update_attribute! utc_starts_at: (contest.starts_at - timezone_mins.minutes)
-    #update_attribute! utc_ends_at: (contest.ends_at - timezone_mins.minutes)
-    #contest.set_utc_start_and_end_times
+    offset = region.timezone_offset_mins.minutes
+    update_column :starts_at, (contest.starts_at - offset)
+    update_column :ends_at, (contest.ends_at - offset)
+    update_column :last_submission_accepted_at, (contest.last_submission_accepted_at - offset)
+    contest.set_utc_start_and_end_times
   end
 
   rails_admin do
@@ -30,6 +32,6 @@ class Participation < ApplicationRecord
       field :data_sources
       field :created_at     
     end
-  end  
+  end
 
 end

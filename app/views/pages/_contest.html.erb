@@ -5,10 +5,10 @@
   		<div class="col h4"><a href="<%= c.get_path %>" class="contest-title-link"><%= c.title %></a></div>
     </div>	  
   	<div class="row mt-3">
-  		<div class="col h6"><%= c.starts_at.strftime '%Y/%m/%d' %> to <%= c.ends_at.strftime '%Y/%m/%d' %></div>
+  		<div class="col h6">For observations made between <%= c.starts_at.strftime '%Y/%m/%d' %> and <%= c.ends_at.strftime '%Y/%m/%d' %></div>
     </div>
   	<div class="row mb-3">
-  		<div class="col h6">Observations accepted up to <%= c.last_submission_accepted_at.strftime '%Y/%m/%d' %></div>
+  		<div class="col h6">Submissions accepted up to <%= c.last_submission_accepted_at.strftime '%Y/%m/%d' %></div>
     </div>
   </div>   		
 	<div class="col-2 d-flex justify-content-end">
