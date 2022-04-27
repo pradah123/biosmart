@@ -21,7 +21,7 @@
           var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
           var _observations = <%= JSON.generate(@region.observations.map { |o| { lat: o.lat, lng: o.lng } }).html_safe %>;
           <% if @region.subregions.count<100 %>
-            var _subregions = <%= JSON.generate(@region.subregions.map { |s| { lat: s.lat, lng: s.lng, radius_metres: (s.radius_km*1000) } }).html_safe %>;
+            //var _subregions = <#%= JSON.generate(@region.subregions.map { |s| { lat: s.lat, lng: s.lng, radius_metres: (s.radius_km*1000) } }).html_safe %>;
           <% else %>
             var _subregions = [];
           <% end %>    
