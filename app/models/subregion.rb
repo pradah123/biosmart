@@ -1,6 +1,6 @@
 class Subregion < ApplicationRecord
   belongs_to :region
-  after_save :compute_geometry
+  # after_save :compute_geometry
 
   def compute_geometry
     polygon_geojson = JSON.generate polygon_geojson_string

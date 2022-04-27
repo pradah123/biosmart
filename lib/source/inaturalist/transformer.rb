@@ -45,6 +45,8 @@ module Source
         copy_keys scientific_name: :accepted_name
         # transform :username & :user_id
         unwrap :user, [:login, :id]
+        map_value :id, -> v { v.to_s }
+        rename_keys id: :creator_id
         rename_keys login: :creator_name
         # transform :photos & :photos_count
         extract_representative_image(:photos, :image_link)
@@ -59,6 +61,7 @@ module Source
           :scientific_name,
           :common_name,
           :accepted_name,
+          :creator_id,
           :creator_name,
           :image_link,
           :lat,
