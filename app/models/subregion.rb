@@ -1,14 +1,23 @@
 class Subregion < ApplicationRecord
   belongs_to :region
-  after_save :compute_geometry
+  belongs_to :data_source, optional: true
+  after_save :update_geometry
 
-  def compute_geometry
-    polygon_geojson = JSON.generate polygon_geojson_string
+  def update_geometry
+Rails.logger.info "here"
+Rails.logger.info raw_polygon_json.inspect
+
+    polygon_geojson = JSON.parse [raw_polygon_json]
+
+Rails.logger.info polygon_geojson.inspect
+Rails.logger.info polygon_geojson['type']
+Rails.logger.info polygon_geojson['coordinates']
+Rails.logger.info polygon_geojson[:type]
 
     # get rectangle which contains polygon
 
-    lats = polygon_geojson['coordinates'].map { |c| c['lat'] }
-    lngs = polygon_geojson['coordinates'].map { |c| c['lng'] }    
+    lats = polygon_geojson['coordinates'].map { |c| c[0] }
+    lngs = polygon_geojson['coordinates'].map { |c| c[1] }    
     lat_min = lats.min
     lat_max = lats.max
     lng_min = lngs.min
@@ -54,15 +63,14 @@ class Subregion < ApplicationRecord
         lat0 = lat_min + 0
         lng0 = lng_min
       end
-      
-      
-
+    
 
       # make hexagonal cover of rectangle
       #   centres at edges
       #   work out the
       # loop over circles, and if they have an overlap with the polygon, make a subregion
     end
+
 
   end  
 

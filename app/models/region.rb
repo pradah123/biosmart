@@ -7,10 +7,10 @@ class Region < ApplicationRecord
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
 
-  after_save :update_polygon_cache
+  after_save :update_polygon_cache, :set_time_zone_from_polygon
   after_create :compute_subregions 
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
-  after_save :adjust_start_and_end_times, if: :saved_change_to_raw_polygon_json
+  after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
 
   enum status: [:online, :deleted]
 
@@ -29,17 +29,61 @@ class Region < ApplicationRecord
 
 
 
+  def set_time_zone_from_polygon
+    polygons = JSON.parse raw_polygon_json
+
+    #
+    # get the centre of the polygons
+    #
+
+    lat_centre = 0
+    lng_centre = 0
+    n = 0
+    polygons.each do |p|
+      lat_centre += p['coordinates'].map { |c| c[0] }.sum
+      lng_centre += p['coordinates'].map { |c| c[1] }.sum
+      n += p['coordinates'].length
+    end
+    return if n==0
+ 
+    lat_centre /= n
+    lng_centre /= n
+
+    #
+    # https://developers.google.com/maps/documentation/timezone/get-started#maps_http_timezone-rb
+    # use api from here to get the timezone offset of this lat,lng in minutes
+    #
+
+    google_api_key = ""
+    url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{lat_centre}%2C#{lng_centre}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
+    offset_mins = 0
+    #begin
+    #  response = HTTParty.get url
+    #  response_json = JSON.parse response.body.force_encoding('UTF-8')
+    #  offset_mins = response_json['rawOffset']
+    #rescue => e
+    #  Rails.logger.error "google api failed for lat,lng = #{lat_centre},#{lng_centre}" 
+    #end    
+
+    update_column :timezone_offset_mins, offset_mins
+    participations.each { |p| p.set_start_and_end_times }  
+  end  
+
+
+
+
+
   def compute_subregions
-    # Peter: we should put the subregion computation here
+    subregions.delete_all
+    polygons = JSON.parse raw_polygon_json
+    polygons.each do |p|
+      Rails.logger.info ">>>>>>>"
+      pp = "{ 'type': 'Polygon', 'coordinates:' #{JSON.generate(p['coordinates'])}"
+      Subregion.create! region_id: id, raw_polygon_json: pp
+    end
   end
 
-  def adjust_start_and_end_times
-    # compute centre of the region
-    # use google api to get the timezone difference in minutes
-    # https://maps.googleapis.com/maps/api/timezone/json?location=39.6034810%2C-119.6822510&timestamp=1331161200&key=AIzaSyDyMJQSW8bBRxhAMYnQcJstMOlKXCnY0WM
-    #timezone_mins = 0
-    #participations.each { |p| p.set_utc_start_and_end_times timezone_mins }
-  end
+
 
   @@polygons_cache = {}
 

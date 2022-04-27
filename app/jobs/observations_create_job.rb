@@ -14,12 +14,17 @@ class ObservationsCreateJob < ApplicationJob
     observations.each do |params|
       obs = Observation.find_by_unique_id params[:unique_id]
       params[:data_source_id] = data_source.id
-
+      image_urls = params.delete :image_urls
+      
       if obs.nil?
-
+ 
         obs = Observation.new params
+        
         if obs.save
           ncreates += 1
+          image_urls.each do |url|
+            ObservationImage.create! observation_id: obs.id, url: url
+          end
         else
           ncreates_failed += 1          
           Delayed::Worker.logger.info "\n\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
@@ -33,11 +38,21 @@ class ObservationsCreateJob < ApplicationJob
 
         obs.attributes = params
         if obs.changed.empty?
-          nupdates_no_change += 1  
+          nupdates_no_change += 1
         else
           nupdates += 1  
           nfields_updated += obs.changed.length
           if obs.save
+
+            current_image_urls = obs.observation_images.pluck :url
+            if current_image_urls-image_urls!=[] 
+              # if the images given are not the same as the ones present, delete the old
+              # ones and remake them
+              obs.observation_images.delete_all
+              image_urls.each do |url|
+                ObservationImage.create! observation_id: obs.id, url: url
+              end
+            end  
 
           else  
             nupdates_failed +=1 
