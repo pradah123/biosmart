@@ -2,6 +2,11 @@ class Observation < ApplicationRecord
   scope :recent, -> { order observed_at: :desc }
   scope :has_image, -> { where.not image_link: nil }
   scope :has_scientific_name, -> { where.not scientific_name: [nil, 'TBD', 'homo sapiens', 'Homo Sapiens', 'Homo sapiens'] }
+  scope :from_observation_org, -> { 
+    joins(:data_source).where(data_sources: { name: 'observation.org' })
+  }
+  scope :has_creator_id, -> { where.not creator_id: nil }
+  scope :without_creator_name, -> { where creator_name: nil }
 
   has_and_belongs_to_many :regions
   has_and_belongs_to_many :participations
