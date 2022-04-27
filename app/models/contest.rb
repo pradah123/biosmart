@@ -3,9 +3,9 @@ class Contest < ApplicationRecord
     
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :asc }
-  scope :in_progress, -> { where 'utc_starts_at < ? AND last_submission_accepted_at > ?', Time.now, Time.now }
+  scope :in_progress, -> { where 'contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'utc_starts_at > ?', Time.now } 
-  scope :past, -> { where 'last_submission_accepted_at < ?', Time.now }
+  scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
   
   belongs_to :user, optional: true
   has_many :participations
