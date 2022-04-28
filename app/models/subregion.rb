@@ -4,41 +4,35 @@ class Subregion < ApplicationRecord
   after_save :update_geometry
 
   def update_geometry
-Rails.logger.info "here"
-Rails.logger.info raw_polygon_json.inspect
+    return unless parent_subregion_id.nil?
 
-    polygon_geojson = JSON.parse [raw_polygon_json]
-
-Rails.logger.info polygon_geojson.inspect
-Rails.logger.info polygon_geojson['type']
-Rails.logger.info polygon_geojson['coordinates']
-Rails.logger.info polygon_geojson[:type]
+    polygon_geojson = JSON.parse raw_polygon_json
 
     # get rectangle which contains polygon
 
-    lats = polygon_geojson['coordinates'].map { |c| c[0] }
-    lngs = polygon_geojson['coordinates'].map { |c| c[1] }    
+    lats = polygon_geojson['coordinates'].map { |c| c[1] }
+    lngs = polygon_geojson['coordinates'].map { |c| c[0] }    
     lat_min = lats.min
     lat_max = lats.max
     lng_min = lngs.min
-    lng_max = lngs.max  
+    lng_max = lngs.max
 
     # get radius of circle which contains rectangle
 
-    r_lat = 0.5*(lat_min+lat_max)
-    r_lng = 0.5*(lng_min+lng_max)
-    centre_lat = lat_min + r_lat
-    centre_lng = lng_min + r_lng
+    r_lat = 0.5*(lat_max-lat_min)
+    r_lng = 0.5*(lng_max-lng_min)
+    centre_lat = 0.5*(lat_max+lat_min)
+    centre_lng = 0.5*(lng_max+lng_min)
 
     centre = Geokit::LatLng.new centre_lat, centre_lng
     edge_along_lat = Geokit::LatLng.new lat_max, centre_lng
     edge_along_lng = Geokit::LatLng.new centre_lat, lng_max
 
-    radius_km = [edge_along_lng.distance_from(centre, units: :kilometres), edge_along_lat.distance_from(centre, units: :kilometres) ].max
+    radius_km = [centre.distance_to(edge_along_lng, units: :kms), centre.distance_to(edge_along_lat, units: :kms) ].max
 
     if radius_km<=max_radius_km
 
-      self.update_columns centre_lat: centre_lat, centre_lng: centre_lng, radius_km: radius_km
+      self.update_columns lat: centre_lat, lng: centre_lng, radius_km: radius_km
 
     else
 
@@ -46,29 +40,64 @@ Rails.logger.info polygon_geojson[:type]
       right_bottom = Geokit::LatLng.new lat_min, lng_max
       right_top = Geokit::LatLng.new lat_max, lng_max
 
-      size_lat = right_bottom.distance_from right_top, units: :kilometres
-      size_lng = left_bottom.distance_from right_bottom, units: :kilometres
+      size_lat = right_bottom.distance_to right_top, units: :kms
+      size_lng = left_bottom.distance_from right_bottom, units: :kms
 
-      n_maxradius_circles_lat = (size_lat/max_radius_km).ceil
+      #
+      # this is the number of circles of max radius it takes to cover the lat and lng 
+      # axes of the bounding box containing the polygon
+      #
+      n_maxradius_circles_lat = (size_lat/max_radius_km).ceil 
       n_maxradius_circles_lng = (size_lng/max_radius_km).ceil
-      if size_lat>size_lng
-        radius_km = size_lat/n_circles
-        n_circles = n_maxradius_circles_lat
-        
-        lat0 = lat_min
-        lng0 = lng_min + 0 
+      
+      # 
+      # compute the radius such that an integer number of
+      # circles fills the smallest edge
+      #
+      if size_lng>size_lat
+        radius_km = size_lng/n_maxradius_circles_lng
       else  
-        n_circles = n_maxradius_circles_lng
-        radius_km = size_lng/n_circles
-        lat0 = lat_min + 0
-        lng0 = lng_min
-      end
-    
+        radius_km = size_lat/n_maxradius_circles_lat
+      end   
 
+      dr_lng_km = radius_km*Math.sqrt(3.0)
+      dr_lat_km = radius_km*1.5
+
+Rails.logger.info right_top.lat
+Rails.logger.info right_top
+Rails.logger.info right_bottom.lat
+Rails.logger.info right_bottom
+Rails.logger.info n_maxradius_circles_lat
+
+
+      dlat = (right_top.lat - right_bottom.lat) / n_maxradius_circles_lat
+      dlng = 1.5*dlat
+      dlat *= Math.sqrt(3.0)
+
+      lat_circle = lat_min + 0.5*dlat
+      lng_circle = lng_min + 0.5*dlng
+
+
+      #dlng = 1.5*(left_bottom.lng - right_bottom.lng) / n_maxradius_circles_lng
+
+      #
       # make hexagonal cover of rectangle
-      #   centres at edges
-      #   work out the
-      # loop over circles, and if they have an overlap with the polygon, make a subregion
+      #
+      n_maxradius_circles_lng.times do |ilng|
+        lat_circle = lat_min
+        n_maxradius_circles_lat.times do |ilat|
+          if ilng==0 && ilat==0
+            update_column :lat, lat_min
+            update_column :lng, lng_min
+            update_column :radius_km, radius_km
+          else            
+            Subregion.create! region_id: self.region_id, parent_subregion_id: self.id, raw_polygon_json: self.raw_polygon_json, lat: lat_circle, lng: lng_circle, radius_km: radius_km
+          end  
+          lat_circle += dlat
+        end
+        lng_circle += dlng  
+      end  
+ 
     end
 
   end  

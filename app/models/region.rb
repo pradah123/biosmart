@@ -67,7 +67,7 @@ class Region < ApplicationRecord
 
     update_column :timezone_offset_mins, offset_mins
     participations.each { |p| p.set_start_and_end_times }  
-  end  
+  end
 
 
 
@@ -77,9 +77,7 @@ class Region < ApplicationRecord
     subregions.delete_all
     polygons = JSON.parse raw_polygon_json
     polygons.each do |p|
-      Rails.logger.info ">>>>>>>"
-      pp = "{ 'type': 'Polygon', 'coordinates:' #{JSON.generate(p['coordinates'])}"
-      Subregion.create! region_id: id, raw_polygon_json: pp
+      Subregion.create! region_id: id, raw_polygon_json: p.to_json
     end
   end
 
@@ -196,6 +194,25 @@ class Region < ApplicationRecord
 
 
 
+
+  def self.reset_datetimes
+    Participation.all.each do |p|
+      unless p.contest.nil?
+        p.update_column :starts_at, p.contest.starts_at
+        p.update_column :ends_at, p.contest.ends_at
+        p.update_column :last_submission_accepted_at, p.contest.last_submission_accepted_at
+      end  
+    end
+
+    Contest.all.each do |c|
+      c.update_column :utc_starts_at, c.starts_at
+      c.update_column :utc_ends_at, c.ends_at
+    end
+
+    Region.all.each do |r|
+      r.set_time_zone_from_polygon
+    end
+  end    
 
   def self.save_img str, id, name
     filename = "#{Rails.root}/public/region-#{id}-#{name}.png"
