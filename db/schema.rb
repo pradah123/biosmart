@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_27_133308) do
+ActiveRecord::Schema.define(version: 2022_04_28_014554) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -215,6 +215,8 @@ ActiveRecord::Schema.define(version: 2022_04_27_133308) do
     t.float "lng"
     t.float "radius_km"
     t.text "raw_polygon_json"
+    t.float "max_radius_km", default: 50.0
+    t.integer "parent_subregion_id"
     t.index ["data_source_id"], name: "index_subregions_on_data_source_id"
     t.index ["region_id"], name: "index_subregions_on_region_id"
   end

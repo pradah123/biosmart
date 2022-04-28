@@ -18,8 +18,8 @@ class Contest < ApplicationRecord
 
   def set_utc_start_and_end_times
     if participations.count>0
-      update_column :utc_starts_at, participations.pluck(:starts_at).min
-      update_column :utc_ends_at, participations.pluck(:ends_at).max
+      update_column :utc_starts_at, participations.pluck(:starts_at).compact.min
+      update_column :utc_ends_at, participations.pluck(:ends_at).compact.max
     end
   end
 
