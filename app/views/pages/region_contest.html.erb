@@ -32,6 +32,7 @@
         <script>  
           var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
           var _observations = <%= JSON.generate(@participation.observations.map { |o| { lat: o.lat, lng: o.lng } }).html_safe %>;
+          var _subregions = [];
         </script>
       </div>
     </div>
