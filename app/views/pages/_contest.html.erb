@@ -50,6 +50,6 @@
 </script>
 <% end %>
 
-<% if c.starts_at<Time.now && !observations_object.nil? %>
+<% if c.starts_at<Time.now && show_stats.nil? || show_stats==true %>
 	<%= render partial: 'statistics', locals: { object: observations_object } %>
 <% end %>
