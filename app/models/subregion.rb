@@ -28,7 +28,7 @@ class Subregion < ApplicationRecord
     edge_along_lat = Geokit::LatLng.new lat_max, centre_lng
     edge_along_lng = Geokit::LatLng.new centre_lat, lng_max
 
-    radius_km = [centre.distance_to(edge_along_lng, units: :kms), centre.distance_to(edge_along_lat, units: :kms) ].max
+    radius_km = Math.sqrt(2)*[centre.distance_to(edge_along_lng, units: :kms), centre.distance_to(edge_along_lat, units: :kms) ].max
 
     if radius_km<=max_radius_km
 
