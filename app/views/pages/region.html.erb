@@ -20,8 +20,8 @@
         <script>  
           var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
           var _observations = <%= JSON.generate(@region.observations.map { |o| { lat: o.lat, lng: o.lng } }).html_safe %>;
-          <% if @region.subregions.count<100 %>
-            var _subregions = <%= JSON.generate(@region.subregions.map { |s| { lat: s.lat, lng: s.lng, radius_metres: (s.radius_km*1000) } }).html_safe %>;
+          <% if @region.subregions.count<1000 %>
+            var _subregions = <%= JSON.generate(@region.subregions.where.not(radius_km: nil).map { |s| { lat: s.lat, lng: s.lng, radius_metres: (s.radius_km*1000) } }).html_safe %>;
           <% else %>
             var _subregions = [];
           <% end %>    
@@ -40,20 +40,21 @@
   </div>
 </div>
 
-<% in_progress = @region.contests.in_progress.ordered_by_starts_at %>
-<% upcoming = @region.contests.upcoming.ordered_by_starts_at %>
-<% contest = in_progress.empty? ? (upcoming.empty? ? nil : upcoming.first) : in_progress.first %>
-<% participation = @region.participations.where(contest: contest.id).first %>
+<%= render partial: 'statistics', locals: { object: @region } %>
 
-<% unless contest.nil? %>
-  <%= render partial: 'statistics', locals: { object: participation } %>
+<% if @region.contests.in_progress.count>0 %>
   <div class="row justify-content-center mt-5">
     <div class="col-10">
       <div class="row">
         <div class="col">
           <div class="row mt-5">
+            <div class="col mb-3 h4 text-center proxima section-header">Contests In Progress</div> 
+          </div>  
+          <div class="row mt-5">
             <div class="col">
-                <%= render partial: 'contest', locals: { c: contest, i: 0, observations_object: participation, show_stats: false, show_more_link: true } %>
+              <% @region.contests.in_progress.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+                <%= render partial: 'contest', locals: { c: c, i: i, observations_object: @region.participations.where(contest_id: c.id).first, show_more_link: true } %>
+              <% end %>
             </div>
           </div>
         </div>      
@@ -63,3 +64,46 @@
 <% end %>
 
 <%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?region_id=#{ @region.id }" } %>
+
+<% if @region.contests.upcoming.count>0 %>
+  <div class="row justify-content-center mt-5">
+    <div class="col-10">
+      <div class="row">
+        <div class="col">
+          <div class="row mt-5">
+            <div class="col mb-3 h4 text-center proxima section-header">Upcoming Contests</div> 
+          </div>  
+          <div class="row mt-5">
+            <div class="col">
+              <% @region.contests.upcoming.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+                <%= render partial: 'contest', locals: { c: c, i: i, observations_object: @region.participations.where(contest_id: c.id).first, show_more_link: true } %>
+              <% end %>
+            </div>    
+          </div>
+        </div>      
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if @region.contests.past.count>0 %>
+  <div class="row justify-content-center mt-5">
+    <div class="col-10">
+      <div class="row">
+        <div class="col">
+          <div class="row mt-5">
+            <div class="col mb-3 h4 text-center proxima section-header">Past Contests</div> 
+          </div>  
+          <div class="row mt-5">
+            <div class="col">
+              <% @region.contests.past.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+                <%= render partial: 'contest', locals: { c: c, i: i, observations_object: @region.participations.where(contest_id: c.id).first, show_more_link: true } %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
