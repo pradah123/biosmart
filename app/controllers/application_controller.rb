@@ -10,6 +10,7 @@ class ApplicationController < ActionController::Base
     @meta_image_width = 800
     @meta_image_height = 2000
     @active_tab = nil
+    @show_banner = false
   end
 
   def get_user

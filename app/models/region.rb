@@ -54,19 +54,25 @@ class Region < ApplicationRecord
     # use api from here to get the timezone offset of this lat,lng in minutes
     #
 
-    google_api_key = ""
-    url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{lat_centre}%2C#{lng_centre}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
+    google_api_key = "AIzaSyDUs2kqzzJeESUQuPKj5LlNQJ1K1PkqiFg"
+    google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
+    url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{lng_centre}%2C#{lat_centre}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
     offset_mins = 0
-    #begin
-    #  response = HTTParty.get url
-    #  response_json = JSON.parse response.body.force_encoding('UTF-8')
-    #  offset_mins = response_json['rawOffset']
-    #rescue => e
-    #  Rails.logger.error "google api failed for lat,lng = #{lat_centre},#{lng_centre}" 
-    #end    
+    begin
+Rails.logger.info url    
+      response = HTTParty.get url
+      response_json = JSON.parse response.body#.force_encoding('UTF-8')
+ Rails.logger.info response_json
+      offset_mins = response_json['rawOffset']
+
+    rescue => e
+      Rails.logger.error "google api failed for lat,lng = #{lat_centre},#{lng_centre}" 
+    end    
 
     update_column :timezone_offset_mins, offset_mins
     participations.each { |p| p.set_start_and_end_times }  
+
+    Rails.logger.info "#{name} : #{timezone_offset_mins}"
   end
 
 
