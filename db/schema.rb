@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_28_014654) do
+ActiveRecord::Schema.define(version: 2022_04_28_115711) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -203,6 +203,7 @@ ActiveRecord::Schema.define(version: 2022_04_28_014654) do
     t.integer "species_count", default: 0
     t.integer "participants_count", default: 0
     t.integer "timezone_offset_mins", default: 0
+    t.integer "observation_dot_org_id"
   end
 
   create_table "subregions", force: :cascade do |t|
