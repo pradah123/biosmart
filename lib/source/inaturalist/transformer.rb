@@ -7,17 +7,6 @@ module Source
       import Dry::Transformer::ArrayTransformations
       import Dry::Transformer::HashTransformations
 
-      def self.extract_representative_image(hash, photo_key, image_key)
-        image_link = nil
-        if hash[photo_key].present? && hash[photo_key].count > 0
-          photo = hash[photo_key].first
-          image_link = photo[:url].gsub("square", "large")
-        end
-        hash.merge({
-          image_key => image_link,
-        })
-      end
-
       def self.add_obs_dttm(hash, key)
         dttm =  hash[:time_observed_at] || 
                 hash[:observed_on_string] || 
@@ -49,7 +38,10 @@ module Source
         rename_keys id: :creator_id
         rename_keys login: :creator_name
         # transform :photos & :photos_count
-        extract_representative_image(:photos, :image_link)
+        map_value :photos, -> images do
+          images&.map { |image| image[:url] } || []
+        end
+        rename_keys photos: :image_urls
         # transform :lat & :lng
         unwrap :geojson, [:coordinates]
         map_value :coordinates, -> v { {lat: v.last, lng: v.first} }
@@ -63,7 +55,7 @@ module Source
           :accepted_name,
           :creator_id,
           :creator_name,
-          :image_link,
+          :image_urls,
           :lat,
           :lng,
           :observed_at,

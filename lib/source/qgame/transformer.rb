@@ -7,17 +7,6 @@ module Source
       import Dry::Transformer::ArrayTransformations
       import Dry::Transformer::HashTransformations
 
-      def self.extract_representative_image(hash, photo_key, image_key)
-        image_link = nil
-        if hash[photo_key].present? && hash[photo_key].count > 0
-          photo = hash[photo_key].first
-          image_link = photo[:main]
-        end
-        hash.merge({
-          image_key => image_link,
-        })
-      end
-
       def self.populate_species_details(hash)
         scientific_name = hash[:category_name]
         common_name = hash[:category_name]
@@ -54,10 +43,12 @@ module Source
         rename_keys submitted_by_name: :creator_name
         map_value :date, -> v { DateTime.parse(v).new_offset(0).strftime('%Y-%m-%d %H:%M') }
         rename_keys date: :observed_at
-        # convert_to_utc(:lat, :lng, :date, :time, :observed_at)
         map_value :expert_comments, -> v { v.count }
         rename_keys expert_comments: :identifications_count
-        extract_representative_image(:images, :image_link)
+        map_value :images, -> images do
+          images&.map { |image| image[:original] } || []
+        end
+        rename_keys images: :image_urls
         accept_keys [
           :unique_id,
           :observed_at,
@@ -67,7 +58,7 @@ module Source
           :creator_id,
           :common_name,
           :creator_name,
-          :image_link,
+          :image_urls,
           :accepted_name,
           :identifications_count
         ]                

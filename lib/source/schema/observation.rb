@@ -9,7 +9,7 @@ module Source
       required(:observed_at).filled(:string)
       required(:identifications_count).filled(:integer)
       
-      optional(:image_link).maybe(:string)
+      optional(:image_urls).maybe(array[:string])
       optional(:common_name).maybe(:string)
       optional(:scientific_name).maybe(:string)
       optional(:accepted_name).maybe(:string)
