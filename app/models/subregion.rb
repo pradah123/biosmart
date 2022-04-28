@@ -1,12 +1,22 @@
 class Subregion < ApplicationRecord
   belongs_to :region
-  belongs_to :data_source, optional: true
+  belongs_to :data_source
   after_save :update_geometry
+
+  def get_query_parameters
+    data_source.get_query_parameters self
+  end  
+
 
   def update_geometry
     return unless parent_subregion_id.nil?
+    return if raw_polygon_json.nil? 
 
     polygon_geojson = JSON.parse raw_polygon_json
+    # if theres no polygon coordinates present, can't compute the subregions
+    return if polygon_geojson['coordinates'].nil? 
+
+
 
     # get rectangle which contains polygon
 
@@ -30,7 +40,7 @@ class Subregion < ApplicationRecord
 
     radius_km = Math.sqrt(2)*[centre.distance_to(edge_along_lng, units: :kms), centre.distance_to(edge_along_lat, units: :kms) ].max
 
-    if radius_km<=max_radius_km
+    if max_radius_km.nil? || radius_km<=max_radius_km
 
       self.update_columns lat: centre_lat, lng: centre_lng, radius_km: radius_km
 
@@ -81,7 +91,9 @@ class Subregion < ApplicationRecord
             update_column :lng, lng_min
             update_column :radius_km, radius_km
           else            
-            Subregion.create! region_id: self.region_id, parent_subregion_id: self.id, raw_polygon_json: self.raw_polygon_json, lat: lat_circle, lng: lng_circle, radius_km: radius_km
+            Subregion.create! region_id: self.region_id, parent_subregion_id: self.id, 
+              data_source_id: self.data_source_id, raw_polygon_json: self.raw_polygon_json, 
+              lat: lat_circle, lng: lng_circle, radius_km: radius_km
           end  
           lat_circle += dlat
         end

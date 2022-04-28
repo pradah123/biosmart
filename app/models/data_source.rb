@@ -8,6 +8,65 @@ class DataSource < ApplicationRecord
   has_many :observations
   has_many :api_request_logs
 
+  #
+  # this is where to control the query parameters format
+  # for each data source
+  #
+
+  def get_query_parameters subregion
+    return {} if subregion.nil?
+
+    case name
+    when 'inaturalist'
+      {
+        lat: subregion.lat,
+        lng: subregion.lng,
+        radius: subregion.radius_km,
+        geo: true,
+        order: "desc",
+        order_by: "observed_on",
+        per_page: 200,
+        page: 1
+      }.to_json
+
+    when 'ebird'
+      {
+        lat: subregion.lat,
+        lng: subregion.lng,
+        dist: subregion.radius_km,
+        sort: "date"
+      }.to_json
+
+    when 'qgame'
+      multipolygon_wkt = Region.get_multipolygon_from_raw_polygon_json_string subregion.raw_polygon_json
+      {
+        multipolygon: multipolygon_wkt, 
+        offset: 0, 
+        limit: 50
+      }.to_json
+
+    when 'observation.org'
+      if subregion.region.observation_dot_org_id.nil?
+        {}
+      else
+        Rails.logger.info "herehere"
+        Rails.logger.info subregion.region.observation_dot_org_id
+        {
+          location_id: (subregion.region.observation_dot_org_id), 
+          offset: 0, 
+          limit: 100
+        }.to_json
+      end
+
+    else
+      {}
+    end     
+  end
+
+
+
+
+
   def fetch_observations region, starts_at, ends_at
     subregions = Subregion.where(region_id: region.id, data_source_id: id)
     subregions.each do |sr|

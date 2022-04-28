@@ -54,25 +54,20 @@ class Region < ApplicationRecord
     # use api from here to get the timezone offset of this lat,lng in minutes
     #
 
-    google_api_key = "AIzaSyDUs2kqzzJeESUQuPKj5LlNQJ1K1PkqiFg"
+    #google_api_key = "AIzaSyDUs2kqzzJeESUQuPKj5LlNQJ1K1PkqiFg"
     google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
     url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{lng_centre}%2C#{lat_centre}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
     offset_mins = 0
     begin
-Rails.logger.info url    
       response = HTTParty.get url
-      response_json = JSON.parse response.body#.force_encoding('UTF-8')
- Rails.logger.info response_json
+      response_json = JSON.parse response.body
       offset_mins = response_json['rawOffset']
-
     rescue => e
       Rails.logger.error "google api failed for lat,lng = #{lat_centre},#{lng_centre}" 
     end    
 
     update_column :timezone_offset_mins, offset_mins
-    participations.each { |p| p.set_start_and_end_times }  
-
-    Rails.logger.info "#{name} : #{timezone_offset_mins}"
+    participations.each { |p| p.set_start_and_end_times }
   end
 
 
@@ -82,8 +77,27 @@ Rails.logger.info url
   def compute_subregions
     subregions.delete_all
     polygons = JSON.parse raw_polygon_json
+
+    # 
+    #  make subregions for all possible data sources- we only need to do this once
+    #  and the data can be reused when required
+    #
+    #  for an object s of type Subregion, the query parameters can 
+    #  be accessed at s.get_query_parameters
+    #
+
     polygons.each do |p|
-      Subregion.create! region_id: id, raw_polygon_json: p.to_json
+      # inaturalist subregion has no limit on the radius
+      Subregion.create! data_source_id: DataSource.find_by_name('inaturalist').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
+
+      # ebird subregions have default 50 km max radius
+      Subregion.create! data_source_id: DataSource.find_by_name('ebird').id, region_id: self.id, raw_polygon_json: p.to_json
+
+      # observation.org does not need a radius- but will use the observation_dot_org_id from the region
+      Subregion.create! data_source_id: DataSource.find_by_name('observation.org').id, region_id: self.id, raw_polygon_json: '{}'
+
+      # questagame does not need a radius- but will use polygon in multipolygon db query format
+      Subregion.create! data_source_id: DataSource.find_by_name('qgame').id, region_id: self.id, raw_polygon_json: p.to_json   
     end
   end
 
@@ -124,7 +138,7 @@ Rails.logger.info url
   end
 
   def self.get_multipolygon_from_raw_polygon_json_string raw_polygon_json_string 
-    polygon_geojson = JSON.generate raw_polygon_json_string 
+    polygon_geojson = JSON.parse raw_polygon_json_string 
 
     polygon_strings = []
     polygon_geojson.each do |rpj|
