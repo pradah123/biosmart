@@ -34,15 +34,17 @@
 
   <body class="d-flex flex-column w-100 h-100">
 
-    <div class="flex-shrink-0 m-0 p-0 py-2 bg-danger text-white d-flex justify-content-center">
-      <div class="container-fluid m-0 p-0">
-        <div class="row p-0 m-0">
-          <div class="col d-flex justify-content-center">
-            We are updating this site and running tests. While the display may change, it's perfectly okay to add and edit data.
+    <% if @show_banner==true %>
+      <div class="flex-shrink-0 m-0 p-0 py-2 bg-danger text-white d-flex justify-content-center">
+        <div class="container-fluid m-0 p-0">
+          <div class="row p-0 m-0">
+            <div class="col d-flex justify-content-center">
+              We are updating this site and running tests. While the display may change, it's perfectly okay to add and edit data.
+            </div>
           </div>
-        </div>
-      </div>  
-    </div> 
+        </div>  
+      </div>
+    <% end %>
 
     <header class="flex-shrink-0 m-0 p-0 py-4 pb-3">
       <div class="container-fluid m-0 p-0">

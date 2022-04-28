@@ -63,22 +63,12 @@ class Subregion < ApplicationRecord
       dr_lng_km = radius_km*Math.sqrt(3.0)
       dr_lat_km = radius_km*1.5
 
-Rails.logger.info right_top.lat
-Rails.logger.info right_top
-Rails.logger.info right_bottom.lat
-Rails.logger.info right_bottom
-Rails.logger.info n_maxradius_circles_lat
-
-
       dlat = (right_top.lat - right_bottom.lat) / n_maxradius_circles_lat
       dlng = 1.5*dlat
       dlat *= Math.sqrt(3.0)
 
       lat_circle = lat_min + 0.5*dlat
       lng_circle = lng_min + 0.5*dlng
-
-
-      #dlng = 1.5*(left_bottom.lng - right_bottom.lng) / n_maxradius_circles_lng
 
       #
       # make hexagonal cover of rectangle
