@@ -27,7 +27,7 @@ class DataSource < ApplicationRecord
         order_by: "observed_on",
         per_page: 200,
         page: 1
-      }.to_json
+      }
 
     when 'ebird'
       {
@@ -35,7 +35,7 @@ class DataSource < ApplicationRecord
         lng: subregion.lng,
         dist: subregion.radius_km.ceil,
         sort: "date"
-      }.to_json
+      }
 
     when 'qgame'
       multipolygon_wkt = Region.get_multipolygon_from_raw_polygon_json subregion.raw_polygon_json
@@ -43,7 +43,7 @@ class DataSource < ApplicationRecord
         multipolygon: multipolygon_wkt, 
         offset: 0, 
         limit: 50
-      }.to_json
+      }
 
     when 'observation.org'
       if subregion.region.observation_dot_org_id.nil?
@@ -53,16 +53,13 @@ class DataSource < ApplicationRecord
           location_id: (subregion.region.observation_dot_org_id), 
           offset: 0, 
           limit: 100
-        }.to_json
+        }
       end
 
     else
       {}
     end     
   end
-
-
-
 
 
   def fetch_observations region, starts_at, ends_at
@@ -92,7 +89,7 @@ class DataSource < ApplicationRecord
 # of observations
 
     begin
-      params = subregion.get_params_dict()
+      params = get_query_parameters subregion
       params[:date_after] = starts_at.strftime('%F')
       params[:date_before] = ends_at.strftime('%F')
       ob_org = ::Source::ObservationOrg.new(**params)
@@ -114,7 +111,7 @@ class DataSource < ApplicationRecord
     # fetch logic here
     Delayed::Worker.logger.info "fetch_inat(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
-      params = subregion.get_params_dict()
+      params = get_query_parameters subregion
       params[:d1] = starts_at.strftime('%F')
       params[:d2] = ends_at.strftime('%F')
       inat = ::Source::Inaturalist.new(**params)
@@ -136,7 +133,7 @@ class DataSource < ApplicationRecord
     # fetch logic here
     Delayed::Worker.logger.info "fetch_ebird(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
-      params = subregion.get_params_dict()
+      params = get_query_parameters subregion
       params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)    
       ebird = ::Source::Ebird.new(**params)
       observations = ebird.get_observations() || []
@@ -153,7 +150,7 @@ class DataSource < ApplicationRecord
     # fetch logic here
     Delayed::Worker.logger.info "fetch_qgame(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
-      params = subregion.get_params_dict()
+      params = get_query_parameters subregion
       params[:start_dttm] = starts_at.strftime('%F')
       params[:end_dttm] = ends_at.strftime('%F')
       qgame = ::Source::QGame.new(**params)    

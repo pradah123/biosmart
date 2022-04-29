@@ -142,13 +142,18 @@ class Region < ApplicationRecord
     return 'MULTIPOLYGON(())' if polygon_geojson['coordinates'].nil?
 
     polygon_strings = []
+    # Hack for cases where input polygon_geojson is a Hash instead of an Array
+    if !polygon_geojson.kind_of?(Array)
+      polygon_geojson = [polygon_geojson]
+    end
     polygon_geojson.each do |rpj|
       rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
       coordinates = rpj['coordinates'].map { |c| "#{c[1]} #{c[0]}" }.join ', ' # check order
+      coordinates = rpj['coordinates'].map { |c| "#{c[0]} #{c[1]}" }.join ','
       polygon_strings.push "((#{ coordinates }))"
     end
 
-    "MULTIPOLYGON( #{ polygon_strings.join ', ' } )"
+    "MULTIPOLYGON(#{ polygon_strings.join ', ' })"
   end
 
   def self.get_raw_polygon_json_string_from_multipolygon multipolygon
