@@ -95,6 +95,12 @@ class DataSource < ApplicationRecord
       ob_org = ::Source::ObservationOrg.new(**params)
       loop do                
           observations = ob_org.get_observations() || []
+
+          #
+          # from peter: this check is not required- 
+          # its a duplicate of the checks inside 
+          # observations_create_job
+          #
           observations = observations.select{ |o| 
             subregion.region.contains? o[:lat], o[:lng]
           }

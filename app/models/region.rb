@@ -2,8 +2,8 @@ class Region < ApplicationRecord
   include CountableStatistics
   
   belongs_to :user
-  has_many :participations
-  has_many :subregions
+  has_many :participations, dependent: :delete_all
+  has_many :subregions, dependent: :delete_all
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
 
@@ -40,8 +40,8 @@ class Region < ApplicationRecord
     lng_centre = 0
     n = 0
     polygons.each do |p|
-      lat_centre += p['coordinates'].map { |c| c[0] }.sum
-      lng_centre += p['coordinates'].map { |c| c[1] }.sum
+      lat_centre += p['coordinates'].map { |c| c[1] }.sum
+      lng_centre += p['coordinates'].map { |c| c[0] }.sum
       n += p['coordinates'].length
     end
     return if n==0

@@ -81,6 +81,17 @@ function set_up_observations_modal() {
 
     return false;  
   });
+
+  $('#search_clear').click(function() {
+    $('#search_input').val();
+  });
+
+  $('#search').click(function() {
+    var q = $('#search_input').val().toLowerCase().trim();
+    if(q.length>0) { Cookies.set('q', q); /*location.reload();*/ }  
+  });
+
+  $('#search_input').val(Cookies.get('q'));
 }
 
 function set_up_contest_page() {
