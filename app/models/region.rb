@@ -137,13 +137,14 @@ class Region < ApplicationRecord
     return false    
   end
 
-  def self.get_multipolygon_from_raw_polygon_json_string raw_polygon_json_string 
-    polygon_geojson = JSON.parse raw_polygon_json_string 
+  def self.get_multipolygon_from_raw_polygon_json raw_polygon_json
+    polygon_geojson = JSON.parse raw_polygon_json
+    return 'MULTIPOLYGON(())' if polygon_geojson['coordinates'].nil?
 
     polygon_strings = []
     polygon_geojson.each do |rpj|
       rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
-      coordinates = rpj['coordinates'].map { |c| "#{c['lng']} #{c['lat']}" }.join ', '
+      coordinates = rpj['coordinates'].map { |c| "#{c[1]} #{c[0]}" }.join ', ' # check order
       polygon_strings.push "((#{ coordinates }))"
     end
 

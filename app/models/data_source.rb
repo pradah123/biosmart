@@ -21,7 +21,7 @@ class DataSource < ApplicationRecord
       {
         lat: subregion.lat,
         lng: subregion.lng,
-        radius: subregion.radius_km,
+        radius: subregion.radius_km.ceil,
         geo: true,
         order: "desc",
         order_by: "observed_on",
@@ -33,12 +33,12 @@ class DataSource < ApplicationRecord
       {
         lat: subregion.lat,
         lng: subregion.lng,
-        dist: subregion.radius_km,
+        dist: subregion.radius_km.ceil,
         sort: "date"
       }.to_json
 
     when 'qgame'
-      multipolygon_wkt = Region.get_multipolygon_from_raw_polygon_json_string subregion.raw_polygon_json
+      multipolygon_wkt = Region.get_multipolygon_from_raw_polygon_json subregion.raw_polygon_json
       {
         multipolygon: multipolygon_wkt, 
         offset: 0, 
@@ -49,8 +49,6 @@ class DataSource < ApplicationRecord
       if subregion.region.observation_dot_org_id.nil?
         {}
       else
-        Rails.logger.info "herehere"
-        Rails.logger.info subregion.region.observation_dot_org_id
         {
           location_id: (subregion.region.observation_dot_org_id), 
           offset: 0, 
