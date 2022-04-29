@@ -39,7 +39,7 @@ module Source
         rename_keys login: :creator_name
         # transform :photos & :photos_count
         map_value :photos, -> images do
-          images&.map { |image| image[:url] } || []
+          images&.map { |image| image[:url]&.gsub("square", "large") } || []
         end
         rename_keys photos: :image_urls
         # transform :lat & :lng
