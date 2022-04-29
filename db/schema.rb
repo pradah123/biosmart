@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_28_115711) do
+ActiveRecord::Schema.define(version: 2022_04_29_011733) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -151,6 +151,7 @@ ActiveRecord::Schema.define(version: 2022_04_28_115711) do
     t.string "creator_name"
     t.datetime "last_submission_accepted_at"
     t.string "creator_id"
+    t.integer "observation_images_count", default: 0
   end
 
   create_table "observations_participations", force: :cascade do |t|
