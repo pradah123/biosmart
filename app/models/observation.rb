@@ -1,10 +1,8 @@
 class Observation < ApplicationRecord
   scope :recent, -> { order observed_at: :desc }
-  scope :has_image, -> { where.not image_link: nil }
+  scope :has_image, -> { where 'observation_images_count > ?', 0 }
   scope :has_scientific_name, -> { where.not scientific_name: [nil, 'TBD', 'homo sapiens', 'Homo Sapiens', 'Homo sapiens'] }
-  scope :from_observation_org, -> { 
-    joins(:data_source).where(data_sources: { name: 'observation.org' })
-  }
+  scope :from_observation_org, -> { joins(:data_source).where(data_sources: { name: 'observation.org' }) }
   scope :has_creator_id, -> { where.not creator_id: nil }
   scope :without_creator_name, -> { where creator_name: nil }
 
