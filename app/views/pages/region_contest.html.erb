@@ -1,11 +1,5 @@
 
 <div class="row justify-content-center">
-  <div class="col d-flex justify-content-center">
-    <img src="<%= @region.logo_image ? @region.logo_image : @region.logo_image_url %>" class="img-fluid" style="width:80px;">
-  </div>
-</div>
-
-<div class="row justify-content-center">
   <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
     <%= @region.name %>
   </div>
@@ -40,9 +34,14 @@
 <% end %>
 
 <div class="row justify-content-center">
-  <div class="col-10 my-5 d-flex justify-content-center h6">
+  <div class="col-10 my-5 h6">
+    <% if @region.logo_image_url || @region.logo_image %>
+      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="height:160px;">
+    <% end %>  
     <%= @region.description.html_safe %>
   </div>
 </div>
+
+<%= render partial: 'statistics', locals: { object: @region.participation.where(contest_id: @contest.id).first } %>
 
 <%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }&region_id=#{ @region.id }" } %>
