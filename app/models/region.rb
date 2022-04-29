@@ -40,8 +40,8 @@ class Region < ApplicationRecord
     lng_centre = 0
     n = 0
     polygons.each do |p|
-      lat_centre += p['coordinates'].map { |c| c[1] }.sum
-      lng_centre += p['coordinates'].map { |c| c[0] }.sum
+      lat_centre += p['coordinates'].map { |c| c[0] }.sum
+      lng_centre += p['coordinates'].map { |c| c[1] }.sum
       n += p['coordinates'].length
     end
     return if n==0
@@ -57,17 +57,18 @@ class Region < ApplicationRecord
     #google_api_key = "AIzaSyDUs2kqzzJeESUQuPKj5LlNQJ1K1PkqiFg"
     google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
     url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{lng_centre}%2C#{lat_centre}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
+
     offset_mins = 0
     begin
       response = HTTParty.get url
       response_json = JSON.parse response.body
       offset_mins = response_json['rawOffset']
+      update_column :timezone_offset_mins, (offset_mins/60)
+      participations.each { |p| p.set_start_and_end_times }
     rescue => e
       Rails.logger.error "google api failed for lat,lng = #{lat_centre},#{lng_centre}" 
     end    
 
-    update_column :timezone_offset_mins, offset_mins
-    participations.each { |p| p.set_start_and_end_times }
   end
 
 
