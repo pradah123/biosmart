@@ -8,7 +8,7 @@ class Contest < ApplicationRecord
   scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
   
   belongs_to :user, optional: true
-  has_many :participations
+  has_many :participations, dependent: :delete_all
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
