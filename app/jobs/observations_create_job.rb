@@ -14,7 +14,7 @@ class ObservationsCreateJob < ApplicationJob
     observations.each do |params|
       obs = Observation.find_by_unique_id params[:unique_id]
       params[:data_source_id] = data_source.id
-      image_urls = params.delete :image_urls
+      image_urls = (params.delete :image_urls) || []
       
       if obs.nil?
  
