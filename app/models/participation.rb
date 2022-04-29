@@ -16,10 +16,16 @@ class Participation < ApplicationRecord
     # contest model start and end datetimes are not utc- they refer to the time in the local time of each region. 
     # the actual start and end are those datetimes in the timezone of the region, in utc.
     #
-    offset = region.timezone_offset_mins.minutes
-    update_column :starts_at, (contest.starts_at - offset)
-    update_column :ends_at, (contest.ends_at - offset)
-    update_column :last_submission_accepted_at, (contest.last_submission_accepted_at - offset)
+    offset = region.timezone_offset_mins.abs.minutes
+    if offset<0
+      update_column :starts_at, (contest.starts_at + offset)
+      update_column :ends_at, (contest.ends_at + offset)
+      update_column :last_submission_accepted_at, (contest.last_submission_accepted_at + offset)
+    else
+      update_column :starts_at, (contest.starts_at - offset)
+      update_column :ends_at, (contest.ends_at - offset)
+      update_column :last_submission_accepted_at, (contest.last_submission_accepted_at - offset)
+    end        
     contest.set_utc_start_and_end_times
   end
 
