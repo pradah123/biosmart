@@ -1,6 +1,6 @@
 <div class="row mt-5">
   <div class="col-2">
-    <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="img-fluid" style="width:70px;" loading="lazy">
+    <img src="<%= r.logo_image_url.nil? ? r.logo_image : r.logo_image_url %>" class="img-fluid" style="width:70px;" loading="lazy">
   </div>
   <div class="col-8">
     <div class="row">
@@ -9,7 +9,7 @@
   </div>
   <div class="col-2 d-flex justify-content-end">
     <% if show_more_link==true %>
-      <!--a href="<#%= r.get_region_contest_path observations_object.contest %>" class="text-muted d-flex align-middle">contest stats</a-->  
+      <a href="<%= r.get_region_contest_path observations_object.contest %>" class="text-muted d-flex align-middle">contest stats</a> 
     <% end %>  
 	</div>
 </div>
