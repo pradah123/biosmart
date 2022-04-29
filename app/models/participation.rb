@@ -37,6 +37,10 @@ Rails.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> timings debug
     contest.set_utc_start_and_end_times
   end
 
+  def is_active?
+    return last_submission_accepted_at.present? && last_submission_accepted_at >= Time.now.utc
+  end
+
   rails_admin do
     list do
       field :id

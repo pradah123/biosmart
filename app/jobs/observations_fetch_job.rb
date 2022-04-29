@@ -6,10 +6,10 @@ class ObservationsFetchJob < ApplicationJob
     
     Contest.in_progress.each do |contest|
       contest.participations.in_competition.each do |participant|
-        participant.data_sources.each do |data_source|
-
-          data_source.fetch_observations participant.region, participant.starts_at, participant.ends_at
-        
+        if participant.is_active?
+          participant.data_sources.each do |data_source|
+            data_source.fetch_observations participant.region, contest.starts_at, contest.ends_at
+          end
         end
       end
     end
