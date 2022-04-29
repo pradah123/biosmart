@@ -98,7 +98,9 @@ class DataSource < ApplicationRecord
           observations = observations.select{ |o| 
             subregion.region.contains? o[:lat], o[:lng]
           }
-          ObservationsCreateJob.perform_later self, observations
+          if observations.present?
+            ObservationsCreateJob.perform_later self, observations
+          end
           break if ob_org.done()
           ob_org.increment_offset()
       end
@@ -121,7 +123,9 @@ class DataSource < ApplicationRecord
         observations = observations.select{ |o| 
           subregion.region.contains? o[:lat], o[:lng]
         }
-        ObservationsCreateJob.perform_later self, observations
+        if observations.present?
+          ObservationsCreateJob.perform_later self, observations
+        end
         inat.increment_page()
       end
     rescue => e
@@ -140,7 +144,9 @@ class DataSource < ApplicationRecord
       observations = observations.select{ |o| 
         subregion.region.contains? o[:lat], o[:lng]
       }
-      ObservationsCreateJob.perform_later self, observations
+      if observations.present?
+        ObservationsCreateJob.perform_later self, observations
+      end
     rescue => e
       Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
@@ -160,7 +166,9 @@ class DataSource < ApplicationRecord
         observations = observations.select{ |o| 
           subregion.region.contains? o[:lat], o[:lng]
         }
-        ObservationsCreateJob.perform_later self, observations
+        if observations.present?
+          ObservationsCreateJob.perform_later self, observations
+        end
         qgame.increment_offset()
       end
     rescue => e
