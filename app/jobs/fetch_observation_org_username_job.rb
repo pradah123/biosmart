@@ -1,6 +1,6 @@
 
 class FetchObservationOrgUsernameJob < ApplicationJob
-  queue_as :default
+  queue_as :queue_fetch_observation_org_username
   
   @@username_cache = {}
 

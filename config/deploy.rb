@@ -36,7 +36,5 @@ set :ssh_options, {
   ]
 }
 
-set :delayed_job_workers, 2
-
 after 'deploy:symlink:release', 'assets:compile'
 after 'puma:restart', 'deploy:restart'

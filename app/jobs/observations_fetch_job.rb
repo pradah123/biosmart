@@ -1,5 +1,5 @@
 class ObservationsFetchJob < ApplicationJob
-  queue_as :default
+  queue_as :queue_observations_fetch
 
   def perform 
     Delayed::Worker.logger.info "\n\n\n\n>>>>>>>>>> fetching observations"
