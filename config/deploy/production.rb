@@ -32,3 +32,8 @@ set :bundle_without, [:development, :test]
 set :rails_env, 'production'
 set :branch, :prod
 set :default_env, { rails_env: "production" }
+
+set :delayed_job_pools, {
+  'queue_observations_fetch' => 1,
+  'queue_observations_create,queue_fetch_observation_org_username' => 2,
+}

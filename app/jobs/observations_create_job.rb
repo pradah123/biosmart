@@ -1,5 +1,5 @@
 class ObservationsCreateJob < ApplicationJob
-  queue_as :default
+  queue_as :queue_observations_create
 
   def perform data_source, observations
     Delayed::Worker.logger.info "\n\n\n\n>>>>>>>>>> processing #{observations.count} observations from #{data_source.name}"
