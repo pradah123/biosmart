@@ -36,7 +36,14 @@ module Source
       # )
       response = HTTParty.get(
         API_URL,
-        query: get_params()
+        query: get_params(),
+        # without query_string_normalizer the query string encodes
+        # multipolygon brackets and qgame api throws 400 error
+        query_string_normalizer: -> (query) {
+          query.map do |key, value|
+            "#{key}=#{value}"
+          end.join('&')
+        },
         # debug_output: $stdout
       )
       if response.success? && !response.body.nil?
