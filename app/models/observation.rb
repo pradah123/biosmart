@@ -15,8 +15,7 @@ class Observation < ApplicationRecord
   after_create :assign_to_contests
   after_update :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
 
-  validates :unique_id, presence: true
-  validates :scientific_name, presence: true
+  validates :unique_id, presence: true  
   validates :lat, presence: true
   validates :lng, presence: true    
   validates :observed_at, presence: true
