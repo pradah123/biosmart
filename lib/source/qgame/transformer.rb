@@ -7,6 +7,17 @@ module Source
       import Dry::Transformer::ArrayTransformations
       import Dry::Transformer::HashTransformations
 
+      def self.populate_identifications_count(hash)
+        # if expert comments present, then identifications count = num of expert comments
+        identifications_count = hash[:expert_comments]&.count || 0
+        if identifications_count < 1 && hash[:scientific_name].present?
+          identifications_count = 1
+        end
+        hash.merge({
+          identifications_count: identifications_count
+        })
+      end
+
       def self.populate_species_details(hash)
         scientific_name = hash[:category_name]
         common_name = hash[:category_name]
@@ -43,8 +54,8 @@ module Source
         rename_keys submitted_by_name: :creator_name
         map_value :date, -> v { DateTime.parse(v).new_offset(0).strftime('%Y-%m-%d %H:%M') }
         rename_keys date: :observed_at
-        map_value :expert_comments, -> v { v.count }
-        rename_keys expert_comments: :identifications_count
+        # should be called after populate_species_details is called
+        populate_identifications_count()
         map_value :images, -> images do
           images&.map { |image| image[:original] } || []
         end

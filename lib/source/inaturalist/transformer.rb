@@ -7,6 +7,16 @@ module Source
       import Dry::Transformer::ArrayTransformations
       import Dry::Transformer::HashTransformations
 
+      def self.populate_identifications_count(hash)
+        identifications_count = hash[:identifications_count] || 0
+        if identifications_count < 1 && hash[:scientific_name].present?
+          identifications_count = 1
+        end
+        hash.merge({
+          identifications_count: identifications_count
+        })
+      end
+
       def self.add_obs_dttm(hash, key)
         dttm =  hash[:time_observed_at] || 
                 hash[:observed_on_string] || 
@@ -48,6 +58,7 @@ module Source
         unwrap :coordinates, [:lat, :lng]
         # transform :obs_dttm
         add_obs_dttm(:observed_at)
+        populate_identifications_count()
         accept_keys [
           :unique_id,
           :scientific_name,
