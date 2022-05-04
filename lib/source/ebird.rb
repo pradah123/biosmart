@@ -65,7 +65,8 @@ module Source
       if @species_code_map[species_code].present?
         scientific_name = @species_code_map[species_code][:sname]
         common_name = @species_code_map[species_code][:cname]
-      end      
+      end
+      identifications_count = (scientific_name.present? ? 1 : 0)
       (date, time) = obs[:obsDt].split(' ')
       return {
         unique_id: obs[:obsId],
@@ -78,7 +79,7 @@ module Source
           lat: lat, lng: lng, date_s: date, time_s: time
         ),
         accepted_name: scientific_name,
-        identifications_count: 1,
+        identifications_count: identifications_count
       }
     end
 
