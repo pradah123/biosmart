@@ -48,12 +48,14 @@ module Api::V1
       else
         observations = Observation.all.has_image.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
       end
-
+      
       observations = observations.map { |obs| {
         scientific_name: obs.scientific_name, 
         creator_name: (obs.creator_name.nil? ? '' : obs.creator_name),
         observed_at: obs.observed_at.strftime('%Y-%m-%d %H:%M'),
-        image_urls: obs.observation_images.pluck(:url)
+        image_urls: obs.observation_images.pluck(:url),
+        lat: obs.lat,
+        lng: obs.lng
       } } 
       
       j = { 'observations': observations }
