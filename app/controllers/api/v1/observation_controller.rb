@@ -51,6 +51,7 @@ module Api::V1
       
       observations = observations.map { |obs| {
         scientific_name: obs.scientific_name, 
+        common_name: obs.common_name,
         creator_name: (obs.creator_name.nil? ? '' : obs.creator_name),
         observed_at: obs.observed_at.strftime('%Y-%m-%d %H:%M'),
         image_urls: obs.observation_images.pluck(:url),
