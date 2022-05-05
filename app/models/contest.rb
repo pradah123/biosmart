@@ -75,7 +75,7 @@ class Contest < ApplicationRecord
                 observations << obs      
                 participation.observations << obs
                 participation.region.observations << obs
-                Observation.add_observation_to_page_caches obs, self, region, participation
+                # Observation.add_observation_to_page_caches obs, self, region, participation
 
                 added = true
                 break
