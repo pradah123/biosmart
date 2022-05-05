@@ -67,7 +67,7 @@ class ObservationsCreateJob < ApplicationJob
       end
     end
 
-    ApiRequestLog.create! job_id: self.job_id, nobservations: observations.length, data_source_id: data_source, ncreates: ncreates, ncreates_failed: ncreates_failed, nupdates: nupdates, nupdates_no_change: nupdates_no_change, nupdates_failed: nupdates_failed  
+    ApiRequestLog.create! job_id: self.job_id, nobservations: observations.length, data_source_id: data_source.id, ncreates: ncreates, ncreates_failed: ncreates_failed, nupdates: nupdates, nupdates_no_change: nupdates_no_change, nupdates_failed: nupdates_failed  
     
     Delayed::Worker.logger.info ">>>>>>>>>> completed\n\n\n\n"
   end

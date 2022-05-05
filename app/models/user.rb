@@ -90,4 +90,32 @@ class User < ApplicationRecord
     end  
   end
 
+
+
+  rails_admin do
+    list do
+      field :id
+      field :organization_name          
+      field :email
+      field :role
+      field :status
+      field :created_at      
+    end
+    edit do 
+      field :organization_name          
+      field :email
+      field :role
+      field :status
+    end
+    show do
+      field :id
+      field :organization_name
+      field :email
+      field :role
+      field :status
+      field :created_at
+    end  
+  end
+
+
 end

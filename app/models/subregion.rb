@@ -85,11 +85,41 @@ class Subregion < ApplicationRecord
 
     end
 
-  end  
+  end
 
-
-  def get_params_dict()
-    return JSON.parse(params_json, symbolize_names: true)
+  rails_admin do
+    list do
+      field :id
+      field :region          
+      field :data_source
+      field :lat
+      field :lng
+      field :radius_km
+      field :max_radius_km
+      field :raw_polygon_json
+      field :created_at      
+    end
+    edit do 
+      field :user
+      field :region          
+      field :data_source
+      field :lat
+      field :lng
+      field :radius_km
+      field :max_radius_km
+      field :raw_polygon_json 
+    end
+    show do 
+      field :id
+      field :region          
+      field :data_source
+      field :lat
+      field :lng
+      field :radius_km
+      field :max_radius_km
+      field :raw_polygon_json
+      field :created_at  
+    end  
   end
 
 end

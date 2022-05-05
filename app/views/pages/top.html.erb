@@ -9,7 +9,7 @@
   </div>
 </div> 
 
-<% if Contest.in_progress.count>0 %>
+<% if Contest.in_progress.online.count>0 %>
   <div class="row justify-content-center">
     <div class="col-10">
       <div class="row my-3">
@@ -19,7 +19,7 @@
           </div>  
           <div class="row">
             <div class="col">
-              <% Contest.in_progress.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+              <% Contest.in_progress.online.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
                 <%= render partial: 'contest_top_page', locals: { c: c, i: i, observations_object: c, show_more_link: false } %>
               <% end %>
             </div>    
@@ -30,7 +30,7 @@
   </div>
 <% end %>
 
-<% if Contest.upcoming.count>0 %>
+<% if Contest.upcoming.online.count>0 %>
   <div class="row justify-content-center mt-5">
     <div class="col-10">
       <div class="row my-3">
@@ -40,7 +40,7 @@
           </div>  
           <div class="row">
             <div class="col">
-              <% Contest.upcoming.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+              <% Contest.upcoming.online.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
                 <%= render partial: 'contest_top_page', locals: { c: c, i: i, observations_object: c, show_more_link: false } %>
               <% end %>
             </div>    
@@ -51,7 +51,7 @@
   </div>
 <% end %>
 
-<% if Contest.past.count>0 %>
+<% if Contest.past.online.count>0 %>
   <div class="row justify-content-center mt-5">
     <div class="col-10">
       <div class="row my-3">
@@ -61,7 +61,7 @@
           </div>  
           <div class="row">
             <div class="col">
-              <% Contest.past.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
+              <% Contest.past.online.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
                 <%= render partial: 'contest_top_page', locals: { c: c, i: i, observations_object: c, show_more_link: false } %>
               <% end %>
             </div>    

@@ -3,24 +3,7 @@ class PagesController < ApplicationController
   @@nobservations = 33
 
   def top
-    @observations = Observation.all.has_image.has_scientific_name.recent.first @@nobservations
-  end
-
-  def regions
-    if @user.nil?
-      render :top 
-    else
-      @regions = @user.admin? ? Region.all : @user.regions
-    end
-  end
-
-  def contests
-    if @user.nil?
-      render :top
-    else
-      @contests = @user.admin? ? Contest.all : @user.contests
-      @contests_through_regions = @user.regions.map { |r| r.contests }.flatten.uniq
-    end
+    @observations = Observation.get_observations
   end
 
   def region_contest
@@ -44,7 +27,39 @@ class PagesController < ApplicationController
     end  
     
     @participation = @participation.first
-    @observations = @participation.observations.has_image.has_scientific_name.recent.first @@nobservations
+    @observations = Observation.get_observations @participation
+  end
+
+  def region
+    @region = Region.find_by_id params[:id]
+    render :top if @region.nil?
+    @observations = Observation.get_observations @region
+  end
+
+  def contest
+    @contest = Contest.find_by_id params[:id]
+    render :top if @contest.nil?
+    @observations = Observation.get_observations @contest
+  end
+
+
+
+
+  def regions
+    if @user.nil?
+      render :top 
+    else
+      @regions = @user.admin? ? Region.all : @user.regions
+    end
+  end
+
+  def contests
+    if @user.nil?
+      render :top
+    else
+      @contests = @user.admin? ? Contest.all : @user.contests
+      @contests_through_regions = @user.regions.map { |r| r.contests }.flatten.uniq
+    end
   end
 
   def participations
@@ -61,18 +76,6 @@ class PagesController < ApplicationController
     else
       @users = User.all
     end  
-  end
-
-  def region
-    @region = Region.find_by_id params[:id]
-    render :top if @region.nil?
-    @observations = @region.observations.has_image.has_scientific_name.recent.first @@nobservations
-  end
-
-  def contest
-    @contest = Contest.find_by_id params[:id]
-    render :top if @contest.nil?
-    @observations = @contest.observations.has_image.has_scientific_name.recent.first @@nobservations
   end
 
 end

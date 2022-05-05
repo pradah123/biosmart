@@ -50,6 +50,20 @@ Rails.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> timings debug
       field :data_sources
       field :created_at     
     end
+    edit do
+      field :region          
+      field :contest
+      field :status
+      field :data_sources
+    end
+    show do
+      field :id
+      field :region          
+      field :contest
+      field :status
+      field :data_sources
+      field :created_at     
+    end    
   end
 
 end
