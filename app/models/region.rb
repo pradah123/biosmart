@@ -161,28 +161,34 @@ class Region < ApplicationRecord
    
     polygons = multipolygon.gsub('MULTIPOLYGON((', '').gsub('))', '').split '('
 
-    geojson = {}
-    geojson['type'] = 'Polygon'
-    geojson['coordinates'] = []
+    geojson_polygons = []
 
     polygons.each do |p|
-      #Rails.logger.info ">>>>"
-      #Rails.logger.info p
+
+      geojson = {}
+      geojson['type'] = 'Polygon'
+      geojson['coordinates'] = []
+
+      Rails.logger.info ">>>>"
+      Rails.logger.info p
       parts = p.gsub(')', '').strip.split ','
+      Rails.logger.info parts.inspect
       parts.each do |c|
-        #Rails.logger.info c
+        Rails.logger.info c
         coordinates = c.split ' '
-        #Rails.logger.info coordinates
-        arr = [coordinates[0].to_f, coordinates[1].to_f]
-        #Rails.logger.info arr
-        #Rails.logger.info "\n\n"
+        Rails.logger.info coordinates
+        arr = [coordinates[0].strip.to_f, coordinates[1].strip.to_f]
+        Rails.logger.info arr
+        Rails.logger.info "\n\n"
         geojson['coordinates'].push arr
-      end  
+      end
+
+      geojson_polygons.push geojson unless geojson['coordinates'].empty? 
     end  
     
     #Rails.logger.info geojson
 
-    JSON.generate geojson
+    JSON.generate geojson_polygons
   end
 
   def self.get_geojson_from_osm relation_id
