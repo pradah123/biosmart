@@ -185,4 +185,20 @@ class DataSource < ApplicationRecord
     end
   end 
   
+  rails_admin do
+    list do
+      field :id
+      field :name
+      field :created_at              
+    end
+    edit do
+      field :name
+    end
+    show do
+      field :id
+      field :name
+      field :created_at
+    end
+  end 
+
 end

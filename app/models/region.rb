@@ -15,16 +15,19 @@ class Region < ApplicationRecord
   enum status: [:online, :deleted]
 
 
-  def get_slug
-    name.blank? ? '' : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+  def set_slug
+    if slug.nil?
+      slug = name.blank? ? '' : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+      update_column :slug, slug
+    end  
   end
     
   def get_path
-    "/regions/#{id}/#{ get_slug }"
+    "/regions/#{id}/#{slug}"
   end  
 
   def get_region_contest_path contest
-    "/regions/#{id}/contests/#{ contest.id }/#{ contest.get_slug }/#{ get_slug }"
+    "/regions/#{id}/contests/#{contest.id}/#{contest.slug}/#{slug}"
   end  
 
 
@@ -294,6 +297,37 @@ class Region < ApplicationRecord
       field :raw_polygon_json
       field :created_at      
     end
+    edit do 
+      field :user
+      field :status
+      field :name
+      field :slug     
+      field :description
+      field :region_url
+      field :population
+      field :logo_image_url
+      field :header_image_url
+      field :raw_polygon_json
+      field :observation_dot_org_id
+      field :inaturalist_place_id
+      field :created_at
+    end
+    show do 
+      field :id      
+      field :user
+      field :status
+      field :name
+      field :slug     
+      field :description
+      field :region_url
+      field :population
+      field :logo_image_url
+      field :header_image_url
+      field :raw_polygon_json
+      field :observation_dot_org_id
+      field :inaturalist_place_id
+      field :created_at
+    end  
   end
 
 end

@@ -22,8 +22,37 @@ $(document).ready(function() {
   set_up_region_page();
   set_up_contest_page();
   set_up_observations_modal();
+  set_up_counters();
 });
 
+function set_up_counters() {
+  $('.countdown').each(function() {
+    var starts_at = $(this).attr('data-starts-at');
+    var id = $(this).attr('data-id');
+
+    var x = setInterval(function() {
+      var countDownDate = new Date(starts_at).getTime();
+      var now = new Date().getTime();
+      var distance = countDownDate - now;
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      var str = "";
+      if(days!=0) str += days + " days ";
+      if(days!=0 || hours!=0 ) str += hours + " hours ";
+      if( (days!=0 && hours!=0 ) || minutes!=0) str += minutes + " minutes ";
+      if( (days!=0 && hours!=0 && minutes!=0) || seconds!=0) str += seconds + " seconds"
+
+      document.getElementById("countdown-"+id).innerHTML = str;
+      if (distance<0) { 
+        clearInterval(x); 
+        document.getElementById("countdown-"+id).innerHTML = ""; 
+      } 
+    }, 1000);
+  });
+}
 
 function set_up_observations_modal() {
 

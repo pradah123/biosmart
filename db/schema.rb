@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_29_111055) do
+ActiveRecord::Schema.define(version: 2022_05_05_045442) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -72,14 +72,15 @@ ActiveRecord::Schema.define(version: 2022_04_29_111055) do
     t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "sightings_count", default: 0
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
-    t.integer "participants_count", default: 0
     t.datetime "final_at"
     t.datetime "last_submission_accepted_at"
     t.datetime "utc_starts_at"
     t.datetime "utc_ends_at"
+    t.string "slug"
+    t.integer "observations_count", default: 0
+    t.integer "people_count", default: 0
   end
 
   create_table "contests_observations", force: :cascade do |t|
@@ -175,13 +176,13 @@ ActiveRecord::Schema.define(version: 2022_04_29_111055) do
     t.integer "status", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "sightings_count", default: 0
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
-    t.integer "participants_count", default: 0
     t.datetime "starts_at"
     t.datetime "ends_at"
     t.datetime "last_submission_accepted_at"
+    t.integer "observations_count", default: 0
+    t.integer "people_count", default: 0
   end
 
   create_table "regions", force: :cascade do |t|
@@ -199,12 +200,13 @@ ActiveRecord::Schema.define(version: 2022_04_29_111055) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "inaturalist_place_id"
-    t.integer "sightings_count", default: 0
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
-    t.integer "participants_count", default: 0
     t.integer "timezone_offset_mins", default: 0
     t.integer "observation_dot_org_id"
+    t.string "slug"
+    t.integer "observations_count", default: 0
+    t.integer "people_count", default: 0
   end
 
   create_table "subregions", force: :cascade do |t|

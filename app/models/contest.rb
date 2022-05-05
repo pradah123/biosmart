@@ -6,13 +6,14 @@ class Contest < ApplicationRecord
   scope :in_progress, -> { where 'contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'utc_starts_at > ?', Time.now } 
   scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
+  scope :online, -> { where status: Contest.statuses[:online] }
   
   belongs_to :user, optional: true
   has_many :participations, dependent: :delete_all
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
-  after_save :set_last_submission_accepted_at
+  after_save :set_last_submission_accepted_at, :set_slug
 
   enum status: [:online, :offline, :deleted, :completed]
 
@@ -29,16 +30,21 @@ class Contest < ApplicationRecord
 
 
 
-  def get_slug
-    title.nil? ? '' : title.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+
+
+  def set_slug
+    if slug.nil?
+      slug = title.nil? ? '' : title.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+      update_column :slug, slug
+    end  
   end
     
   def get_path
-    "/contests/#{id}/#{ get_slug }"
+    "/contests/#{id}/#{slug}"
   end  
 
   def get_region_contest_path region
-    region.get_region_contest_path contest
+    region.get_region_contest_path self
   end  
 
 
@@ -69,6 +75,7 @@ class Contest < ApplicationRecord
                 observations << obs      
                 participation.observations << obs
                 participation.region.observations << obs
+                Observation.add_observation_to_page_caches obs, self, region, participation
 
                 added = true
                 break
@@ -95,12 +102,36 @@ class Contest < ApplicationRecord
   rails_admin do
     list do
       field :id
-      field :title          
+      field :title
       field :user
       field :starts_at
       field :ends_at
       field :last_submission_accepted_at    
       field :created_at              
+    end
+    edit do
+      field :user
+      field :status
+      field :title
+      field :slug
+      field :description
+      field :starts_at
+      field :ends_at
+      field :last_submission_accepted_at   
+    end
+    show do
+      field :id      
+      field :user
+      field :status
+      field :title
+      field :slug
+      field :description
+      field :starts_at
+      field :ends_at
+      field :last_submission_accepted_at 
+      field :utc_starts_at
+      field :utc_ends_at
+      field :created_at  
     end
   end  
 
