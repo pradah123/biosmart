@@ -7,7 +7,7 @@ module CountableStatistics
     end  
    
     def get_nspecies
-      self.observations.pluck(:accepted_name).uniq.count
+      self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
     end  
     
     def get_nidentifications
