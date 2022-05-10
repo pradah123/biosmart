@@ -19,10 +19,14 @@ staging:
         - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
         - git config --global user.email "priyankgt@gmail.com"
         - git config --global user.name "Priyank"
-        - gem install bundler
-        - bundle install
+        - gem install capistrano
+        - gem install capistrano-bundler
+        - gem install capistrano-rails
+        - gem install capistrano-rvm
+        - gem install capistrano3-puma
+        - gem install capistrano3-delayed-job -v '~> 1.0'
     script:
-        - bundle exec cap staging deploy
+        - cap staging deploy
     only:
         - main
 
@@ -43,9 +47,13 @@ production:
         - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
         - git config --global user.email "priyankgt@gmail.com"
         - git config --global user.name "Priyank"
-        - gem install bundler
-        - bundle install
+        - gem install capistrano
+        - gem install capistrano-bundler
+        - gem install capistrano-rails
+        - gem install capistrano-rvm
+        - gem install capistrano3-puma
+        - gem install capistrano3-delayed-job -v '~> 1.0'
     script:
-        - bundle exec cap production deploy
+        - cap production deploy
     only:
         - prod
