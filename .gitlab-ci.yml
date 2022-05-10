@@ -3,7 +3,7 @@ image: ruby:latest
 before_script:
     - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
     - eval $(ssh-agent -s)
-    - ssh-add <(echo -e "$SSH_PRIVATE_KEY")
+    - echo "$DEPLOY_PRIVATE_KEY" | base64 -d | ssh-add -
     - gem install capistrano
 
 stages:
