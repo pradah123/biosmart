@@ -14,11 +14,11 @@ staging:
     script:
         - cap staging deploy user=${GITLAB_USER_EMAIL} branch=main
     only:
-        - develop
+        - main
 
 production:
     stage: deploy
     script:
         - cap production deploy user=${GITLAB_USER_EMAIL} branch=prod
     only:
-        - tags
+        - prod
