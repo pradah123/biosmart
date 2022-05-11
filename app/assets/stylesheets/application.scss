@@ -28,7 +28,9 @@
 }  
 
 header {
-  background: url('https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/background.jpeg') no-repeat center center / cover;    
+  /*background: url('https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/background.jpeg') no-repeat center center / cover;*/
+  background: black;
+  color: white;
 }
 
 .fw-home, .fw-header-link { font-size: 13px; font-weight: 300; letter-spacing: 2px; }

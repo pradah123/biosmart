@@ -34,6 +34,7 @@ class Observation < ApplicationRecord
 
 
   @@page_cache = {}
+  @@page_cache_last_update = {}
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
   @@nobservations_per_page = 33
 
@@ -52,12 +53,14 @@ class Observation < ApplicationRecord
 
   def self.get_observations obj=nil
     key = get_key obj
-    if @@page_cache[key].blank?
+    now = Time.now
+    if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+5.minutes)
       if obj.nil?
         @@page_cache[key] = Observation.all.has_image.has_scientific_name.recent.first @@nobservations_per_page
       else
         @@page_cache[key] = obj.observations.has_image.has_scientific_name.recent.first @@nobservations_per_page
-      end  
+      end
+      @@page_cache_last_update[key] = now
     end
     @@page_cache[key]
   end

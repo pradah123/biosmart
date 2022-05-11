@@ -1,0 +1,2 @@
+class BannerMessage < ApplicationRecord
+end

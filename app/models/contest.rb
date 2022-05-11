@@ -2,7 +2,7 @@ class Contest < ApplicationRecord
   include CountableStatistics
     
   scope :ordered_by_creation, -> { order created_at: :desc }
-  scope :ordered_by_starts_at, -> { order starts_at: :asc }
+  scope :ordered_by_starts_at, -> { order starts_at: :desc }
   scope :in_progress, -> { where 'contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now }
   scope :upcoming, -> { where 'utc_starts_at > ?', Time.now } 
   scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
@@ -72,10 +72,10 @@ class Contest < ApplicationRecord
                 # add references for this observation to contest, participation, and region
                 #
 
-                observations << obs      
-                participation.observations << obs
-                participation.region.observations << obs
-                # Observation.add_observation_to_page_caches obs, self, region, participation
+                add_and_compute_statistics obs
+                participation.add_and_compute_statistics obs
+                participation.region.add_and_compute_statistics obs
+                Observation.add_observation_to_page_caches obs, self, region, participation
 
                 added = true
                 break
