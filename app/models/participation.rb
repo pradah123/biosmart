@@ -1,6 +1,9 @@
 class Participation < ApplicationRecord
   include CountableStatistics
+
   scope :in_competition, -> { where status: Participation.statuses[:accepted] }
+  scope :ordered_by_nobservations, -> { order observation_count: :desc }
+
   belongs_to :user
   belongs_to :region
   belongs_to :contest
