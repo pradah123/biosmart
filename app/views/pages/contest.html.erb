@@ -23,7 +23,7 @@
           </div>  
           <div class="row">
             <div class="col mt-5">
-              <% @contest.participations.ordered_by_nobservations.each.with_index(1) do |p,i| %>
+              <% @contest.participations.ordered_by_observations_count.each.with_index(1) do |p,i| %>
                 <%= render partial: 'region', locals: { r: p.region, i: i, observations_object: p, show_more_link: false } %>
               <% end %>
             </div>    
