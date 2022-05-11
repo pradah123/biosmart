@@ -13,8 +13,8 @@
 
 
 <div class="row justify-content-center">
-  <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center my-5">
-    <%= @contest.title %>
+  <div class="col-12 col-lg-10 d-flex justify-content-center text-center my-5">
+    <a href="<%= @contest.get_region_contest_path @region %>" class="proxima section-header h2 fw-bold text-dark"><%= @contest.title %></a>
   </div>
 </div>
 

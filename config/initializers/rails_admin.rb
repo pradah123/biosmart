@@ -37,10 +37,10 @@ RailsAdmin.config do |config|
   config.navigation_static_label = ''
   config.navigation_static_links = { 'Go to the Top Page' => '/' }
 
-  #config.authorize_with do
-  #  unless @user && @user.admin?
-  #    redirect_to '/'
-  #  end  
-  #end
+  config.authorize_with do
+    unless @user && @user.admin?
+      redirect_to '/'
+    end  
+  end
 
 end

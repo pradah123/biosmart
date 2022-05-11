@@ -55,10 +55,10 @@ module Api::V1
           
       data = { 
         title: r.name,
-        observations: p.get_nobservations,
-        species: p.get_nspecies,
-        identifications: p.get_nidentifications,
-        people: p.get_nparticipants
+        observations: p.observations_count,
+        species: p.species_count,
+        identifications: p.identifications_count,
+        people: p.people_count
       }
 
       render json: data

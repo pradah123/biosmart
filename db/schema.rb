@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_05_05_045442) do
+ActiveRecord::Schema.define(version: 2022_05_11_031802) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -61,6 +61,15 @@ ActiveRecord::Schema.define(version: 2022_05_05_045442) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "job_id"
+  end
+
+  create_table "banner_messages", force: :cascade do |t|
+    t.string "message"
+    t.string "background_colour", default: "#dc3545"
+    t.string "text_colour", default: "#ffffff"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.boolean "online", default: true
   end
 
   create_table "contests", force: :cascade do |t|

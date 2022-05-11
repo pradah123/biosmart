@@ -34,12 +34,12 @@
 
   <body class="d-flex flex-column w-100 h-100">
 
-    <% if @show_banner==true %>
-      <div class="flex-shrink-0 m-0 p-0 py-2 bg-danger text-white d-flex justify-content-center">
+    <% @banner_messages.each do |m| %>
+      <div class="flex-shrink-0 m-0 p-0 py-2 d-flex justify-content-center" style="background-color: <%= m.background_colour %>">
         <div class="container-fluid m-0 p-0">
           <div class="row p-0 m-0">
-            <div class="col d-flex justify-content-center">
-              We are updating this site and running tests. While the display may change, it's perfectly okay to add and edit data.
+            <div class="col d-flex justify-content-center" style="color:<%= m.text_colour %>">
+              <%= m.message %>
             </div>
           </div>
         </div>  
