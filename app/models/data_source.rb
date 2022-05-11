@@ -154,7 +154,10 @@ class DataSource < ApplicationRecord
         subregion.region.contains? o[:lat], o[:lng]
       }
       if observations.present?
-        ObservationsCreateJob.perform_later self, observations
+        # Divide eBird observations in chunks of 400 instead of
+        # processing all the observations together
+        chunks = observations.each_slice(200).to_a
+        chunks.each{ |chunk| ObservationsCreateJob.perform_later self, chunk }
       end
     rescue => e
       Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"

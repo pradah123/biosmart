@@ -2,7 +2,9 @@ class Observation < ApplicationRecord
   scope :recent, -> { order observed_at: :desc }
   scope :has_image, -> { where 'observation_images_count > ?', 0 }
   scope :has_scientific_name, -> { where.not scientific_name: @@filtered_scientific_names }
+  scope :has_accepted_name, -> { where.not accepted_name: @@filtered_scientific_names }
   scope :from_observation_org, -> { joins(:data_source).where(data_sources: { name: 'observation.org' }) }
+  scope :ignore_species_code, -> { where('accepted_name != lower(accepted_name)') }
   scope :has_creator_id, -> { where.not creator_id: nil }
   scope :without_creator_name, -> { where creator_name: nil }
 

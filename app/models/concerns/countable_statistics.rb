@@ -6,6 +6,14 @@ module CountableStatistics
       self.observations << obs      
       reset_statistics
     end  
+   
+    def get_nspecies
+      self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+    end  
+    
+    def get_nidentifications
+      self.observations.pluck(:identifications_count).sum
+    end
 
     def reset_statistics
       update_column :observations_count, self.observations.count

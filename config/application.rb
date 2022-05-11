@@ -23,7 +23,14 @@ module Biosmart
     config.action_dispatch.cookies_same_site_protection = :strict
 
     config.active_job.queue_adapter = :delayed_job
-    config.active_job.queue_name_prefix = "observations_#{Rails.env}"    
+    config.active_job.queue_name_prefix = "observations_#{Rails.env}"
+
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins '*'
+        resource '*', :headers => :any, :methods => [:get, :post, :options]
+      end
+    end
     
     #config.action_mailer.delivery_method = :smtp
     #config.action_mailer.smtp_settings = {
