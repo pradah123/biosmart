@@ -75,7 +75,7 @@ class Contest < ApplicationRecord
                 add_and_compute_statistics obs
                 participation.add_and_compute_statistics obs
                 participation.region.add_and_compute_statistics obs
-                Observation.add_observation_to_page_caches obs, self, region, participation
+                # Observation.add_observation_to_page_caches obs, self, region, participation
 
                 added = true
                 break
