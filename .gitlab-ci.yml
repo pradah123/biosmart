@@ -32,7 +32,6 @@ staging:
 
 production:
     stage: deploy
-    when: manual
     environment:
         name: production
         url: https://$PRODUCTION_HOST
