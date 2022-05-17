@@ -53,7 +53,7 @@ module Api::V1
         scientific_name: obs.scientific_name, 
         common_name: obs.common_name,
         creator_name: (obs.creator_name.nil? ? '' : obs.creator_name),
-        observed_at: obs.observed_at.strftime('%Y-%m-%d %H:%M'),
+        observed_at: "#{ obs.observed_at.strftime '%Y-%m-%d %H:%M' } UTC",
         image_urls: obs.observation_images.pluck(:url),
         lat: obs.lat,
         lng: obs.lng
@@ -62,6 +62,13 @@ module Api::V1
       j = { 'observations': observations }
       render_success j
     end
+
+    def region
+      r = Region.find_by_id params[:id]
+      j = {}
+      j['observations'] = r.nil? ? [] : r.observations.map { |o| { lat: o.lat, lng: o.lng } }
+      render_success j
+    end  
 
   end
 end 

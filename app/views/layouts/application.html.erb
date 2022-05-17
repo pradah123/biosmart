@@ -83,8 +83,31 @@
     </main>
 
     <footer class="footer mt-auto pt-5 border-0">
-      <div class="row justify-content-center">
+      <div class="row justify-content-center mb-5">
+        <div class="col-12 col-md-8 proxima text-uppercase d-flex justify-content-center">
+          Powered by Observations from
+        </div>  
+      </div>  
+      <div class="row justify-content-center mb-5">
+        <div class="col-12 col-md-8">
+          <div class="row"> 
+            <div class="col">
+              <img src="<%= asset_path 'inaturalist.jpeg' %>" class="w-50 m-auto d-block">
+            </div>
+            <div class="col">
+              <img src="<%= asset_path 'ebird.jpeg' %>" class="w-50 m-auto d-block">
+            </div>
+            <div class="col">
+              <img src="<%= asset_path 'observationdotorg.png' %>" class="w-50 m-auto mt-5 d-block">
+            </div> 
+            <div class="col">
+              <img src="<%= asset_path 'questagame.png' %>" class="w-50 m-auto d-block">
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div class="row justify-content-center mt-5">
         <div class="col-12 col-md-8">      
           <div class="row">
 
@@ -234,6 +257,16 @@
               <span class="visually-hidden">Next</span>
             </button>                        
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="processing_modal" style="background: transparent;">
+      <div class="modal-dialog modal-fullscreen" style="background: transparent;">
+        <div class="modal-content" style="background: transparent;">
+          <div class="spinner-border text-warning" role="status" style="margin: auto;" >
+            <span class="visually-hidden">Loading...</span>
+          </div>          
         </div>
       </div>
     </div>

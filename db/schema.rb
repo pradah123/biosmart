@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_05_11_031802) do
+ActiveRecord::Schema.define(version: 2022_05_17_004437) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -216,6 +216,8 @@ ActiveRecord::Schema.define(version: 2022_05_11_031802) do
     t.string "slug"
     t.integer "observations_count", default: 0
     t.integer "people_count", default: 0
+    t.float "lat"
+    t.float "lng"
   end
 
   create_table "subregions", force: :cascade do |t|

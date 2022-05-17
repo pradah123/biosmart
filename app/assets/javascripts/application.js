@@ -10,6 +10,7 @@ var _login_modal = new bootstrap.Modal(document.getElementById('login'), { keybo
 var _signup_modal = new bootstrap.Modal(document.getElementById('signup'), { keyboard: true });
 var _signup_success_modal = new bootstrap.Modal(document.getElementById('signup_success'), { keyboard: true });
 var _gallery_modal = new bootstrap.Modal(document.getElementById('gallery'), { keyboard: true });
+var _processing_modal = new bootstrap.Modal(document.getElementById('processing_modal'), { keyboard: true });
 var _gallery_carousel = null;
 
 var _nshow_more = 1
@@ -23,7 +24,18 @@ $(document).ready(function() {
   set_up_contest_page();
   set_up_observations_modal();
   set_up_counters();
+  set_up_search();
 });
+
+function set_up_search() {
+  $('#search_clear').click(function() { $('#search_input').val(''); });
+  $('#search_button').click(function() { search(); });
+}
+
+function search() { 
+  // add query parameters
+  reload();
+}
 
 function set_up_counters() {
   $('.countdown').each(function() {
@@ -63,7 +75,7 @@ function set_up_observations_modal() {
 
     for( var i=0 ; i<urls.length ; i++ ) {
       var html = '<div class="carousel-item"><div class="card border-0 p-0 m-0">';
-      html += '<img src="'+urls[i]+'" class="card-img d-block w-100" loading="lazy" alt="...">';
+      html += '<img src="'+urls[i]+'" class="img-fluid" loading="lazy" alt="...">';
       html += '</div></div>';
       $('#gallery-carousel').append(html);
     } 
@@ -81,6 +93,8 @@ function set_up_observations_modal() {
     var params = $(this).attr('data-api-parameters');
     params += "&nstart="+nstart;
     params += "&nend="+nend;
+
+    _processing_modal.show();
 
     $.get(_api+'/observations/more'+params, function() {})
     .done(function(data, status) {
@@ -106,9 +120,9 @@ function set_up_observations_modal() {
       }
     })
     .fail(function(xhr, status, error) {})
-    .always(function() {});
+    .always(function() { _processing_modal.hide(); });
 
-    return false;  
+    return false;
   });
 
   $('#search_clear').click(function() {
@@ -133,9 +147,9 @@ function set_up_contest_page() {
   google.maps.event.addListenerOnce(map, 'idle', function() { 
     var bounds = new google.maps.LatLngBounds(null);
 
-    for( var k = 0 ; k < _regions_json.length ; k++ ) {
-      var polygon_json = _regions_json[k];
-
+    for( var k = 0 ; k < _polygons.length ; k++ ) {
+      var polygon_json = _polygons[k];
+    
       for( var i = 0 ; i<polygon_json.length ; i++ ) {
         var coordinates = polygon_json[i]['coordinates'];
         var googlemaps_points = [];
@@ -150,6 +164,18 @@ function set_up_contest_page() {
       }  
     }  
 
+    if(_participants!=undefined) {
+      var markers = [];
+      for( var i = 0 ; i<_participants.length ; i++ ) {
+        var marker = new google.maps.Marker({ position: _participants[i] });
+        marker.setMap(map);
+        markers.push(marker);
+        bounds.extend(_participants[i]);
+        //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
+      } 
+      new markerClusterer.MarkerClusterer({ markers, map });
+    }    
+
     if(bounds.getNorthEast().lat()==-1 && bounds.getSouthWest().lat()==1 && bounds.getNorthEast().lng()==-180 && bounds.getSouthWest().lng()==180) {
 
     } else {
@@ -158,16 +184,6 @@ function set_up_contest_page() {
       map.panToBounds(bounds);
     }
 
-    if(_observations!=undefined) {
-      var markers = [];
-      for( var i = 0 ; i<_observations.length ; i++ ) {
-        var marker = new google.maps.Marker({ position: _observations[i], title: "Observation" });
-        marker.setMap(map);
-        marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
-        markers.push(marker);
-      } 
-      new markerClusterer.MarkerClusterer({ markers, map });
-    }
   });
 
 }
@@ -203,16 +219,25 @@ function set_up_region_page() {
       map.panToBounds(bounds);
     }
 
-    if(_observations!=undefined) {
-      var markers = [];
-      for( var i = 0 ; i<_observations.length ; i++ ) {
-        var marker = new google.maps.Marker({ position: _observations[i], title: "Observation" });
-        marker.setMap(map);
-        marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
-        markers.push(marker);
-      } 
-      new markerClusterer.MarkerClusterer({ markers, map });
-    }
+    $.get(_api+_observations_filename, function() {})
+    .done(function(data, status) {
+      console.log(data);
+      if(data['data']==undefined || data['data']['observations']==undefined || data['data']['observations'].length==0) {
+        
+      } else {
+        var observations = data['data']['observations']
+        var markers = [];
+        for( var i = 0 ; i<observations.length ; i++ ) {
+          var marker = new google.maps.Marker({ position: observations[i] });
+          marker.setMap(map);
+          markers.push(marker);
+          //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
+        } 
+        new markerClusterer.MarkerClusterer({ markers, map });
+      }
+    })
+    .fail(function(xhr, status, error) {})
+    .always(function() {});
 
     if(location.href.indexOf('show_subregions=true')!=-1) {
       for( var i = 0 ; i<_subregions.length ; i++ ) {
