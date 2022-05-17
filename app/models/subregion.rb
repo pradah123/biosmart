@@ -18,6 +18,7 @@ class Subregion < ApplicationRecord
     #
     # get centre of the polygon
     #
+    
     lats = polygon_geojson['coordinates'].map { |c| c[1] }
     lngs = polygon_geojson['coordinates'].map { |c| c[0] }    
     lat_min = lats.min

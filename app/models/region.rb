@@ -7,7 +7,7 @@ class Region < ApplicationRecord
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
 
-  after_save :update_polygon_cache, :set_time_zone_from_polygon
+  after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
   after_create :compute_subregions 
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
@@ -31,20 +31,19 @@ class Region < ApplicationRecord
   end  
 
 
-
-  def set_time_zone_from_polygon
-    polygons = JSON.parse raw_polygon_json
-
+  
+  def set_lat_lng
     #
     # get the centre of the polygons
     #
 
+    polygons = JSON.parse raw_polygon_json
     lat_centre = 0
     lng_centre = 0
     n = 0
     polygons.each do |p|
-      lat_centre += p['coordinates'].map { |c| c[0] }.sum
-      lng_centre += p['coordinates'].map { |c| c[1] }.sum
+      lng_centre += p['coordinates'].map { |c| c[0] }.sum
+      lat_centre += p['coordinates'].map { |c| c[1] }.sum
       n += p['coordinates'].length
     end
     return if n==0
@@ -52,14 +51,18 @@ class Region < ApplicationRecord
     lat_centre /= n
     lng_centre /= n
 
+    update_column :lat, lat_centre
+    update_column :lng, lng_centre
+  end
+
+  def set_time_zone_from_polygon
     #
     # https://developers.google.com/maps/documentation/timezone/get-started#maps_http_timezone-rb
     # use api from here to get the timezone offset of this lat,lng in minutes
     #
 
-    #google_api_key = "AIzaSyDUs2kqzzJeESUQuPKj5LlNQJ1K1PkqiFg"
     google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
-    url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{lng_centre}%2C#{lat_centre}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
+    url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{self.lng}%2C#{self.lat}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
 
     offset_mins = 0
     begin
@@ -69,10 +72,12 @@ class Region < ApplicationRecord
       update_column :timezone_offset_mins, (offset_mins/60)
       participations.each { |p| p.set_start_and_end_times }
     rescue => e
-      Rails.logger.error "google api failed for lat,lng = #{lat_centre},#{lng_centre}" 
+      Rails.logger.error "google api failed for lat,lng = #{lat},#{lng}" 
     end    
 
   end
+
+  
 
 
 

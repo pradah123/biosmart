@@ -38,6 +38,8 @@ Rails.application.routes.draw do
 
       post '/observations', to: 'observation#bulk_create'
       get '/observations/more', to: 'observation#get_more'
+      get '/observations/region/:id', to: 'observation#region'
+      
     end
   end
 
