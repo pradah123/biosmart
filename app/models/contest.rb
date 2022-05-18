@@ -41,10 +41,15 @@ class Contest < ApplicationRecord
     
   def get_path
     "/contests/#{id}/#{slug}"
-  end  
+    #"/contests/#{slug}"
+  end
 
   def get_region_contest_path region
     region.get_region_contest_path self
+  end  
+
+  def get_region_polygons
+    regions.map { |r| JSON.parse r.raw_polygon_json }.flatten.map { |p| p.to_hash }
   end  
 
 
@@ -97,6 +102,9 @@ class Contest < ApplicationRecord
       participation.region.observations.where(id: obs.id).delete_all
     end  
   end  
+
+
+
 
 
   rails_admin do

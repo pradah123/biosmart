@@ -44,7 +44,7 @@ function set_up_counters() {
       if(days!=0) str += days + " days ";
       if(days!=0 || hours!=0 ) str += hours + " hours ";
       if( (days!=0 && hours!=0 ) || minutes!=0) str += minutes + " minutes ";
-      if( (days!=0 && hours!=0 && minutes!=0) || seconds!=0) str += seconds + " seconds"
+      if( (days!=0 && hours!=0 && minutes!=0) || seconds!=0) str += seconds + " seconds";
 
       document.getElementById("countdown-"+id).innerHTML = str;
       if (distance<0) { 
@@ -118,21 +118,17 @@ function set_up_contest_page() {
   google.maps.event.addListenerOnce(map, 'idle', function() { 
     var bounds = new google.maps.LatLngBounds(null);
 
-    for( var k = 0 ; k < _polygons.length ; k++ ) {
-      var polygon_json = _polygons[k];
-    
-      for( var i = 0 ; i<polygon_json.length ; i++ ) {
-        var coordinates = polygon_json[i]['coordinates'];
-        var googlemaps_points = [];
-        for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
-        var polygon = new google.maps.Polygon({ paths: googlemaps_points, fillColor: _colours[k*_regions_json.length + i] });
-        polygon.setMap(map);
+    for( var i = 0 ; i<_region_polygons.length ; i++ ) {
+      var coordinates = _region_polygons[i]['coordinates'];
+      var googlemaps_points = [];
+      for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
+      var polygon = new google.maps.Polygon({ paths: googlemaps_points, fillColor: _colours[i%_colours.length] });
+      polygon.setMap(map);
 
-        polygon.getPaths().forEach(function(path) {
-          var ar = path.getArray();
-          for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);  
-        });
-      }  
+      polygon.getPaths().forEach(function(path) {
+        var ar = path.getArray();
+        for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);  
+      });
     }  
 
     if(_participants!=undefined) {
@@ -440,9 +436,6 @@ function set_up_regions() {
         map.fitBounds(bounds, 0);
         map.panToBounds(bounds);
         map.setZoom(6);
-        //console.log('here'); 
-        //console.log(bounds); 
-        //console.log(map.getBounds());
       }  
     });
   });
@@ -451,8 +444,6 @@ function set_up_regions() {
 
 function validate_polygon_json(str) {
   try {
-    console.log('validate');
-    console.log(str);
     json = JSON.parse(str);
 
     if(json['type']==null || json['type']==undefined || json['type']!='Polygon') return false;
@@ -462,12 +453,13 @@ function validate_polygon_json(str) {
       var lnglat = $(this);
       if(!Array.isArray(lnglat) || lnglat.length!=2) return false;
       if(typeof(lnglat[0])!='number' || lnglat[0]<-180.0 || lnglat[0]>180.0) return false;
-      if(typeof(lnglat[1])!='number' || lnglat[0]<-90.0 || lnglat[0]>90.0) return false;
+      if(typeof(lnglat[1])!='number' || lnglat[1]<-90.0 || lnglat[1]>90.0) return false;
     });
 
     return true;
   } catch (e) {
-    console.log('thrown')
+    console.log('thrown in polygon validation');
+    console.log(e);
   }
   return false;
 }
@@ -485,8 +477,7 @@ function write_polygon(modalid) {
 function set_parameters(polygon) {
   var colour = _colours[_npolygons%_colours.length];
   _npolygons++;
-  polygon.setOptions({ fillColor: colour });
-  //polygon.setEditable(true);
+  polygon.setOptions({ fillColor: colour, editable: true });
   return colour;
 }
 
@@ -502,7 +493,6 @@ function make_html(polygon_geojson_data, modalid, colour, polygon) {
   $(id+' .polygon-json span.polygon-colour').last().css('background-color', colour);
   var row = $(id+' .polygon-json').last();
   $(id+' .polygon-json button.polygon-remove').last().click(function() { 
-    console.log('remove'); 
     polygon.setMap(null); 
     row.remove(); 
   });
@@ -530,13 +520,10 @@ function get_polygon(input) {
   var polygon_text= input.val().trim();
   if(polygon_text.length==0) return null;
 
-  //confirm input is json  
   var polygon_json = JSON.parse(polygon_text);
   var coordinates = polygon_json['coordinates'];
-
   var googlemaps_points = [];
   for( var i = 0 ; i<coordinates.length ; i++ ) googlemaps_points.push({ lng: coordinates[i][0], lat: coordinates[i][1] });
-
   var polygon = new google.maps.Polygon({ paths: googlemaps_points });
 
   return polygon;

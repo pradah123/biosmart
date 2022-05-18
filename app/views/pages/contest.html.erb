@@ -16,7 +16,7 @@
     <div class="row my-3">
       <div class="col" id="contest-map" style="width:100%; height:400px;"></div>  
       <script>
-        var _polygons = [];//[<%#= @contest.regions.map { |r| r.raw_polygon_json }.join(',') %>]; 
+        var _region_polygons = <%= JSON.generate(@contest.get_region_polygons).html_safe %>; 
         var _participants = <%= JSON.generate(@contest.regions.map { |r| { lat: r.lat, lng: r.lng } }).html_safe %>;
       </script>        
     </div>
@@ -46,4 +46,4 @@
   </div>
 <% end %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }" } %>
+<%= render partial: 'recent_observations', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }" } %>

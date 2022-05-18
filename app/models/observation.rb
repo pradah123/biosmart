@@ -37,6 +37,7 @@ class Observation < ApplicationRecord
     update_column :search_text, "#{scientific_name} #{common_name} #{accepted_name} #{creator_name}".downcase
   end
 
+ 
 
 
   @@page_cache = {}
@@ -80,6 +81,62 @@ class Observation < ApplicationRecord
     return false if obs.observation_images_count==0
     true
   end
+
+
+
+  def add_to_regions_and_contests
+    added = false
+
+    geokit_point = Geokit::LatLng.new lat, lng
+
+    Region.all.each do |region|
+      region.get_geokit_polygons.each do |polygon|
+        if polygon.contains?(geokit_point)
+
+          # inside one of the region's polygons
+          region.add_and_compute_statistics self
+          Observation.add_observation_to_page_caches self, region
+          added = true
+
+          region.participations.in_competition.each do |participation|
+            # from one of the requested data sources
+            if participation.data_sources.include?(data_source) 
+
+              # observed in the period of the contest
+              if observed_at>=participation.starts_at && observed_at<participation.ends_at 
+          
+                # submitted in the allowed period  
+                if created_at>=participation.starts_at && created_at<participation.last_submission_accepted_at 
+          
+                  #
+                  # this observation is in this contest in time and space
+                  # add references for this observation to contest, participation, and region
+                  #
+
+                  participation.contest.add_and_compute_statistics self
+                  participation.add_and_compute_statistics self
+                  Observation.add_observation_to_page_caches self, participation
+                
+                end
+              end
+            end  
+          end
+
+          break if added==true
+        end
+      end
+    end
+
+    added
+  end
+
+  def remove_observation obs
+    observations.where(id: obs.id).delete_all
+    participations.in_competition.each do |participation|
+      participation.observations.where(id: obs.id).delete_all
+      participation.region.observations.where(id: obs.id).delete_all
+    end  
+  end 
 
   rails_admin do
     list do

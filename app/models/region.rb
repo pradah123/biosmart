@@ -24,10 +24,12 @@ class Region < ApplicationRecord
     
   def get_path
     "/regions/#{id}/#{slug}"
+    #"/regions/#{slug}"
   end  
 
   def get_region_contest_path contest
     "/regions/#{id}/contests/#{contest.id}/#{contest.slug}/#{slug}"
+    #"/regions-contests/#{contest.slug}/#{slug}"
   end  
 
 

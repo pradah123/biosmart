@@ -33,6 +33,10 @@ header {
   color: white;
 }
 
+.marker-cluster-small, .marker-cluster-small div, .marker-cluster-medium, .marker-cluster-medium div, .marker-cluster-large, .marker-cluster-large div {
+  background-color: rgba(239, 181, 74, 0.6);
+}
+
 .fw-home, .fw-header-link { font-size: 13px; font-weight: 300; letter-spacing: 2px; }
 .fw-home { font-size: 20px; }
 
