@@ -80,7 +80,7 @@ function set_up_observations() {
     params += "&nstart="+n;
     params += "&nend="+(n + parseInt($(this).attr('data-n-per-fetch')));
 
-    if(n>0) _processing_modal.show();
+    if(n>0 || location.href.indexOf('recent_observations')!=-1) _processing_modal.show();
 
     $.ajax({ url: ('/observations/more'+params), dataType: 'html' })
     .done(function(data, status) { $('#observations-block').append(data); })
