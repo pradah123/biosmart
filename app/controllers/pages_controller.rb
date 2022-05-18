@@ -3,7 +3,6 @@ class PagesController < ApplicationController
  
 
   def top
-    @observations = Observation.get_observations
   end
 
   def region_contest
@@ -27,19 +26,16 @@ class PagesController < ApplicationController
     end  
     
     @participation = @participation.first
-    @observations = Observation.get_observations @participation
   end
 
   def region
     @region = Region.find_by_id params[:id]
     render :top if @region.nil?
-    @observations = Observation.get_observations @region
   end
 
   def contest
     @contest = Contest.find_by_id params[:id]
     render :top if @contest.nil?
-    @observations = Observation.get_observations @contest
   end
 
 
@@ -82,11 +78,6 @@ class PagesController < ApplicationController
 
 
   def get_more
-
-Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-Rails.logger.info cookies[:q]
-Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
     if params[:region_id] && params[:contest_id]
       obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
     elsif params[:region_id]
@@ -94,13 +85,16 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
     elsif params[:contest_id]
       obj = Contest.where id: params[:contest_id]
     else
-      obj = []
+      obj = nil
     end
 
     q = cookies[:q].strip.downcase
 
-    observations = (obj.blank? ? Observation.all : obj.first.observations).has_image.has_scientific_name.recent
-    observations = observations.search q if q.length>0
+    if q.length==0
+      observations = Observation.get_observations obj
+    else  
+      observations = (obj.nil? ? Observation.all : obj.first.observations).has_image.has_scientific_name.recent.search q
+    end  
     
     render partial: 'pages/observation_block', locals: { observations: observations[params[:nstart].to_i...params[:nend].to_i] }, layout: false
   end  

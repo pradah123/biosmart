@@ -13,6 +13,10 @@ Rails.application.routes.draw do
   get '/regions/:id(/:slug)', to: 'pages#region'
   get '/contests/:id(/:slug)', to: 'pages#contest'
 
+  #get '/regions-contests/:contest_slug/:region_slug', to: 'pages#region_contest'
+  #get '/regions/:slug', to: 'pages#region'
+  #get '/contests/:slug', to: 'pages#contest'
+
   get '/observations/more', to: 'pages#get_more'
 
   namespace :api do
