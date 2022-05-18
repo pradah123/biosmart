@@ -7,6 +7,7 @@ class Observation < ApplicationRecord
   scope :ignore_species_code, -> { where('accepted_name != lower(accepted_name)') }
   scope :has_creator_id, -> { where.not creator_id: nil }
   scope :without_creator_name, -> { where creator_name: nil }
+  scope :search, -> (q) { where 'search_text LIKE ?', "%#{q.downcase}%" }
 
   has_and_belongs_to_many :regions
   has_and_belongs_to_many :participations
@@ -16,6 +17,7 @@ class Observation < ApplicationRecord
 
   after_create :assign_to_contests
   after_update :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
+  after_save :update_search_text
 
   validates :unique_id, presence: true  
   validates :lat, presence: true
@@ -31,6 +33,10 @@ class Observation < ApplicationRecord
     Contest.in_progress.each { |c| added = c.add_observation self }
   end
     
+  def update_search_text
+    update_column :search_text, "#{scientific_name} #{common_name} #{accepted_name} #{creator_name}".downcase
+  end
+
 
 
   @@page_cache = {}
@@ -54,7 +60,7 @@ class Observation < ApplicationRecord
   def self.get_observations obj=nil
     key = get_key obj
     now = Time.now
-    if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+5.minutes)
+    if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+30.minutes)
       if obj.nil?
         @@page_cache[key] = Observation.all.has_image.has_scientific_name.recent.first @@nobservations_per_page
       else
@@ -78,7 +84,8 @@ class Observation < ApplicationRecord
   rails_admin do
     list do
       field :id
-      field :creator_id          
+      field :creator_name
+      field :unique_id
       field :scientific_name
       field :observed_at
       field :lat
@@ -86,7 +93,8 @@ class Observation < ApplicationRecord
       field :created_at      
     end
     edit do 
-      field :creator_id
+      field :data_source
+      field :creator_name
       field :unique_id
       field :common_name
       field :accepted_name
@@ -94,11 +102,10 @@ class Observation < ApplicationRecord
       field :observed_at
       field :lat
       field :lng
-      field :created_at      
     end
     show do
       field :id
-      field :creator_id
+      field :creator_name
       field :unique_id
       field :common_name
       field :accepted_name

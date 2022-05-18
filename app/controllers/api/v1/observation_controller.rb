@@ -63,12 +63,23 @@ module Api::V1
       render_success j
     end
 
-    def region
-      r = Region.find_by_id params[:id]
+    def get_map_observations obj
       j = {}
-      j['observations'] = r.nil? ? [] : r.observations.map { |o| { lat: o.lat, lng: o.lng } }
+      j['observations'] = obj.nil? ? [] : obj.observations.map { |o| { lat: o.lat, lng: o.lng } }
       render_success j
+    end
+
+    def region
+      get_map_observations Region.find_by_id params[:id]
     end  
+
+    def participation
+      get_map_observations Participation.find_by_id params[:id]
+    end  
+
+    def contest
+      get_map_observations Contest.find_by_id params[:id]
+    end
 
   end
 end 

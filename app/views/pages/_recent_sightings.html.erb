@@ -1,8 +1,8 @@
 <% if observations.count>0 %>
 
-  <div class="row justify-content-center mt-3">
+  <div class="row justify-content-center mt-5" id="recent_observations">
     <div class="col-10">
-      <div class="row my-3">
+      <div class="row my-5">
         <div class="col">
         	<div class="row">
         	  <div class="col h4 text-center proxima section-header mb-3">Recent Observations</div>
@@ -17,13 +17,11 @@
             </div>
           </div>          
         	<div class="row" id="observations-block">
-      		  <% observations.each.with_index(1) do |o,i| %>
-      		    <%= render partial: 'observation', locals: { o: o, i: i } %>
-          	<% end %>
+            <%#= render partial: 'observation_block', locals: { observations: observations } %>
           </div>
           <div class="row justify-content-center mt-5">
             <div class="col-4">
-              <button type="button" class="btn btn-warning w-100" id="show_more" data-api-parameters="<%= api_parameters %>">Show more</button>
+              <button type="button" class="btn btn-warning w-100" id="show_more" data-api-parameters="<%= api_parameters %>" data-n-per-fetch="<%= @nobservations %>">Show more</button>
             </div>              
           </div>  
         </div>      

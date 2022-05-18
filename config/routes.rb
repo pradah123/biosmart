@@ -13,6 +13,8 @@ Rails.application.routes.draw do
   get '/regions/:id(/:slug)', to: 'pages#region'
   get '/contests/:id(/:slug)', to: 'pages#contest'
 
+  get '/observations/more', to: 'pages#get_more'
+
   namespace :api do
     namespace :v1 do
       post '/user', to: 'user#create'
@@ -39,6 +41,8 @@ Rails.application.routes.draw do
       post '/observations', to: 'observation#bulk_create'
       get '/observations/more', to: 'observation#get_more'
       get '/observations/region/:id', to: 'observation#region'
+      get '/observations/participation/:id', to: 'observation#participation'
+      get '/observations/contest/:id', to: 'observation#contest'
       
     end
   end

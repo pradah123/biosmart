@@ -22,20 +22,9 @@ $(document).ready(function() {
   set_up_participations();
   set_up_region_page();
   set_up_contest_page();
-  set_up_observations_modal();
+  set_up_observations();
   set_up_counters();
-  set_up_search();
 });
-
-function set_up_search() {
-  $('#search_clear').click(function() { $('#search_input').val(''); });
-  $('#search_button').click(function() { search(); });
-}
-
-function search() { 
-  // add query parameters
-  reload();
-}
 
 function set_up_counters() {
   $('.countdown').each(function() {
@@ -66,7 +55,7 @@ function set_up_counters() {
   });
 }
 
-function set_up_observations_modal() {
+function set_up_observations() {
 
   $(document).on('click', '.gallery-link', function() { 
     var link = $(this);    
@@ -85,56 +74,38 @@ function set_up_observations_modal() {
   });
 
   $('#show_more').click(function() {
+    
     var n = $('.observation').length;
-    var nstart = n
-    var nend = nstart + n/_nshow_more;
-    _nshow_more += 1;
-
     var params = $(this).attr('data-api-parameters');
-    params += "&nstart="+nstart;
-    params += "&nend="+nend;
+    params += "&nstart="+n;
+    params += "&nend="+(n + parseInt($(this).attr('data-n-per-fetch')));
 
     _processing_modal.show();
 
-    $.get(_api+'/observations/more'+params, function() {})
-    .done(function(data, status) {
-      if(data['data']==undefined || data['data']['observations']==undefined || data['data']['observations'].length==0) {
-        $('#show_more').addClass('d-none');
-      } else {
-        var observations = data['data']['observations']
-        var obs_html = $(".observation").last();
-
-        for( var i = 0 ; i < observations.length ; i++ ) {
-          var obs = observations[i];
-          obs_html.clone().appendTo('#observations-block'); 
-          var new_obs = $('.observation').last();
-          new_obs.find('.observation-image').css('background-image', 'url('+obs.image_urls[0]+')');
-          new_obs.find('.scientific_name').text(obs.scientific_name);
-          new_obs.find('.creator_name').text(obs.creator_name);
-          new_obs.find('.observed_at').text(obs.observed_at);
-
-          var url_arr = [];
-          for( var j = 0 ; j < obs.image_urls.length ; j++ )  url_arr.push('"'+obs.image_urls[j]+'"');
-          new_obs.find('.gallery-link').attr('data-image-urls', '['+url_arr.join()+']');
-        }
-      }
-    })
+    $.ajax({ url: ('/observations/more'+params), dataType: 'html' })
+    .done(function(data, status) { $('#observations-block').append(data); })
     .fail(function(xhr, status, error) {})
     .always(function() { _processing_modal.hide(); });
 
     return false;
   });
 
-  $('#search_clear').click(function() {
-    $('#search_input').val();
+  $('#search_clear').click(function() { 
+    $('#search_input').val(''); $('#search_button').click(); 
   });
 
-  $('#search').click(function() {
+  $('#search_button').click(function() {
     var q = $('#search_input').val().toLowerCase().trim();
-    if(q.length>0) { Cookies.set('q', q); /*location.reload();*/ }  
+    Cookies.set('q', q);
+    reload('recent_observations');
+  });
+
+  $(document).keyup(function(e) {
+    if(e.key==='Enter' && $('#search_input').is(':focus')) $('#search_button').click();
   });
 
   $('#search_input').val(Cookies.get('q'));
+  $('#show_more').click();
 }
 
 function set_up_contest_page() {
@@ -730,9 +701,10 @@ function get_signup_params(modal) {
   return (failed ? null : p);
 }
 
-function reload() {
-  var url = new URL(location.href);
+function reload(atag='') {
+  var url = new URL(location.href+(atag.length>0 && location.href.indexOf(atag)==-1 ? '#'+atag : ''));
   window.location = url.href;
+  location.reload();
 }
 
 function login(params) {
