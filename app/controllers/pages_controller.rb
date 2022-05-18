@@ -91,7 +91,7 @@ class PagesController < ApplicationController
     q = cookies[:q].strip.downcase
 
     if q.length==0
-      observations = Observation.get_observations obj
+      observations = Observation.get_observations obj.first
     else  
       observations = (obj.nil? ? Observation.all : obj.first.observations).has_image.has_scientific_name.recent.search q
     end  
