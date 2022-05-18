@@ -56,4 +56,4 @@
 
 <%= render partial: 'statistics', locals: { object: @region.participations.where(contest_id: @contest.id).first } %>
 
-<%= render partial: 'recent_sightings', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }&region_id=#{ @region.id }" } %>
+<%= render partial: 'recent_observations', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }&region_id=#{ @region.id }" } %>
