@@ -26,6 +26,12 @@ $(document).ready(function() {
   set_up_counters();
 });
 
+function reload(atag='') {
+  var url = new URL(location.href+(atag.length>0 && location.href.indexOf(atag)==-1 ? '#'+atag : ''));
+  window.location = url.href;
+  location.reload();
+}
+
 function set_up_counters() {
   $('.countdown').each(function() {
     var starts_at = $(this).attr('data-starts-at');
@@ -74,7 +80,6 @@ function set_up_observations() {
   });
 
   $('#show_more').click(function() {
-    
     var n = $('.observation').length;
     var params = $(this).attr('data-api-parameters');
     params += "&nstart="+n;
@@ -118,19 +123,6 @@ function set_up_contest_page() {
   google.maps.event.addListenerOnce(map, 'idle', function() { 
     var bounds = new google.maps.LatLngBounds(null);
 
-    for( var i = 0 ; i<_region_polygons.length ; i++ ) {
-      var coordinates = _region_polygons[i]['coordinates'];
-      var googlemaps_points = [];
-      for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
-      var polygon = new google.maps.Polygon({ paths: googlemaps_points, fillColor: _colours[i%_colours.length] });
-      polygon.setMap(map);
-
-      polygon.getPaths().forEach(function(path) {
-        var ar = path.getArray();
-        for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);  
-      });
-    }  
-
     if(_participants!=undefined) {
       var markers = [];
       for( var i = 0 ; i<_participants.length ; i++ ) {
@@ -139,8 +131,7 @@ function set_up_contest_page() {
         markers.push(marker);
         bounds.extend(_participants[i]);
         //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
-      } 
-      new markerClusterer.MarkerClusterer({ markers, map });
+      }
     }    
 
     if(bounds.getNorthEast().lat()==-1 && bounds.getSouthWest().lat()==1 && bounds.getNorthEast().lng()==-180 && bounds.getSouthWest().lng()==180) {
@@ -151,8 +142,15 @@ function set_up_contest_page() {
       map.panToBounds(bounds);
     }
 
-  });
+    for( var i = 0 ; i<_region_polygons.length ; i++ ) {
+      var coordinates = _region_polygons[i]['coordinates'];
+      var googlemaps_points = [];
+      for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
+      var polygon = new google.maps.Polygon({ paths: googlemaps_points, fillColor: _colours[i%_colours.length] });
+      polygon.setMap(map);
+    }  
 
+  });
 }
 
 function set_up_region_page() {
@@ -200,7 +198,7 @@ function set_up_region_page() {
           markers.push(marker);
           //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
         } 
-        new markerClusterer.MarkerClusterer({ markers, map });
+        new markerClusterer.MarkerClusterer(map, markers, { 'cssClass': 'marker_cluster' });
       }
     })
     .fail(function(xhr, status, error) {})
@@ -223,6 +221,14 @@ function set_up_region_page() {
   });
 
 }
+
+
+
+
+
+
+
+// edit functions
 
 function set_up_participations() {
 
@@ -547,7 +553,7 @@ function getBase64(file, name) {
 
 
 
-
+// login etc.
 
 function set_up_authentication() {
   $('#signup').on('show.bs.modal', function() { Cookies.set('modal', 'signup'); });
@@ -686,12 +692,6 @@ function get_signup_params(modal) {
   p = { 'user': p };
 
   return (failed ? null : p);
-}
-
-function reload(atag='') {
-  var url = new URL(location.href+(atag.length>0 && location.href.indexOf(atag)==-1 ? '#'+atag : ''));
-  window.location = url.href;
-  location.reload();
 }
 
 function login(params) {

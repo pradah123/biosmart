@@ -7,10 +7,11 @@ class Region < ApplicationRecord
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
 
-  after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
+  
   after_create :compute_subregions 
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
+  after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
 
   enum status: [:online, :deleted]
 
@@ -19,7 +20,7 @@ class Region < ApplicationRecord
     if slug.nil?
       slug = name.blank? ? '' : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
       update_column :slug, slug
-    end  
+    end
   end
     
   def get_path
