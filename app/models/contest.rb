@@ -7,7 +7,7 @@ class Contest < ApplicationRecord
   scope :upcoming, -> { where 'utc_starts_at > ?', Time.now } 
   scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
   scope :online, -> { where status: Contest.statuses[:online] }
-  
+
   belongs_to :user, optional: true
   has_many :participations, dependent: :delete_all
   has_many :regions, through: :participations
@@ -16,6 +16,7 @@ class Contest < ApplicationRecord
   after_save :set_last_submission_accepted_at, :set_slug
 
   enum status: [:online, :offline, :deleted, :completed]
+  enum rank_regions_by: [:recent]
 
   def set_utc_start_and_end_times
     if participations.count>0

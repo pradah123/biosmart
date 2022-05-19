@@ -17,7 +17,7 @@ class Observation < ApplicationRecord
 
   after_create :assign_to_contests
   after_update :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
-  after_save :update_search_text
+  after_save :update_search_text, :update_address
 
   validates :unique_id, presence: true  
   validates :lat, presence: true
@@ -37,7 +37,21 @@ class Observation < ApplicationRecord
     update_column :search_text, "#{scientific_name} #{common_name} #{accepted_name} #{creator_name}".downcase
   end
 
- 
+  def update_address
+    google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
+    url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=#{self.lat},#{self.lng}&key=#{google_api_key}"
+    begin
+      response = HTTParty.get url
+      response_json = JSON.parse response.body
+Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+Rails.logger.info response_json
+Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      address = ""#response_json['results']
+      update_column :address, address
+    rescue => e
+      Rails.logger.error "google gecode api failed for lat,lng = #{lat},#{lng}" 
+    end
+  end  
 
 
   @@page_cache = {}

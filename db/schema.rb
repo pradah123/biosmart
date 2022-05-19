@@ -10,15 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_05_18_010932) do
-
+ActiveRecord::Schema[7.0].define(version: 2022_05_19_001212) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
     t.string "record_type", null: false
     t.bigint "record_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
   end
 
@@ -27,7 +26,7 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.string "record_type", null: false
     t.integer "record_id", null: false
     t.integer "blob_id", null: false
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
@@ -40,7 +39,7 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.string "service_name", null: false
     t.bigint "byte_size", null: false
     t.string "checksum", null: false
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -58,8 +57,8 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.integer "nupdates"
     t.integer "nupdates_no_change"
     t.integer "nupdates_failed"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "job_id"
   end
 
@@ -67,56 +66,66 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.string "message"
     t.string "background_colour", default: "#dc3545"
     t.string "text_colour", default: "#ffffff"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.boolean "online", default: true
+  end
+
+  create_table "constants", force: :cascade do |t|
+    t.string "name"
+    t.float "value", default: 0.0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "contests", force: :cascade do |t|
     t.integer "user_id"
     t.string "title"
     t.string "description"
-    t.datetime "starts_at"
-    t.datetime "ends_at"
+    t.datetime "starts_at", precision: nil
+    t.datetime "ends_at", precision: nil
     t.integer "status", default: 0
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
-    t.datetime "final_at"
-    t.datetime "last_submission_accepted_at"
-    t.datetime "utc_starts_at"
-    t.datetime "utc_ends_at"
+    t.datetime "final_at", precision: nil
+    t.datetime "last_submission_accepted_at", precision: nil
+    t.datetime "utc_starts_at", precision: nil
+    t.datetime "utc_ends_at", precision: nil
     t.string "slug"
     t.integer "observations_count", default: 0
     t.integer "people_count", default: 0
+    t.integer "rank_regions_by", default: 0
+    t.float "physical_health_score", default: 0.0
+    t.float "mental_health_score", default: 0.0
   end
 
   create_table "contests_observations", force: :cascade do |t|
     t.integer "contest_id"
     t.integer "observation_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "contests_participations", force: :cascade do |t|
     t.integer "contest_id"
     t.integer "participation_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "data_sources", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "data_sources_participations", force: :cascade do |t|
     t.integer "participation_id"
     t.integer "data_source_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "delayed_jobs", force: :cascade do |t|
@@ -124,13 +133,13 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.integer "attempts", default: 0, null: false
     t.text "handler", null: false
     t.text "last_error"
-    t.datetime "run_at"
-    t.datetime "locked_at"
-    t.datetime "failed_at"
+    t.datetime "run_at", precision: nil
+    t.datetime "locked_at", precision: nil
+    t.datetime "failed_at", precision: nil
     t.string "locked_by"
     t.string "queue"
-    t.datetime "created_at", precision: 6
-    t.datetime "updated_at", precision: 6
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
   end
 
@@ -140,17 +149,17 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.string "url_thumbnail"
     t.string "license_code"
     t.string "attribution"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "observations", force: :cascade do |t|
     t.float "lat"
     t.float "lng"
     t.integer "data_source_id"
-    t.datetime "observed_at"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "observed_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "unique_id"
     t.string "scientific_name", default: "TBD"
     t.string "common_name"
@@ -158,24 +167,25 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.integer "identifications_count", default: 0
     t.string "external_link"
     t.string "creator_name"
-    t.datetime "last_submission_accepted_at"
+    t.datetime "last_submission_accepted_at", precision: nil
     t.string "creator_id"
     t.integer "observation_images_count", default: 0
     t.text "search_text"
+    t.string "address"
   end
 
   create_table "observations_participations", force: :cascade do |t|
     t.integer "observation_id"
     t.integer "participation_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "observations_regions", force: :cascade do |t|
     t.integer "region_id"
     t.integer "observation_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "participations", force: :cascade do |t|
@@ -183,15 +193,17 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.integer "region_id"
     t.integer "contest_id"
     t.integer "status", default: 0
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
-    t.datetime "starts_at"
-    t.datetime "ends_at"
-    t.datetime "last_submission_accepted_at"
+    t.datetime "starts_at", precision: nil
+    t.datetime "ends_at", precision: nil
+    t.datetime "last_submission_accepted_at", precision: nil
     t.integer "observations_count", default: 0
     t.integer "people_count", default: 0
+    t.float "physical_health_score", default: 0.0
+    t.float "mental_health_score", default: 0.0
   end
 
   create_table "regions", force: :cascade do |t|
@@ -206,8 +218,8 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.string "header_image_url"
     t.string "logo_image_url"
     t.integer "status", default: 0
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "inaturalist_place_id"
     t.integer "identifications_count", default: 0
     t.integer "species_count", default: 0
@@ -218,14 +230,17 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.integer "people_count", default: 0
     t.float "lat"
     t.float "lng"
+    t.float "bioscore"
+    t.float "physical_health_score", default: 0.0
+    t.float "mental_health_score", default: 0.0
   end
 
   create_table "subregions", force: :cascade do |t|
     t.string "params_json", default: "{}"
     t.integer "region_id"
     t.integer "data_source_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.float "lat"
     t.float "lng"
     t.float "radius_km"
@@ -242,13 +257,13 @@ ActiveRecord::Schema.define(version: 2022_05_18_010932) do
     t.integer "role", default: 0
     t.integer "status", default: 0
     t.string "login_code"
-    t.datetime "login_code_expires_at"
+    t.datetime "login_code_expires_at", precision: nil
     t.string "jwt_token"
     t.string "password_digest"
     t.integer "login_attempts", default: 0
     t.integer "login_attempts_max", default: 5
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
