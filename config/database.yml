@@ -12,6 +12,15 @@ test:
   <<: *default
   database: db/test.sqlite3
 
+staging:
+  adapter: postgresql
+  encoding: unicode
+  database: staging
+  host: localhost
+  pool: 5
+  username: 'postgres'
+  password: 'biosmart'
+
 production:
   adapter: postgresql
   encoding: unicode
