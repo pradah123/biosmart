@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount Rswag::Ui::Engine => '/api-docs'
+  mount Rswag::Api::Engine => '/api-docs'
     
   mount RailsAdmin::Engine, at: '/dashboard/admin', as: 'rails_admin'
   match "/dashboard/delayed_job" => DelayedJobWeb, :anchor => false, :via => [:get, :post]
@@ -36,8 +38,10 @@ Rails.application.routes.draw do
       delete '/participation', to: 'participation#destroy'    
 
       post '/region', to: 'region#create'
-      put '/region', to: 'region#update'
-      delete '/region', to: 'region#destroy'
+      get '/region/:id', to: 'region#show'
+      put '/region/:id', to: 'region#update'
+      patch '/region/:id', to: 'region#update'      
+      delete '/region/:id', to: 'region#destroy'
 
       get '/region/polygons', to: 'region#polygons'
       get '/region/data/:region_id/:contest_id', to: 'region#data'
@@ -47,7 +51,6 @@ Rails.application.routes.draw do
       get '/observations/region/:id', to: 'observation#region'
       get '/observations/participation/:id', to: 'observation#participation'
       get '/observations/contest/:id', to: 'observation#contest'
-      
     end
   end
 

@@ -23,6 +23,12 @@ gem 'rails_admin_globalize_field'
 gem 'jwt'
 gem 'pg'
 
+gem 'rake'
+gem 'rspec'
+gem 'rswag'
+gem 'rswag-api'
+gem 'rswag-ui'
+
 gem 'delayed_job'
 gem 'delayed_job_active_record'
 gem 'delayed_job_web'
@@ -42,6 +48,8 @@ gem 'timezone_finder'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'rspec-rails'
+  gem 'rswag-specs'  
 end
 
 group :development do
