@@ -1,13 +1,15 @@
 class Region < ApplicationRecord
   include CountableStatistics
   
+  scope :recent, -> { order created_at: :asc }
+  scope :online, -> { where status: Region.statuses[:online] }
+
   belongs_to :user
   has_many :participations, dependent: :delete_all
   has_many :subregions, dependent: :delete_all
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
-
-  
+ 
   after_create :compute_subregions 
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
