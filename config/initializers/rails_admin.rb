@@ -28,12 +28,6 @@ RailsAdmin.config do |config|
     ActiveStorage::VariantRecord
   )
 
-  config.model Contest do
-    configure :observations do
-      visible(false)
-    end
-  end
-
   config.navigation_static_label = ''
   config.navigation_static_links = { 'Go to the Top Page' => '/' }
 

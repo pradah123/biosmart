@@ -6,8 +6,44 @@ require_relative '../../lib/source/observation_org.rb'
 class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
   has_many :observations
+  has_many :subregions
   has_many :api_request_logs
 
+  def fetch_and_store_observations subregion
+    store fetch(subregion)
+  end
+
+  private
+
+
+
+  def fetch
+    []
+  end  
+  
+  rails_admin do
+    list do
+      field :id
+      field :type
+      field :name
+      field :created_at              
+    end
+    edit do
+      field :name
+    end
+    show do
+      field :id
+      field :name
+      field :created_at
+    end
+  end 
+
+end
+
+
+
+
+=begin
   #
   # this is where to control the query parameters format
   # for each data source
@@ -187,21 +223,27 @@ class DataSource < ApplicationRecord
       Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
   end 
-  
-  rails_admin do
-    list do
-      field :id
-      field :name
-      field :created_at              
-    end
-    edit do
-      field :name
-    end
-    show do
-      field :id
-      field :name
-      field :created_at
-    end
-  end 
 
-end
+contest.observations.from_observation_org.has_creator_id.without_creator_name.distinct.pluck(:creator_id).each do |creator_id|
+        creator_name = nil
+        if creator_id.blank?
+          next
+        end
+        if @@username_cache[creator_id].blank?
+          creator_name = Source::ObservationOrg::Repo.fetch_creator_name(creator_id)
+          if creator_name.present?
+            @@username_cache[creator_id] = creator_name
+          else
+            Delayed::Worker.logger.error "Could not fetch creator name for creator id: #{creator_id}"
+          end
+        end
+        if creator_name.present?
+          contest.observations.from_observation_org.without_creator_name.where(
+            creator_id: creator_id
+          ).update_all(
+            creator_name: creator_name, 
+            updated_at: DateTime.now
+          )
+        end
+      end  
+=end  
