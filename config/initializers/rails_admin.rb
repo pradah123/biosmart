@@ -2,6 +2,10 @@ require 'i18n'
 
 I18n.default_locale = :en
 
+class RailsAdmin::Config::Fields::Types::Timestamptz < RailsAdmin::Config::Fields::Base
+  RailsAdmin::Config::Fields::Types::register(self)
+end
+
 RailsAdmin.config do |config|
   config.asset_source = :webpacker
   config.parent_controller = '::ApplicationController'  
