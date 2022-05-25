@@ -11,10 +11,9 @@ RSpec.describe 'api/v1/region', type: :request do
         properties: {
           name: { type: :string },
           description: { type: :string },
-          logo_url: { type: :string },
-          header_url: { type: :string },
+          logo_image_url: { type: :string },
+          header__image_url: { type: :string },
           raw_polygon_json: { type: :string },
-          bioscore: { type: :number },  
           population: { type: :integer },
           status: { type: :string, enum: [:online, :offline] }
         },
@@ -76,10 +75,9 @@ RSpec.describe 'api/v1/region', type: :request do
         properties: {
           name: { type: :string },
           description: { type: :string },
-          logo_url: { type: :string },
-          header_url: { type: :string },
+          logo_image_url: { type: :string },
+          header__image_url: { type: :string },
           raw_polygon_json: { type: :string },
-          bioscore: { type: :number },  
           population: { type: :integer },
           status: { type: :string, enum: [:online, :offline] }
         },
@@ -106,10 +104,9 @@ RSpec.describe 'api/v1/region', type: :request do
         properties: {
           name: { type: :string },
           description: { type: :string },
-          logo_url: { type: :string },
-          header_url: { type: :string },
+          logo_image_url: { type: :string },
+          header__image_url: { type: :string },
           raw_polygon_json: { type: :string },
-          bioscore: { type: :number },  
           population: { type: :integer },
           status: { type: :string, enum: [:online, :offline] }
         },

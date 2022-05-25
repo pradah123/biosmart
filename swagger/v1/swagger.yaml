@@ -21,14 +21,12 @@ paths:
                   type: string
                 description:
                   type: string
-                logo_url:
+                logo_image_url:
                   type: string
-                header_url:
+                header__image_url:
                   type: string
                 raw_polygon_json:
                   type: string
-                bioscore:
-                  type: number
                 population:
                   type: integer
                 status:
@@ -75,14 +73,12 @@ paths:
                   type: string
                 description:
                   type: string
-                logo_url:
+                logo_image_url:
                   type: string
-                header_url:
+                header__image_url:
                   type: string
                 raw_polygon_json:
                   type: string
-                bioscore:
-                  type: number
                 population:
                   type: integer
                 status:
@@ -111,14 +107,12 @@ paths:
                   type: string
                 description:
                   type: string
-                logo_url:
+                logo_image_url:
                   type: string
-                header_url:
+                header__image_url:
                   type: string
                 raw_polygon_json:
                   type: string
-                bioscore:
-                  type: number
                 population:
                   type: integer
                 status:
