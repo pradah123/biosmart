@@ -130,6 +130,9 @@ class ApiController < ActionController::API
   end
 
   def show
+      Rails.logger.info ">>>>>>>>>>>>>>>> show"
+      Rails.logger.info get_model_str
+      Rails.logger.info params.inspect    
     render_success get_object_serialized(get_object)
   end
 
@@ -205,7 +208,7 @@ class ApiController < ActionController::API
     end
 
     def get_object
-      get_model.find params[get_model_str]['id']
+      get_model.find params['id']
     end
 
     def get_object_serialized obj

@@ -1,0 +1,131 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/api/v1/region":
+    post:
+      summary: create region
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                logo_image_url:
+                  type: string
+                header_image_url:
+                  type: string
+                raw_polygon_json:
+                  type: string
+                population:
+                  type: integer
+                status:
+                  type: string
+                  enum:
+                  - online
+                  - offline
+              required:
+              - name
+              - description
+              - logo_url
+              - status
+  "/api/v1/region/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show region
+      responses:
+        '200':
+          description: successful
+    delete:
+      summary: delete region
+      responses:
+        '200':
+          description: successful
+    put:
+      summary: update region
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                logo_image_url:
+                  type: string
+                header_image_url:
+                  type: string
+                raw_polygon_json:
+                  type: string
+                population:
+                  type: integer
+                status:
+                  type: string
+                  enum:
+                  - online
+                  - offline
+              required:
+              - name
+              - description
+              - logo_url
+              - status
+    patch:
+      summary: update region
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                logo_image_url:
+                  type: string
+                header_image_url:
+                  type: string
+                raw_polygon_json:
+                  type: string
+                population:
+                  type: integer
+                status:
+                  type: string
+                  enum:
+                  - online
+                  - offline
+              required:
+              - name
+              - description
+              - logo_url
+              - status
+servers:
+- url: https://portal-staging.biosmart.life
+- url: https://portal.biosmart.life
+- url: http://localhost:3000

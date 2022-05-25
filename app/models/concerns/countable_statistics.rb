@@ -31,7 +31,7 @@ module CountableStatistics
     end
 
     def get_score constant, constant_a, constant_b
-      total_hours = Constants.find_by_name('average_hours_per_observation') * self.observations.count
+      total_hours = Constant.find_by_name('average_hours_per_observation').value * self.observations.count
       ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
     end
 

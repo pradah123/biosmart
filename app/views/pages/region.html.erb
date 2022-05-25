@@ -6,19 +6,43 @@
   </div>
 <% end %>  
 
-<div class="row justify-content-center">
+<div class="row justify-content-center mb-5">
   <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
     <%= @region.name %>
   </div>
 </div>
 
-<% if !@region.raw_polygon_json.blank? && @region.raw_polygon_json!='[]' %>
+<!--div class="row justify-content-center">
+  <div class="col-10 my-5 h6">
+    <div class="row justify-content-center">
+      <div class="col-3">Bioscore </div>
+    </div>  
+  </div>
+</div-->
+
+<% if !@region.raw_polygon_json.blank? && @region.raw_polygon_json!='[]' || @region.child_regions.count>0 %>
   <div class="row justify-content-center">
     <div class="col-10">
+      <div class="row mt-3">
+        <div class="input-group input-group-sm me-2">
+          <span class="input-group-text">From</span>
+          <input class="form-control form-control-sm" type="datetime-local" id="start_filter" value="<%= 1.month.ago.to_datetime.strftime '%Y-%m-%dT%H:%M:%S' %>">
+          <span class="input-group-text">To</span>
+          <input class="form-control form-control-sm" type="datetime-local" id="end_filter" value="<%= Time.now.to_datetime.strftime '%Y-%m-%dT%H:%M:%S' %>">        
+          <select class="form-select form-select-sm" id="species_filter">
+            <option value="all" selected>All species</option>
+          </select>
+          <button class="btn btn-outline-secondary" type="button">Filter</button>
+        </div>  
+      </div>
       <div class="row my-3">
-        <div class="col" id="region-map" style="width:100%; height:400px;"></div>  
+        <div class="col" id="region-map" style="width:100%; height:600px;"></div>  
         <script>  
-          var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
+          <% if @region.child_regions.count>0 %>
+            var _polygon_json = <%= JSON.generate(@region.get_child_region_polygons).html_safe %>;
+          <% else %>
+            var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
+          <% end %>  
           var _observations_filename = "/observations/region/<%= @region.id %>";
           <% if @region.subregions.count<1000 %>
             var _subregions = <%= JSON.generate(@region.subregions.where.not(radius_km: nil).map { |s| { lat: s.lat, lng: s.lng, radius_metres: (s.radius_km*1000) } }).html_safe %>;
@@ -41,6 +65,42 @@
 </div>
 
 <%= render partial: 'statistics', locals: { object: @region } %>
+
+<% if @region.child_regions.count>0 %>
+  <div class="row justify-content-center mt-5">
+    <div class="col-10">
+      <div class="row mt-5">
+        <div class="col h4 text-center proxima section-header">Leaderboard</div> 
+      </div>  
+      <div class="row mb-5">
+        <% @region.child_regions.each do |r| %>
+          <%= render partial: 'region_top_page', locals: { r: r } %>
+          <%= render partial: 'statistics', locals: { object: r } %>
+        <% end %>
+      </div>
+    </div>
+  </div>      
+<% end %>
+
+<div class="row justify-content-center">
+  <div class="col-5">
+    <div class="row mt-5">
+      <div class="col mb-3 h4 text-center proxima section-header">Species</div> 
+    </div>  
+    <div class="row my-5">
+      
+    </div>
+  </div>
+  <div class="col-5">
+    <div class="row mt-5">
+      <div class="col mb-3 h4 text-center proxima section-header">People</div> 
+    </div>  
+    <div class="row my-5">
+      
+    </div>
+  </div>
+</div>
+
 
 <% if @region.contests.in_progress.count>0 %>
   <div class="row justify-content-center mt-5">

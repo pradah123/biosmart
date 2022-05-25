@@ -8,7 +8,7 @@ Bundler.require(*Rails.groups)
 
 module Biosmart
   class Application < Rails::Application
-    config.load_defaults 6.1
+    #config.load_defaults 6.1
     config.hosts << "localhost"
     config.hosts << "portal.biosmart.life"
     config.hosts << "portal-staging.biosmart.life"
@@ -25,12 +25,12 @@ module Biosmart
     config.active_job.queue_adapter = :delayed_job
     config.active_job.queue_name_prefix = "observations_#{Rails.env}"
 
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
-      end
-    end
+    #config.middleware.insert_before 0, Rack::Cors do
+    #  allow do
+    #    origins '*'
+    #    resource '*', :headers => :any, :methods => [:get, :post, :options]
+    #  end
+    #end
     
     #config.action_mailer.delivery_method = :smtp
     #config.action_mailer.smtp_settings = {

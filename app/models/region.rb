@@ -1,19 +1,25 @@
 class Region < ApplicationRecord
   include CountableStatistics
   
+  scope :recent, -> { order created_at: :desc }
+  scope :online, -> { where status: Region.statuses[:online] }
+  scope :parent_region, -> { where parent_region_id: nil }
+
   belongs_to :user
+  belongs_to :parent_region, class_name: 'Region', optional: true
+  has_many :child_regions, class_name: 'Region', foreign_key: 'parent_region_id'
+
   has_many :participations, dependent: :delete_all
   has_many :subregions, dependent: :delete_all
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
-
-  
+ 
   after_create :compute_subregions 
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
   after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
 
-  enum status: [:online, :deleted]
+  enum status: [:online, :offline, :deleted]
 
 
   def set_slug
@@ -33,6 +39,9 @@ class Region < ApplicationRecord
     #"/regions-contests/#{contest.slug}/#{slug}"
   end  
 
+  def get_child_region_polygons
+    child_regions.map { |r| JSON.parse r.raw_polygon_json }.flatten.map { |p| p.to_hash }
+  end  
 
   
   def set_lat_lng
@@ -64,19 +73,20 @@ class Region < ApplicationRecord
     # use api from here to get the timezone offset of this lat,lng in minutes
     #
 
-    google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
-    url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{self.lng}%2C#{self.lat}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
-
-    offset_mins = 0
-    begin
-      response = HTTParty.get url
-      response_json = JSON.parse response.body
-      offset_mins = response_json['rawOffset']
-      update_column :timezone_offset_mins, (offset_mins/60)
-      participations.each { |p| p.set_start_and_end_times }
-    rescue => e
-      Rails.logger.error "google api failed for lat,lng = #{lat},#{lng}" 
-    end    
+    unless self.lat.nil? || self.lng.nil?
+      google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
+      url = "https://maps.googleapis.com/maps/api/timezone/json?location=#{self.lng}%2C#{self.lat}&timestamp=#{Time.now.to_i}&key=#{google_api_key}"
+      offset_mins = 0
+      begin
+        response = HTTParty.get url
+        response_json = JSON.parse response.body
+        offset_mins = response_json['rawOffset']
+        update_column :timezone_offset_mins, (offset_mins/60)
+        participations.each { |p| p.set_start_and_end_times }
+      rescue => e
+        Rails.logger.error "google api failed for lat,lng = #{lat},#{lng}" 
+      end
+    end
 
   end
 
@@ -143,21 +153,15 @@ class Region < ApplicationRecord
   end
 
   def contains? lat, lng
-    get_geokit_polygons.each { |polygon|
-      return true if polygon.contains?(Geokit::LatLng.new lat, lng)
-    }
+    get_geokit_polygons.each { |polygon| return true if polygon.contains?(Geokit::LatLng.new lat, lng) }
     return false    
   end
 
   def self.get_multipolygon_from_raw_polygon_json raw_polygon_json
     polygon_geojson = JSON.parse raw_polygon_json
+    #polygon_geojson = [polygon_geojson] unless polygon_geojson.kind_of?(Array)
     return 'MULTIPOLYGON(())' if polygon_geojson['coordinates'].nil?
 
-    polygon_strings = []
-    # Hack for cases where input polygon_geojson is a Hash instead of an Array
-    if !polygon_geojson.kind_of?(Array)
-      polygon_geojson = [polygon_geojson]
-    end
     polygon_geojson.each do |rpj|
       rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
       coordinates = rpj['coordinates'].map { |c| "#{c[1]} #{c[0]}" }.join ', ' # check order
@@ -169,35 +173,23 @@ class Region < ApplicationRecord
   end
 
   def self.get_raw_polygon_json_string_from_multipolygon multipolygon
-   
     polygons = multipolygon.gsub('MULTIPOLYGON((', '').gsub('))', '').split '('
-
     geojson_polygons = []
 
     polygons.each do |p|
-
       geojson = {}
       geojson['type'] = 'Polygon'
       geojson['coordinates'] = []
 
-      Rails.logger.info ">>>>"
-      Rails.logger.info p
       parts = p.gsub(')', '').strip.split ','
-      Rails.logger.info parts.inspect
-      parts.each do |c|
-        Rails.logger.info c
+      parts.each do |c|        
         coordinates = c.split ' '
-        Rails.logger.info coordinates
         arr = [coordinates[0].strip.to_f, coordinates[1].strip.to_f]
-        Rails.logger.info arr
-        Rails.logger.info "\n\n"
         geojson['coordinates'].push arr
       end
 
       geojson_polygons.push geojson unless geojson['coordinates'].empty? 
-    end  
-    
-    #Rails.logger.info geojson
+    end
 
     JSON.generate geojson_polygons
   end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_05_19_001212) do
+ActiveRecord::Schema[7.0].define(version: 2022_05_25_030744) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -119,6 +119,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_19_001212) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "type"
   end
 
   create_table "data_sources_participations", force: :cascade do |t|
@@ -210,7 +211,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_19_001212) do
     t.integer "user_id"
     t.string "name"
     t.string "description"
-    t.text "raw_polygon_json"
+    t.string "raw_polygon_json", default: "[]"
     t.string "region_url"
     t.integer "population"
     t.text "header_image"
@@ -233,6 +234,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_19_001212) do
     t.float "bioscore"
     t.float "physical_health_score", default: 0.0
     t.float "mental_health_score", default: 0.0
+    t.integer "parent_region_id"
   end
 
   create_table "subregions", force: :cascade do |t|
@@ -247,6 +249,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_19_001212) do
     t.text "raw_polygon_json"
     t.float "max_radius_km", default: 50.0
     t.integer "parent_subregion_id"
+    t.integer "status", default: 0
+    t.integer "fetch_every", default: 0
     t.index ["data_source_id"], name: "index_subregions_on_data_source_id"
     t.index ["region_id"], name: "index_subregions_on_region_id"
   end
