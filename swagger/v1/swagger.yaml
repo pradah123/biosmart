@@ -23,7 +23,7 @@ paths:
                   type: string
                 logo_image_url:
                   type: string
-                header__image_url:
+                header_image_url:
                   type: string
                 raw_polygon_json:
                   type: string
@@ -75,7 +75,7 @@ paths:
                   type: string
                 logo_image_url:
                   type: string
-                header__image_url:
+                header_image_url:
                   type: string
                 raw_polygon_json:
                   type: string
@@ -109,7 +109,7 @@ paths:
                   type: string
                 logo_image_url:
                   type: string
-                header__image_url:
+                header_image_url:
                   type: string
                 raw_polygon_json:
                   type: string

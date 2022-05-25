@@ -12,7 +12,7 @@ RSpec.describe 'api/v1/region', type: :request do
           name: { type: :string },
           description: { type: :string },
           logo_image_url: { type: :string },
-          header__image_url: { type: :string },
+          header_image_url: { type: :string },
           raw_polygon_json: { type: :string },
           population: { type: :integer },
           status: { type: :string, enum: [:online, :offline] }
@@ -76,7 +76,7 @@ RSpec.describe 'api/v1/region', type: :request do
           name: { type: :string },
           description: { type: :string },
           logo_image_url: { type: :string },
-          header__image_url: { type: :string },
+          header_image_url: { type: :string },
           raw_polygon_json: { type: :string },
           population: { type: :integer },
           status: { type: :string, enum: [:online, :offline] }
@@ -105,7 +105,7 @@ RSpec.describe 'api/v1/region', type: :request do
           name: { type: :string },
           description: { type: :string },
           logo_image_url: { type: :string },
-          header__image_url: { type: :string },
+          header_image_url: { type: :string },
           raw_polygon_json: { type: :string },
           population: { type: :integer },
           status: { type: :string, enum: [:online, :offline] }
