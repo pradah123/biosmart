@@ -15,24 +15,15 @@ class Observation < ApplicationRecord
   belongs_to :data_source
   has_many :observation_images
 
-  after_create :assign_to_contests
-  after_update :update_to_contests, if: :saved_change_to_lat || :saved_change_to_lng
-  after_save :update_search_text, :update_address
+  after_save :update_search_text, :update_address, :add_to_regions_and_contests
 
   validates :unique_id, presence: true  
   validates :lat, presence: true
   validates :lng, presence: true    
   validates :observed_at, presence: true
- 
-  def assign_to_contests
-    Contest.in_progress.each { |c| c.add_observation self }
-  end
-
-  def update_to_contests
-    Contest.in_progress.each { |c| c.remove_observation self }
-    Contest.in_progress.each { |c| added = c.add_observation self }
-  end
     
+
+
   def update_search_text
     update_column :search_text, "#{scientific_name} #{common_name} #{accepted_name} #{creator_name}".downcase
   end
@@ -52,6 +43,77 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       Rails.logger.error "google gecode api failed for lat,lng = #{lat},#{lng}" 
     end
   end  
+
+  def add_to_regions_and_contests
+    added = false
+
+    inside = false
+    regions.each do |region|
+      region.get_geokit_polygons.each do |polygon|
+        if polygon.contains?(geokit_point) 
+          inside = true
+          break
+        end
+      end
+      if inside==false         
+        region.observations.where(id: id).delete_all
+      end    
+    end
+
+    participations.each do |participation|
+      unless can_participate_in(participation)
+        participation.observations.where(observation_id: id).delete_all
+        participation.contest.observations.where(observation_id: id).delete_all
+      end
+    end  
+
+    geokit_point = Geokit::LatLng.new lat, lng
+
+    Region.all.each do |region|
+      region.get_geokit_polygons.each do |polygon|
+        if polygon.contains?(geokit_point)
+
+          # inside one of the region's polygons
+          region.add_and_compute_statistics self
+          Observation.add_observation_to_page_caches self, region
+          added = true
+
+          region.participations.each do |participation|
+            if can_participate_in(participation)
+              #
+              # this observation is in this contest in time and space
+              # add references for this observation to contest, participation, and region
+              #              
+              participation.contest.add_and_compute_statistics self
+              participation.add_and_compute_statistics self
+              Observation.add_observation_to_page_caches self, participation              
+            end  
+          end
+
+          break if added==true
+        end
+      end
+    end
+
+    added
+  end
+
+  def can_participate_in participation
+    # from one of the requested data sources
+    return false unless participation.data_sources.include?(data_source) 
+
+    # observed in the period of the contest
+    return false unless observed_at>=participation.starts_at && observed_at<participation.ends_at 
+          
+    # submitted in the allowed period  
+    return false unless created_at>=participation.starts_at && created_at<participation.last_submission_accepted_at 
+
+    true
+  end  
+
+
+
+
 
 
   @@page_cache = {}
@@ -96,61 +158,67 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     true
   end
 
+  def self.store observations
+    nupdates = 0
+    nupdates_no_change = 0
+    nupdates_failed = 0
+    nfields_updated = 0
+    ncreates = 0
+    ncreates_failed = 0
 
+    observations.each do |params|
+      obs = Observation.find_by_unique_id params[:unique_id]
+      image_urls = (params.delete :image_urls) || []
+      
+      if obs.nil? 
+        obs = Observation.new params
+        if obs.save
+          ncreates += 1
+          image_urls.each do |url|
+            ObservationImage.create! observation_id: obs.id, url: url
+          end
+        else
+          ncreates_failed += 1          
+          Rails.logger.info "\n\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+          Rails.logger.info "Create failed on observation"
+          Rails.logger.info obs.inspect
+          Rails.logger.info params.inspect
+          Rails.logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\n"
+        end
 
-  def add_to_regions_and_contests
-    added = false
+      else
+        obs.attributes = params
+        if obs.changed.empty?
+          nupdates_no_change += 1
+        else
+          nupdates += 1  
+          nfields_updated += obs.changed.length
+          if obs.save
 
-    geokit_point = Geokit::LatLng.new lat, lng
-
-    Region.all.each do |region|
-      region.get_geokit_polygons.each do |polygon|
-        if polygon.contains?(geokit_point)
-
-          # inside one of the region's polygons
-          region.add_and_compute_statistics self
-          Observation.add_observation_to_page_caches self, region
-          added = true
-
-          region.participations.in_competition.each do |participation|
-            # from one of the requested data sources
-            if participation.data_sources.include?(data_source) 
-
-              # observed in the period of the contest
-              if observed_at>=participation.starts_at && observed_at<participation.ends_at 
-          
-                # submitted in the allowed period  
-                if created_at>=participation.starts_at && created_at<participation.last_submission_accepted_at 
-          
-                  #
-                  # this observation is in this contest in time and space
-                  # add references for this observation to contest, participation, and region
-                  #
-
-                  participation.contest.add_and_compute_statistics self
-                  participation.add_and_compute_statistics self
-                  Observation.add_observation_to_page_caches self, participation
-                
-                end
+            current_image_urls = obs.observation_images.pluck :url
+            if current_image_urls-image_urls!=[] 
+              # if the images given are not the same as the ones present, delete the old
+              # ones and remake them
+              obs.observation_images.delete_all
+              image_urls.each do |url|
+                ObservationImage.create! observation_id: obs.id, url: url
               end
             end  
-          end
 
-          break if added==true
+          else  
+            nupdates_failed +=1 
+            Rails.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+            Rails.logger.info "Update failed on observation #{obs.id}"
+            Rails.logger.info obs.inspect
+            Rails.logger.info params.inspect
+            Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n\n"
+          end
         end
       end
+
     end
 
-    added
   end
-
-  def remove_observation obs
-    observations.where(id: obs.id).delete_all
-    participations.in_competition.each do |participation|
-      participation.observations.where(id: obs.id).delete_all
-      participation.region.observations.where(id: obs.id).delete_all
-    end  
-  end 
 
   rails_admin do
     list do

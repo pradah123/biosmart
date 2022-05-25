@@ -1,3 +1,10 @@
+
+r = Region.create! name: 'Tokyo Parks', description: 'Three main parks in central Tokyo', logo_image_url: 'https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/favicon.png'
+Region.create! name: 'Yoyogi', description: 'Yoyogi Park', parent_region_id: r.id, logo_image_url: 'https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/favicon.png', raw_polygon_json: '[{"type":"Polygon","coordinates":[[139.69533613176844,35.67528163916845],[139.69548633547328,35.67435780023483],[139.69769647570155,35.67200457728195],[139.70005681963465,35.67108070041584],[139.70185926409266,35.669145753838784],[139.70035722704432,35.66865765179871],[139.69778230639002,35.66850076122344],[139.69784667940638,35.667123597386045],[139.6941559598019,35.665781275592984],[139.6927182957699,35.66658318483284],[139.69098022432826,35.66870994858861],[139.69016483278773,35.66933750739513],[139.69027212114833,35.67020910866402],[139.69076564760707,35.670488019060066],[139.6908085629513,35.670836655684646],[139.69050815554164,35.671167859067594],[139.69052961321376,35.67238807019891],[139.6912591740658,35.67254495313385],[139.69155958147547,35.673956885672155],[139.69276121111415,35.6735559690956],[139.6940486714413,35.67479357464918]]}]'
+Region.create! name: 'Shinjuku', description: 'Shinjuku Park', parent_region_id: r.id, logo_image_url: 'https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/favicon.png', raw_polygon_json: '[{"type":"Polygon","coordinates":[[139.70612074614442,35.689215724142834],[139.71189285994447,35.68719407621397],[139.71489693404115,35.68719407621397],[139.71453215361512,35.68433579689269],[139.7158410716144,35.68330748843083],[139.71549774886049,35.68247088871829],[139.71414591551698,35.68158199191204],[139.71313740492738,35.68186086256436],[139.71223618269838,35.681024247683325],[139.70974709273256,35.68163428023358],[139.70670010329164,35.68316805575459],[139.7043183016864,35.68489351797244],[139.70455433607972,35.68518980571025],[139.7041895556537,35.68674094120107]]}]'
+Region.create! name: 'Ueno', description: 'Ueno Park', parent_region_id: r.id, logo_image_url: 'https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/favicon.png', raw_polygon_json: '[{"type":"Polygon","coordinates":[[139.7725076977761,35.717856783908424],[139.77321580095602,35.7186755910841],[139.777893573478,35.716184300553934],[139.77332308931662,35.70980763574534],[139.76976111574484,35.70926751228382],[139.76879552049948,35.710190946949226],[139.76761534853293,35.71512155851692],[139.76862385912253,35.71574875225276],[139.76978257341696,35.71557453226575],[139.76991131944968,35.71719476344471],[139.77042630358054,35.71747350957349],[139.76976111574484,35.71820521352226],[139.77137044115378,35.71825747783292]]}]'
+
+
 =begin
 ebird = DataSource.where(name: 'ebird').first
 inat = DataSource.where(name: 'inaturalist').first
@@ -158,6 +165,7 @@ Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: 
 Subregion.create! region_id: r.id, data_source_id: ebird.id, params_json: {lat: -32.393877575286446, lng: -67.35717773437501, dist: 24, sort: "date"}.to_json
 =end
 
+=begin
 User.all.destroy_all
 u0 = User.create! organization_name: 'Biosmart Admin', email: 'admin@earthguardians.life', password: '123456', role: 'admin'
 
@@ -179,7 +187,7 @@ ds2 = DataSource.create! name: 'ebird'
 ds3 = DataSource.create! name: 'observation.org'
 ds = [ds0, ds1, ds2, ds3]
 
-=begin
+
 Subregion.all.destroy_all
 # For iNat
 Subregion.create! region_id: r0.id, data_source_id: ds0.id, params_json: {"geo": true, "lat": -26.902477, "lng": 149.150391, "order": "desc", "radius": 500, "order_by": "observed_on", "per_page": 200, "page": 1}.to_json
@@ -191,6 +199,7 @@ Subregion.create! region_id: r3.id, data_source_id: ds3.id, params_json: {locati
 Subregion.create! region_id: r3.id, data_source_id: ds2.id, params_json: {lat: 54.321329, lng: 10.019531, dist: 50, sort: "date"}.to_json
 =end
 
+=begin
 Region.all.each do |r|
   [c0.id, c1.id, c2.id].each do |cid|
     p = Participation.create! contest_id: cid, region_id: r.id, status: Participation.statuses[:accepted], user_id: u0.id
@@ -219,6 +228,7 @@ nobs.times do
   end  
 end
 
+=end
 
 =begin
 User.all.destroy_all

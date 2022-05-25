@@ -3,10 +3,18 @@ class Subregion < ApplicationRecord
   belongs_to :data_source
   after_save :update_geometry
 
+  enum status: [:not_processing, :processing]
+  enum fetch_every: [:fifteen_minutes, :thirty_minutes, :one_hour, :two_hours, :four_hours, :eight_hours]
+
+  def fetch_and_store_observations
+    processing!
+    data_source.fetch_and_store_observations
+    not_processing!
+  end
+
   def get_query_parameters
     data_source.get_query_parameters self
   end  
-
 
   def update_geometry
     return unless parent_subregion_id.nil?

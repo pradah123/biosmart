@@ -81,7 +81,7 @@
         </div>  
         <div class="row">
           <div class="col">
-            <% Region.all.online.recent.each do |r| %>
+            <% Region.all.online.parent_region.recent.each do |r| %>
               <%= render partial: 'region_top_page', locals: { r: r } %>
             <% end %>
           </div>    

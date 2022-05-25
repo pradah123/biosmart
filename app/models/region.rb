@@ -1,10 +1,14 @@
 class Region < ApplicationRecord
   include CountableStatistics
   
-  scope :recent, -> { order created_at: :asc }
+  scope :recent, -> { order created_at: :desc }
   scope :online, -> { where status: Region.statuses[:online] }
+  scope :parent_region, -> { where parent_region_id: nil }
 
   belongs_to :user
+  belongs_to :parent_region, class_name: 'Region', optional: true
+  has_many :child_regions, class_name: 'Region', foreign_key: 'parent_region_id'
+
   has_many :participations, dependent: :delete_all
   has_many :subregions, dependent: :delete_all
   has_many :contests, through: :participations
@@ -35,6 +39,9 @@ class Region < ApplicationRecord
     #"/regions-contests/#{contest.slug}/#{slug}"
   end  
 
+  def get_child_region_polygons
+    child_regions.map { |r| JSON.parse r.raw_polygon_json }.flatten.map { |p| p.to_hash }
+  end  
 
   
   def set_lat_lng
