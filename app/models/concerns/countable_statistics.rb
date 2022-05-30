@@ -36,8 +36,7 @@ module CountableStatistics
     end
 
     def get_top_species n
-      #get_ranking self.observations.pluck(:scientific_name), n
-      get_ranking ["aa", "bb", "cc", "aa", "aa", "aa", "bb", "bb", "bb", "bb", "bb"], 3
+      get_ranking self.observations.pluck(:scientific_name), n
     end  
 
     def get_top_people n
