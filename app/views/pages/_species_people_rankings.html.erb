@@ -1,0 +1,27 @@
+<div class="row justify-content-center">
+  <div class="col-5">
+    <div class="row mt-5">
+      <div class="col mb-3 h4 text-center proxima section-header">Species</div> 
+    </div>  
+    <div class="row my-5">
+      <div class="col">
+        <% object.get_top_species(10).each.with_index(1) do |s,i| %>
+          <%= render partial: 'ranked_object', locals: { object: s, i: i } %>
+        <% end %>
+      </div>  
+    </div>
+  </div>
+  <div class="col"></div>
+  <div class="col-5">
+    <div class="row mt-5">
+      <div class="col mb-3 h4 text-center proxima section-header">People</div> 
+    </div>  
+    <div class="row my-5">
+      <div class="col">      
+        <% object.get_top_people(10).each.with_index(1) do |p,i| %>
+          <%= render partial: 'ranked_object', locals: { object: p, i: i } %>
+        <% end %>
+      </div>      
+    </div>
+  </div>
+</div>

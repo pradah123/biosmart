@@ -109,6 +109,14 @@ function set_up_observations() {
     if(e.key==='Enter' && $('#search_input').is(':focus')) $('#search_button').click();
   });
 
+  $('.search-for').each(function() { 
+    var el = $(this);
+    el.click(function(){
+      $('#search_input').val(el.text());
+      $('#search_button').click();
+    });
+  });
+
   $('#search_input').val(Cookies.get('q'));
   $('#show_more').click();
 }
