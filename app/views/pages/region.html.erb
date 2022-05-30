@@ -12,6 +12,8 @@
   </div>
 </div>
 
+<%= render partial: 'scores', locals: { object: @region } %>
+
 <!--div class="row justify-content-center">
   <div class="col-10 my-5 h6">
     <div class="row justify-content-center">
@@ -58,7 +60,7 @@
 <div class="row justify-content-center">
   <div class="col-10 my-5 h6">
     <% if @region.logo_image_url || @region.logo_image %>
-      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="height:160px;">
+      <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="max-height:160px;max-width:50%;">
     <% end %>  
     <%= @region.description.html_safe %>
   </div>
@@ -82,25 +84,7 @@
   </div>      
 <% end %>
 
-<div class="row justify-content-center">
-  <div class="col-5">
-    <div class="row mt-5">
-      <div class="col mb-3 h4 text-center proxima section-header">Species</div> 
-    </div>  
-    <div class="row my-5">
-      
-    </div>
-  </div>
-  <div class="col-5">
-    <div class="row mt-5">
-      <div class="col mb-3 h4 text-center proxima section-header">People</div> 
-    </div>  
-    <div class="row my-5">
-      
-    </div>
-  </div>
-</div>
-
+<%= render partial: 'species_people_rankings', locals: { object: @region } %>
 
 <% if @region.contests.in_progress.count>0 %>
   <div class="row justify-content-center mt-5">
