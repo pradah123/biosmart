@@ -206,7 +206,7 @@ function set_up_region_page() {
           markers.push(marker);
           //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
         } 
-        new markerClusterer.MarkerClusterer(map, markers, { 'cssClass': 'marker_cluster' });
+        new markerClusterer.MarkerClusterer(map, markers);//, { 'cssClass': 'marker_cluster' });
       }
     })
     .fail(function(xhr, status, error) {})

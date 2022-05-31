@@ -59,8 +59,9 @@
               <a href="/regions" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <%= @regions.nil? ? '' : 'text-decoration-underline' %>" role="button">Regions</a>
         
               <% if @user.admin? %>
-                <a href="/users" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <%= @users.nil? ? '' : 'text-decoration-underline' %>" role="button">Users</a>
-                <a href="/contests" class="btn float-end p-3 h3 proxima text-uppercase fw-header-link text-white <%= @contests.nil? ? '' : 'text-decoration-underline' %>" role="button">Contest Management</a>
+                <a href="/dashboard/admin" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white" role="button">Dashboard</a>
+                <!--a href="/users" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <#%= @users.nil? ? '' : 'text-decoration-underline' %>" role="button">Users</a>
+                <a href="/contests" class="btn float-end p-3 h3 proxima text-uppercase fw-header-link text-white <#%= @contests.nil? ? '' : 'text-decoration-underline' %>" role="button">Contest Management</a-->
               <% end %>
             <% else %>
               <a href="#" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white" data-bs-toggle="modal" data-bs-target="#login" id="login_button" role="button">Login</a>
