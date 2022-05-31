@@ -35,16 +35,16 @@ module CountableStatistics
       ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
     end
 
-    def get_top_species n
-      get_ranking self.observations.pluck(:scientific_name), n
+    def get_top_species n=nil
+      get_ranking ['a', 'a', 'a', 'b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'a', 'a', 'a', 'b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'js', 'k', 'l', 'md', 'n', 'aa', 'aa', 'aa', 'bf', 'b', 'cd', 'd', 'se', 'f', 'g', 'hg', 'i', 'fj', 'sk', 'd', 'mff', 'nsa', 'aab', 'cd', 'd', 'sde', 'f', 'g', 'hfg', 'dsi', 'fffj', 'sddk', 'l', 'mf', 'nffa'], n#self.observations.pluck(:scientific_name), n
     end  
 
-    def get_top_people n
+    def get_top_people n=nil
       get_ranking self.observations.pluck(:creator_name), n
     end  
 
     def get_ranking arr, n
-      arr.tally.sort_by { |k,v| -v }.first n
+      arr.tally.sort_by { |k,v| -v }.first (n.nil? || n<1 ? arr.length : n)
     end
 
   end
