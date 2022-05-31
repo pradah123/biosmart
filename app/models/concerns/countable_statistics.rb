@@ -36,7 +36,7 @@ module CountableStatistics
     end
 
     def get_top_species n=nil
-      get_ranking ['a', 'a', 'a', 'b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'a', 'a', 'a', 'b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'js', 'k', 'l', 'md', 'n', 'aa', 'aa', 'aa', 'bf', 'b', 'cd', 'd', 'se', 'f', 'g', 'hg', 'i', 'fj', 'sk', 'd', 'mff', 'nsa', 'aab', 'cd', 'd', 'sde', 'f', 'g', 'hfg', 'dsi', 'fffj', 'sddk', 'l', 'mf', 'nffa'], n#self.observations.pluck(:scientific_name), n
+      get_ranking self.observations.pluck(:scientific_name), n
     end  
 
     def get_top_people n=nil
