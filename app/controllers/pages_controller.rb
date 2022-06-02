@@ -88,13 +88,13 @@ class PagesController < ApplicationController
       obj = nil
     end
 
-    q = cookies[:q].strip.downcase
+    q = cookies[:q].blank? ? '' : cookies[:q].strip.downcase
 
     if q.length==0
       observations = Observation.get_observations (obj.nil? ? nil : obj.first)
     else  
       if obj.nil?
-        observations = Observation.all.has_image.has_scientific_name.recent.search q
+        observations = Observation.all.has_scientific_name.recent.search q
       else 
         observations = obj.first.observations.has_scientific_name.recent.search q
       end  
