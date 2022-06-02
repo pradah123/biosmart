@@ -84,21 +84,3 @@
 <% end %>
 
 <%= render partial: 'recent_observations', locals: { observations: @observations, api_parameters: "?" } %>
-
-<% Region.all.recent.each do |r| %>
-<div class="row justify-content-center mt-5">
-  <div class="col-8">
-    <div class="row mb-3">
-      <div class="col-9 d-flex align-items-center">
-        <a href="<%= r.get_path %>" class="text-muted d-flex fw-bold"><%= r.name %></a>
-      </div>
-      <div class="col-3">
-        <a role="button" class="text-muted d-flex " href="<%= r.get_path %>" target="_blank">View</a>
-      </div>
-    </div>  
-  </div>
-</div>  
-<% end %>
-
-
-
