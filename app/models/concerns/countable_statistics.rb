@@ -3,8 +3,13 @@ module CountableStatistics
   included do
 
     def add_and_compute_statistics obs
-      self.observations << obs
+      add_observation self, obs
       reset_statistics
+    end
+
+    def add_observation region, obs
+      region.observations << obs
+      add_observation region.parent_region, obs unless region.parent_subregion_id.nil?
     end
 
     def reset_statistics
