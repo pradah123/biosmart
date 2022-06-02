@@ -24,19 +24,18 @@ class Region < ApplicationRecord
 
   def set_slug
     if slug.nil?
-      slug = name.blank? ? '' : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+      slug = name.blank? ? SecureRandom.hex(8) : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+      slug += '1' if ['contest'].include?(slug) || Region.all.where(slug: slug).count>0
       update_column :slug, slug
     end
   end
     
   def get_path
-    "/regions/#{id}/#{slug}"
-    #"/regions/#{slug}"
+    "/#{slug}"
   end  
 
   def get_region_contest_path contest
-    "/regions/#{id}/contests/#{contest.id}/#{contest.slug}/#{slug}"
-    #"/regions-contests/#{contest.slug}/#{slug}"
+    "/#{slug}/#{contest.slug}/"
   end  
 
   def get_child_region_polygons

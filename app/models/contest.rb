@@ -41,8 +41,7 @@ class Contest < ApplicationRecord
   end
     
   def get_path
-    "/contests/#{id}/#{slug}"
-    #"/contests/#{slug}"
+    "/contest/#{slug}"
   end
 
   def get_region_contest_path region
