@@ -1,6 +1,6 @@
 <div class="col-6 col-lg-4 observation">
   <div class="card m-2" style="height:370px;">    
-    <div class="card-body observation-image" style="height: 200px; background: url('<%= o.observation_images.first.url || o.image_link %>') no-repeat center center / cover;">
+    <div class="card-body observation-image" style="height: 200px; background-color: lightGrey; <% if o.observation_images.count>0 %>background: url('<%= o.observation_images.first.url %>') no-repeat center center / cover;<% end %>">
     </div>
     <div class="card-body">  
       <h5 class="card-title w-100 text-center text-dark fw-bold scientific_name"><%= o.scientific_name %></h5>

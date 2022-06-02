@@ -67,17 +67,18 @@ function set_up_observations() {
   $(document).on('click', '.gallery-link', function() { 
     var link = $(this);    
     $('#gallery-carousel').html('');
-    var urls = JSON.parse( link.attr('data-image-urls') ); 
+    var urls = JSON.parse( link.attr('data-image-urls') );
+    if(urls.length>0) {
+      for( var i=0 ; i<urls.length ; i++ ) {
+        var html = '<div class="carousel-item"><div class="card border-0 p-0 m-0">';
+        html += '<img src="'+urls[i]+'" class="img-fluid" loading="lazy" alt="...">';
+        html += '</div></div>';
+        $('#gallery-carousel').append(html);
+      } 
 
-    for( var i=0 ; i<urls.length ; i++ ) {
-      var html = '<div class="carousel-item"><div class="card border-0 p-0 m-0">';
-      html += '<img src="'+urls[i]+'" class="img-fluid" loading="lazy" alt="...">';
-      html += '</div></div>';
-      $('#gallery-carousel').append(html);
-    } 
-
-    $('.carousel-item').first().addClass('active');
-    _gallery_modal.show();      
+      $('.carousel-item').first().addClass('active');
+      _gallery_modal.show();      
+    }
   });
 
   $('#show_more').click(function() {
@@ -254,7 +255,7 @@ function set_up_region_page() {
           markers.push(marker);
           //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
         } 
-        new MarkerClusterer({ markers, map });
+        const mc = new markerClusterer.MarkerClusterer({ map, markers });
       }
     })
     .fail(function(xhr, status, error) {})
