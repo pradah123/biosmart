@@ -33,20 +33,20 @@ module Api::V1
       
     def get_more
 
-      if params[:region_id] && params[:contest_id]
+      if !params[:region_id].nil? && !params[:contest_id].nil?
         obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
-      elsif params[:region_id]
+      elsif !params[:region_id].nil?
         obj = Region.where id: params[:region_id]
-      elsif params[:contest_id]
+      elsif !params[:contest_id].nil?
         obj = Contest.where id: params[:contest_id]
       else
         obj = []
       end
 
       unless obj.blank?
-        observations = obj.first.observations.has_image.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
+        observations = obj.first.observations.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
       else
-        observations = Observation.all.has_image.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
+        observations = Observation.all.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
       end
       
       observations = observations.map { |obs| {
