@@ -43,6 +43,13 @@ class Region < ApplicationRecord
     child_regions.map { |r| JSON.parse r.raw_polygon_json }.flatten.map { |p| p.to_hash }
   end  
 
+  def self.get_all_regions
+    arr = Region.all.where.not(lat: nil, lng: nil).map { |r| { name: r.name, url: r.get_path, lat: r.lat, lng: r.lng } } 
+    Rails.logger.info arr
+    arr
+  end  
+
+
   
   def set_lat_lng
     #
