@@ -7,13 +7,13 @@ class PagesController < ApplicationController
 
   def region_contest
 
-    @region = Region.find_by_id params[:region_id]
+    @region = Region.find_by_slug params[:region_slug]
     if @region.nil?
       render :top 
       return
     end
     
-    @contest = Contest.find_by_id params[:contest_id]
+    @contest = Contest.find_by_slug params[:contest_slug]
     if @contest.nil?
       render :top
       return
@@ -29,12 +29,12 @@ class PagesController < ApplicationController
   end
 
   def region
-    @region = Region.find_by_id params[:id]
+    @region = Region.find_by_slug params[:slug]
     render :top if @region.nil?
   end
 
   def contest
-    @contest = Contest.find_by_id params[:id]
+    @contest = Contest.find_by_slug params[:slug]
     render :top if @contest.nil?
   end
 
@@ -93,7 +93,11 @@ class PagesController < ApplicationController
     if q.length==0
       observations = Observation.get_observations (obj.nil? ? nil : obj.first)
     else  
-      observations = (obj.nil? ? Observation.all : obj.first.observations).has_image.has_scientific_name.recent.search q
+      if obj.nil?
+        observations = Observation.all.has_image.has_scientific_name.recent.search q
+      else 
+        observations = obj.first.observations.has_scientific_name.recent.search q
+      end  
     end  
     
     render partial: 'pages/observation_block', locals: { observations: observations[params[:nstart].to_i...params[:nend].to_i] }, layout: false

@@ -25,18 +25,18 @@
 <% if !@region.raw_polygon_json.blank? && @region.raw_polygon_json!='[]' || @region.child_regions.count>0 %>
   <div class="row justify-content-center">
     <div class="col-10">
-      <div class="row mt-3">
+      <!--div class="row mt-3">
         <div class="input-group input-group-sm me-2">
           <span class="input-group-text">From</span>
-          <input class="form-control form-control-sm" type="datetime-local" id="start_filter" value="<%= 1.month.ago.to_datetime.strftime '%Y-%m-%dT%H:%M:%S' %>">
+          <input class="form-control form-control-sm" type="datetime-local" id="start_filter" value="<%#= 1.month.ago.to_datetime.strftime '%Y-%m-%dT%H:%M:%S' %>">
           <span class="input-group-text">To</span>
-          <input class="form-control form-control-sm" type="datetime-local" id="end_filter" value="<%= Time.now.to_datetime.strftime '%Y-%m-%dT%H:%M:%S' %>">        
+          <input class="form-control form-control-sm" type="datetime-local" id="end_filter" value="<%#= Time.now.to_datetime.strftime '%Y-%m-%dT%H:%M:%S' %>">        
           <select class="form-select form-select-sm" id="species_filter">
             <option value="all" selected>All species</option>
           </select>
           <button class="btn btn-outline-secondary" type="button">Filter</button>
         </div>  
-      </div>
+      </div-->
       <div class="row my-3">
         <div class="col" id="region-map" style="width:100%; height:600px;"></div>  
         <script>  

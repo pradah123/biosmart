@@ -18,6 +18,7 @@ class Region < ApplicationRecord
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
   after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
+  after_save :set_slug
 
   enum status: [:online, :offline, :deleted]
 
