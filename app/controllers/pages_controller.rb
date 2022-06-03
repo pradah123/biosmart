@@ -94,9 +94,9 @@ class PagesController < ApplicationController
       observations = Observation.get_observations (obj.nil? ? nil : obj.first)
     else  
       if obj.nil?
-        observations = Observation.all.has_scientific_name.recent.search q
+        observations = Observation.all.has_images.has_scientific_name.recent.search q
       else 
-        observations = obj.first.observations.has_scientific_name.recent.search q
+        observations = obj.first.observations.has_images.has_scientific_name.recent.search q
       end  
     end  
     

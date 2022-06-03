@@ -140,9 +140,9 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     now = Time.now
     if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+30.minutes)
       if obj.nil?
-        @@page_cache[key] = Observation.all.recent.first @@nobservations_per_page
+        @@page_cache[key] = Observation.all.has_images.recent.first @@nobservations_per_page
       else
-        @@page_cache[key] = obj.observations.recent.first @@nobservations_per_page
+        @@page_cache[key] = obj.observations.has_images.recent.first @@nobservations_per_page
       end
       @@page_cache_last_update[key] = now
     end
