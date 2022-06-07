@@ -3,8 +3,13 @@ module CountableStatistics
   included do
 
     def add_and_compute_statistics obs
-      self.observations << obs
+      add_observation self, obs
       reset_statistics
+    end
+
+    def add_observation region, obs
+      region.observations << obs
+      add_observation region.parent_region, obs unless region.parent_subregion_id.nil?
     end
 
     def reset_statistics
@@ -33,6 +38,18 @@ module CountableStatistics
     def get_score constant, constant_a, constant_b
       total_hours = Constant.find_by_name('average_hours_per_observation').value * self.observations.count
       ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
+    end
+
+    def get_top_species n=nil
+      get_ranking self.observations.pluck(:scientific_name), n
+    end  
+
+    def get_top_people n=nil
+      get_ranking self.observations.pluck(:creator_name), n
+    end  
+
+    def get_ranking arr, n
+      arr.tally.sort_by { |k,v| -v }.first (n.nil? || n<1 ? arr.length : n)
     end
 
   end

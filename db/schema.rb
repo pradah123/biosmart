@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_05_25_030744) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -99,6 +99,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_25_030744) do
     t.integer "rank_regions_by", default: 0
     t.float "physical_health_score", default: 0.0
     t.float "mental_health_score", default: 0.0
+    t.float "bioscore", default: 0.0
   end
 
   create_table "contests_observations", force: :cascade do |t|
@@ -205,6 +206,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_25_030744) do
     t.integer "people_count", default: 0
     t.float "physical_health_score", default: 0.0
     t.float "mental_health_score", default: 0.0
+    t.float "bioscore", default: 0.0
   end
 
   create_table "regions", force: :cascade do |t|
@@ -231,7 +233,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_25_030744) do
     t.integer "people_count", default: 0
     t.float "lat"
     t.float "lng"
-    t.float "bioscore"
+    t.float "bioscore", default: 0.0
     t.float "physical_health_score", default: 0.0
     t.float "mental_health_score", default: 0.0
     t.integer "parent_region_id"

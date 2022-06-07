@@ -1,6 +1,6 @@
 class Observation < ApplicationRecord
   scope :recent, -> { order observed_at: :desc }
-  scope :has_image, -> { where 'observation_images_count > ?', 0 }
+  scope :has_images, -> { where 'observation_images_count > ?', 0 }
   scope :has_scientific_name, -> { where.not scientific_name: @@filtered_scientific_names }
   scope :has_accepted_name, -> { where.not accepted_name: @@filtered_scientific_names }
   scope :from_observation_org, -> { joins(:data_source).where(data_sources: { name: 'observation.org' }) }
@@ -73,11 +73,12 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       region.get_geokit_polygons.each do |polygon|
         if polygon.contains?(geokit_point)
 
+          #
           # inside one of the region's polygons
+          #
           region.add_and_compute_statistics self
           Observation.add_observation_to_page_caches self, region
-          added = true
-
+         
           region.participations.each do |participation|
             if can_participate_in(participation)
               #
@@ -90,7 +91,7 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
             end  
           end
 
-          break if added==true
+          break
         end
       end
     end
@@ -139,9 +140,9 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     now = Time.now
     if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+30.minutes)
       if obj.nil?
-        @@page_cache[key] = Observation.all.has_image.has_scientific_name.recent.first @@nobservations_per_page
+        @@page_cache[key] = Observation.all.has_images.recent.first @@nobservations_per_page
       else
-        @@page_cache[key] = obj.observations.has_image.has_scientific_name.recent.first @@nobservations_per_page
+        @@page_cache[key] = obj.observations.has_images.recent.first @@nobservations_per_page
       end
       @@page_cache_last_update[key] = now
     end

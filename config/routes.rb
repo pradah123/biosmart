@@ -10,16 +10,11 @@ Rails.application.routes.draw do
   get '/contests', to: 'pages#contests'
   get '/participants', to: 'pages#participations'
   get '/users', to: 'pages#users'
-
-  get '/regions/:region_id/contests/:contest_id(/:contest_slug/:region_slug)', to: 'pages#region_contest'
-  get '/regions/:id(/:slug)', to: 'pages#region'
-  get '/contests/:id(/:slug)', to: 'pages#contest'
-
-  #get '/regions-contests/:contest_slug/:region_slug', to: 'pages#region_contest'
-  #get '/regions/:slug', to: 'pages#region'
-  #get '/contests/:slug', to: 'pages#contest'
-
   get '/observations/more', to: 'pages#get_more'
+
+  get '/contest/:slug', to: 'pages#contest'
+  get '/:region_slug/:contest_slug', to: 'pages#region_contest'
+  get '/:slug', to: 'pages#region'
 
   namespace :api do
     namespace :v1 do
@@ -54,6 +49,6 @@ Rails.application.routes.draw do
     end
   end
 
-  get "*path", to: redirect('404.html')
+  get "*path", to: redirect('/')
 
 end

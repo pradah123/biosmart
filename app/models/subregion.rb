@@ -7,6 +7,7 @@ class Subregion < ApplicationRecord
   enum fetch_every: [:fifteen_minutes, :thirty_minutes, :one_hour, :two_hours, :four_hours, :eight_hours]
 
   def fetch_and_store_observations
+    #return if region.parent_subregion_id.nil?
     processing!
     data_source.fetch_and_store_observations
     not_processing!
