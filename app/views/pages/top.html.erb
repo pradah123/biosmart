@@ -20,6 +20,8 @@
   </div>
 </div>
 
+<%= render partial: 'recent_observations', locals: { observations: @observations, api_parameters: "?" } %>
+
 <% if Contest.in_progress.online.count>0 %>
   <div class="row justify-content-center">
     <div class="col-10">
@@ -82,5 +84,3 @@
     </div>
   </div>
 <% end %>
-
-<%= render partial: 'recent_observations', locals: { observations: @observations, api_parameters: "?" } %>

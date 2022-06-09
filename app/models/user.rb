@@ -93,6 +93,11 @@ class User < ApplicationRecord
 
 
   rails_admin do
+
+    object_label_method do
+      :get_label
+    end
+
     list do
       field :id
       field :organization_name          
@@ -117,5 +122,8 @@ class User < ApplicationRecord
     end  
   end
 
+  def get_label
+    "#{ organization_name.nil? ? '' : organization_name} : #{email.nil? ? '' : email}"
+  end
 
 end

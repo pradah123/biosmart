@@ -78,29 +78,12 @@ class PagesController < ApplicationController
 
 
   def get_more
-    if params[:region_id] && params[:contest_id]
-      obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
-    elsif params[:region_id]
-      obj = Region.where id: params[:region_id]
-    elsif params[:contest_id]
-      obj = Contest.where id: params[:contest_id]
-    else
-      obj = nil
-    end
-
-    q = cookies[:q].blank? ? '' : cookies[:q].strip.downcase
-
-    if q.length==0
-      observations = Observation.get_observations (obj.nil? ? nil : obj.first)
-    else  
-      if obj.nil?
-        observations = Observation.all.has_images.has_scientific_name.recent.search q
-      else 
-        observations = obj.first.observations.has_images.has_scientific_name.recent.search q
-      end  
-    end  
-    
-    render partial: 'pages/observation_block', locals: { observations: observations[params[:nstart].to_i...params[:nend].to_i] }, layout: false
+    result = Observation.get_search_results params[:region_id], params[:contest_id], cookies[:q]
+    render partial: 'pages/observation_block', locals: { 
+      observations: result[:observations][params[:nstart].to_i...params[:nend].to_i], 
+      nobservations: result[:nobservations].count,
+      nobservations_excluded: result[:nobservations_excluded]
+    }, layout: false
   end  
 
 end

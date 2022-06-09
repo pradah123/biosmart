@@ -17,11 +17,15 @@ class Observation < ApplicationRecord
 
   after_save :update_search_text, :update_address, :add_to_regions_and_contests
 
-  validates :unique_id, presence: true  
+  validates :unique_id, presence: true
   validates :lat, presence: true
   validates :lng, presence: true    
   validates :observed_at, presence: true
     
+  @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
+  @@nobservations_per_page = 33
+
+
 
 
   def update_search_text
@@ -34,9 +38,9 @@ class Observation < ApplicationRecord
     begin
       response = HTTParty.get url
       response_json = JSON.parse response.body
-Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-Rails.logger.info response_json
-Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      Rails.logger.info response_json
+      Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       address = ""#response_json['results']
       update_column :address, address
     rescue => e
@@ -115,49 +119,42 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 
 
-
-
-  @@page_cache = {}
-  @@page_cache_last_update = {}
-  @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
-  @@nobservations_per_page = 33
-
-  def self.add_observation_to_page_caches obs, contest, region, participation
-
-=begin
-    if top_page_cache.length==0
-      @@top_page_cache = 
+  def self.get_search_results region_id, contest_id, q
+    if region_id && contest_id
+      obj = Participation.where contest_id: contest_id, region_id: region_id
+    elsif region_id
+      obj = Region.where id: region_id
+    elsif contest_id
+      obj = Contest.where id: contest_id
+    else
+      obj = nil
     end
-    if can_add_to_cache(obs)==false
-      @@top_page_cache.prepend obs
-      @@top_page_cache = @@top_page_cache.shift unless @@top_page_cache.count>@@nobservations_per_page
-    end
-=end    
-  end
 
-  def self.get_observations obj=nil
-    key = get_key obj
-    now = Time.now
-    if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+30.minutes)
-      if obj.nil?
-        @@page_cache[key] = Observation.all.has_images.recent.first @@nobservations_per_page
+    q = q.blank? ? '' : q.strip.downcase
+
+    if obj.nil?
+      if q.blank?
+        observations = Observation.all.has_images.has_scientific_name.recent
       else
-        @@page_cache[key] = obj.observations.has_images.recent.first @@nobservations_per_page
+        observations = Observation.all.has_images.has_scientific_name.search(q).recent
       end
-      @@page_cache_last_update[key] = now
+      nobservations = observations.count
+      nobservations_excluded = Observation.all.count - nobservations
+    else 
+      if q.blank?
+        observations = obj.first.observations.has_images.has_scientific_name.recent
+      else
+        observations = obj.first.observations.has_images.has_scientific_name.search(q).recent
+      end  
+      nobservations = observations.count
+      nobservations_excluded = obj.first.observations.count - nobservations
     end
-    @@page_cache[key]
+
+    { observations: observations, nobservations: nobservations, nobservations_excluded: nobservations_excluded }
   end
 
-  def self.get_key obj
-    obj.nil? ? 'top' : "#{ obj.class.name[0] }#{ obj.id }"
-  end
 
-  def self.can_add_to_cache obs
-    return false if @@filtered_scientific_names.include?(observation.scientific_name)
-    return false if obs.observation_images_count==0
-    true
-  end
+
 
   def self.store observations
     nupdates = 0
@@ -220,6 +217,58 @@ Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     end
 
   end
+
+
+
+
+
+
+  @@page_cache = {}
+  @@page_cache_last_update = {}
+
+  def self.add_observation_to_page_caches obs, contest, region, participation
+
+=begin
+    if top_page_cache.length==0
+      @@top_page_cache = 
+    end
+    if can_add_to_cache(obs)==false
+      @@top_page_cache.prepend obs
+      @@top_page_cache = @@top_page_cache.shift unless @@top_page_cache.count>@@nobservations_per_page
+    end
+=end    
+  end
+
+  def self.get_observations obj=nil
+    key = get_key obj
+    now = Time.now
+    if @@page_cache[key].blank? || (@@page_cache_last_update[key]>now+30.minutes)
+      if obj.nil?
+        @@page_cache[key] = Observation.all.has_images.recent.first @@nobservations_per_page
+      else
+        @@page_cache[key] = obj.observations.has_images.recent.first @@nobservations_per_page
+      end
+      @@page_cache_last_update[key] = now
+    end
+    @@page_cache[key]
+  end
+
+  def self.get_key obj
+    obj.nil? ? 'top' : "#{ obj.class.name[0] }#{ obj.id }"
+  end
+
+  def self.can_add_to_cache obs
+    return false if @@filtered_scientific_names.include?(observation.scientific_name)
+    return false if obs.observation_images_count==0
+    true
+  end
+
+
+
+
+
+
+
 
   rails_admin do
     list do
