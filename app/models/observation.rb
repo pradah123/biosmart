@@ -120,6 +120,8 @@ class Observation < ApplicationRecord
 
 
   def self.get_search_results region_id, contest_id, q
+    Rails.logger.info "here >>>>>>"
+
     if region_id && contest_id
       obj = Participation.where contest_id: contest_id, region_id: region_id
     elsif region_id
@@ -130,25 +132,24 @@ class Observation < ApplicationRecord
       obj = nil
     end
 
+    Rails.logger.info "here >>>>>>"
+
     q = q.blank? ? '' : q.strip.downcase
 
+Rails.logger.info "here >>>>>>"
+
     if obj.nil?
-      if q.blank?
-        observations = Observation.all.has_images.has_scientific_name.recent
-      else
-        observations = Observation.all.has_images.has_scientific_name.search(q).recent
-      end
-      nobservations = observations.count
-      nobservations_excluded = Observation.all.count - nobservations
+      observations = q.blank? ? Observation.all : Observation.all.search(q).recent
     else 
-      if q.blank?
-        observations = obj.first.observations.has_images.has_scientific_name.recent
-      else
-        observations = obj.first.observations.has_images.has_scientific_name.search(q).recent
-      end  
-      nobservations = observations.count
-      nobservations_excluded = obj.first.observations.count - nobservations
+      observations = q.blank? ? obj.first.observations : obj.first.observations.search(q)
     end
+
+    nobservations_all = observations.count
+    observations = observations.has_images.has_scientific_name.recent
+    nobservations = observations.count
+    nobservations_excluded = nobservations_all - nobservations
+
+Rails.logger.info "here >>>>>>"
 
     { observations: observations, nobservations: nobservations, nobservations_excluded: nobservations_excluded }
   end
