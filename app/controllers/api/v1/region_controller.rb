@@ -62,7 +62,7 @@ module Api::V1
       }
 
       render json: data
-    end  
+    end
 
   end
 end 

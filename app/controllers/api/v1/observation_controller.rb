@@ -32,28 +32,7 @@ module Api::V1
     end
       
     def get_more
-      nstart = params[:nstart]&.to_i || 0
-      nend = params[:nend]&.to_i || 24
-      offset = nstart
-      limit = nend - nstart
-      if !params[:region_id].nil? && !params[:contest_id].nil?
-        obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
-      elsif !params[:region_id].nil?
-        obj = Region.where id: params[:region_id]
-      elsif !params[:contest_id].nil?
-        obj = Contest.where id: params[:contest_id]
-      else
-        obj = []
-      end
-
-      unless obj.blank?
-        observations = obj.first.observations.has_scientific_name.recent.offset(offset).limit(limit)
-      else
-        observations = Observation.all.has_scientific_name.recent
-      end
-      if params[:with_images].present? && params[:with_images].to_s == 'true'
-        observations = observations.has_images
-      end
+      result = Observation.get_search_results params[:region_id], params[:contest_id], ''
       
       observations = observations.map { |obs| {
         scientific_name: obs.scientific_name, 
@@ -63,7 +42,7 @@ module Api::V1
         image_urls: obs.observation_images.pluck(:url),
         lat: obs.lat,
         lng: obs.lng
-      } } 
+      } }
       
       j = { 'observations': observations }
       render_success j
