@@ -81,7 +81,7 @@ class PagesController < ApplicationController
     result = Observation.get_search_results params[:region_id], params[:contest_id], cookies[:q]
     render partial: 'pages/observation_block', locals: { 
       observations: result[:observations][params[:nstart].to_i...params[:nend].to_i], 
-      nobservations: result[:nobservations].count,
+      nobservations: result[:nobservations],
       nobservations_excluded: result[:nobservations_excluded]
     }, layout: false
   end  
