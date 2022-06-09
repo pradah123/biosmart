@@ -32,7 +32,11 @@ module Api::V1
     end
       
     def get_more
-
+      nstart = params[:nstart]&.to_i || 0
+      nend = params[:nend]&.to_i || 24
+      offset = nstart
+      limit = nend - nstart
+      Rails.logger.info params[:with_images]
       if !params[:region_id].nil? && !params[:contest_id].nil?
         obj = Participation.where contest_id: params[:contest_id], region_id: params[:region_id]
       elsif !params[:region_id].nil?
@@ -44,9 +48,12 @@ module Api::V1
       end
 
       unless obj.blank?
-        observations = obj.first.observations.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
+        observations = obj.first.observations.has_scientific_name.recent.offset(offset).limit(limit)
       else
-        observations = Observation.all.has_scientific_name.recent[params[:nstart].to_i...params[:nend].to_i]
+        observations = Observation.all.has_scientific_name.recent
+      end
+      if params[:with_images].present? && params[:with_images] == true
+        observations = observations.has_images
       end
       
       observations = observations.map { |obs| {
