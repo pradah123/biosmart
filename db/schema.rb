@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_10_021139) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -62,37 +62,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.integer "job_id"
   end
 
-  create_table "articles", force: :cascade do |t|
-    t.string "title"
-    t.text "description"
-    t.integer "category_id"
-    t.integer "author_id"
-    t.integer "status", default: 0
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "url_title"
-    t.text "search_text"
-    t.string "hashcode"
-    t.text "search_text_howto"
-    t.text "search_text_uses"
-    t.integer "views_count", default: 0
-    t.integer "comments_count", default: 0
-    t.integer "ratings_count", default: 0
-    t.float "average_rating", default: 0.0
-    t.datetime "updated_content_at", precision: nil
-    t.float "ranking_score", default: 0.0
-    t.text "search_text_by"
-  end
-
-  create_table "attachments", force: :cascade do |t|
-    t.string "name"
-    t.text "data"
-    t.integer "article_id"
-    t.integer "order"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "banner_messages", force: :cascade do |t|
     t.string "message"
     t.string "background_colour", default: "#dc3545"
@@ -100,23 +69,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "online", default: true
-  end
-
-  create_table "categories", force: :cascade do |t|
-    t.string "name"
-    t.text "description"
-    t.integer "parent_category_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "level"
-  end
-
-  create_table "comments", force: :cascade do |t|
-    t.integer "article_id"
-    t.integer "commentor_id"
-    t.text "comment"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
   end
 
   create_table "constants", force: :cascade do |t|
@@ -193,19 +145,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
   end
 
-  create_table "ingredients", force: :cascade do |t|
-    t.text "description"
-    t.integer "article_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "order"
-  end
-
-  create_table "ingredients_steps", id: false, force: :cascade do |t|
-    t.integer "ingredient_id", null: false
-    t.integer "step_id", null: false
-  end
-
   create_table "observation_images", force: :cascade do |t|
     t.integer "observation_id"
     t.string "url"
@@ -270,14 +209,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.float "bioscore", default: 0.0
   end
 
-  create_table "ratings", force: :cascade do |t|
-    t.integer "user_id"
-    t.integer "article_id"
-    t.float "rating"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "regions", force: :cascade do |t|
     t.integer "user_id"
     t.string "name"
@@ -308,15 +239,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.integer "parent_region_id"
   end
 
-  create_table "steps", force: :cascade do |t|
-    t.integer "order"
-    t.integer "article_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "title"
-    t.text "instruction"
-  end
-
   create_table "subregions", force: :cascade do |t|
     t.string "params_json", default: "{}"
     t.integer "region_id"
@@ -331,6 +253,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.integer "parent_subregion_id"
     t.integer "status", default: 0
     t.integer "fetch_every", default: 0
+    t.integer "data_source_new_id"
     t.index ["data_source_id"], name: "index_subregions_on_data_source_id"
     t.index ["region_id"], name: "index_subregions_on_region_id"
   end
@@ -348,13 +271,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_02_045458) do
     t.integer "login_attempts_max", default: 5
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "views", force: :cascade do |t|
-    t.integer "article_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

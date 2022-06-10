@@ -2,6 +2,12 @@ module CountableStatistics
   extend ActiveSupport::Concern
   included do
 
+    #
+    # this code deals with updating the counts of observations and other related information. 
+    # since we want this information for regions, contests, and participants in a contest, the
+    # code is here in a concern, so that the code can be used in those three models.
+    #
+
     def add_and_compute_statistics obs
       add_observation self, obs
       reset_statistics
@@ -19,7 +25,13 @@ module CountableStatistics
       update_column :physical_health_score, get_physical_health_score
       update_column :mental_health_score, get_mental_health_score
 
-      #update_column :species_count, self.observations.pluck(:accepted_name).uniq.count
+      #
+      # update_column :species_count, self.observations.pluck(:accepted_name).uniq.count
+      # 
+      # the above count is not used because the species names are not normalized across
+      # data sources. thus the same species will have multiple names, and counts of unique values
+      # is not possible
+      #
       update_column :species_count, self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
     end
 
@@ -40,6 +52,11 @@ module CountableStatistics
       ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
     end
 
+    #
+    # these functions compute the rankings of people and species
+    # used on the regions and contest page.
+    #
+
     def get_top_species n=nil
       get_ranking self.observations.pluck(:scientific_name), n
     end  
@@ -49,6 +66,10 @@ module CountableStatistics
     end  
 
     def get_ranking arr, n
+      #
+      # rank by count, in descending order
+      # when n is nil take all values, otherwise take the top n
+      #
       arr.tally.sort_by { |k,v| -v }.first (n.nil? || n<1 ? arr.length : n)
     end
 

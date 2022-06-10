@@ -5,7 +5,17 @@ class Region < ApplicationRecord
   scope :online, -> { where status: Region.statuses[:online] }
   scope :parent_region, -> { where parent_region_id: nil }
 
-  belongs_to :user
+  belongs_to :user, optional: true
+
+  #
+  # parent regions may have no polygons themselves, but have many
+  # child regions, referenced through the key parent_region_id.
+  #
+  # eg. a parent region may be australia, which has child regions, one for
+  # each province. the provinces would each have the parent_region_id set to
+  # the region id for australia.
+  #
+
   belongs_to :parent_region, class_name: 'Region', optional: true
   has_many :child_regions, class_name: 'Region', foreign_key: 'parent_region_id'
 
@@ -14,14 +24,33 @@ class Region < ApplicationRecord
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
  
+  #
+  # subregions are used in fetching data when the region size is too large
+  # for one api call to cover
+  #
   after_create :compute_subregions 
   after_update :compute_subregions if :saved_change_to_raw_polygon_json
+
+  #
+  # the timezone of the centre point of the region is found using a google
+  # api. this is used in working out the utc date times in this region for a contest
+  #
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
+
+  #
+  # polygon computations are required to decide if an observation lies inside this
+  # region. geokit polygons are used to acheive this, and since they are reused 
+  # many times, the geokit polygon objects are cached.
+  #
   after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
   after_save :set_slug
 
   enum status: [:online, :offline, :deleted]
 
+
+  #
+  # the slug is used to identify a region from its url.
+  #
 
   def set_slug
     if slug.nil?
@@ -132,6 +161,11 @@ class Region < ApplicationRecord
 
 
 
+  #
+  #  polygon caching and computation functions,
+  #  all based around geokit polygon objects.
+  #
+
   @@polygons_cache = {}
 
   def update_polygon_cache
@@ -163,6 +197,11 @@ class Region < ApplicationRecord
     get_geokit_polygons.each { |polygon| return true if polygon.contains?(Geokit::LatLng.new lat, lng) }
     return false    
   end
+
+
+  #
+  # conversion code from geojson polygon format to multipolygon db query format.
+  #
 
   def self.get_multipolygon_from_raw_polygon_json raw_polygon_json
     polygon_geojson = JSON.parse raw_polygon_json
@@ -201,42 +240,6 @@ class Region < ApplicationRecord
     JSON.generate geojson_polygons
   end
 
-  def self.get_geojson_from_osm relation_id
-    coordinates = []
-
-=begin
-    r = HTTParty.get "https://api.openstreetmap.org/api/0.6/relation/#{relation_id}.json"
-    members = r['elements'][0]['members']
-    Rails.logger.info "Got relationship, #{members.length} members"
-  
-    members.each do |m|
-      if m['type']=='way'   
-        rr = HTTParty.get "https://api.openstreetmap.org/api/0.6/way/#{m['ref']}.json"
-        Rails.logger.info rr['elements'].inspect
-        nodes = rr['elements'][0]['nodes']
-        Rails.logger.info ">> Got way, #{nodes.length} nodes"
-
-        nodes.each do |n|
-          rrr = HTTParty.get "https://api.openstreetmap.org/api/0.6/node/#{n}.json" 
-          Rails.logger.info ">>>> Got node #{rrr.body['elements'][0].inspect}"
-          c = { lat: rrr.body['elements'][0]['lat'], lng: rrr.body['elements'][0]['lon'] }
-          coordinates.push c
-        end
-
-      elsif m['type']=='node'
-        rr = HTTParty.get "https://api.openstreetmap.org/api/0.6/node/#{n}.json"  
-        c = { lat: rr.body['elements'][0]['lat'], lng: rr.body['elements'][0]['lon'] }
-        coordinates.push c
-
-      end 
-    end
-=end
-
-    coordinates
-  end
-
-
-
 
   def self.reset_datetimes
     Participation.all.each do |p|
@@ -256,6 +259,12 @@ class Region < ApplicationRecord
       r.set_time_zone_from_polygon
     end
   end    
+
+
+  #
+  # tmp functions used to circumvent the fact that
+  # S3 image upload does not work.
+  #
 
   def self.save_img str, id, name
     filename = "#{Rails.root}/public/region-#{id}-#{name}.png"
