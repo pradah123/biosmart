@@ -1,16 +1,45 @@
 class Subregion < ApplicationRecord
   belongs_to :region
   belongs_to :data_source
+  belongs_to :data_source_new
   after_save :update_geometry
 
   enum status: [:not_processing, :processing]
   enum fetch_every: [:fifteen_minutes, :thirty_minutes, :one_hour, :two_hours, :four_hours, :eight_hours]
 
+  #
+  #  function called by a subregion job to
+  #  fetch data and create or update observations
+  #
+
   def fetch_and_store_observations
-    #return if region.parent_subregion_id.nil?
+    return if region.child_regions.count>0 # no need to fetch for parent regions
+    return if processing? # if this subregion is already being fetched, don't duplicate the job
     processing!
-    data_source.fetch_and_store_observations
+    data_source_new.fetch_and_store_observations
     not_processing!
+  end
+
+  #
+  # considering the fetch_every parameter, compute if 
+  # the subregion needs to be fetched at the moment.
+  #
+
+  def should_fetch_now hour, min
+    if fifteen_minutes?
+      true 
+    elsif thirty_minutes?
+      (min/15)%2==0
+    elsif one_hour?
+      min/15==0
+    elsif two_hours?    
+      min/15==0 && hour%2==0
+    elsif four_hours?
+      min/15==0 && hour%4==0
+    elsif eight_hours?
+      min/15==0 && hour%8==0  
+    end
+    false  
   end
 
   def get_query_parameters
@@ -50,6 +79,7 @@ class Subregion < ApplicationRecord
     # get radius of circle which contains the smallest square 
     # which can contain the polygon
     #
+
     centre = Geokit::LatLng.new centre_lat, centre_lng
     top_right_corner = Geokit::LatLng.new centre_lat+max_dlat, centre_lng+max_dlng
     radius_km = centre.distance_to top_right_corner, units: :kms
@@ -57,10 +87,18 @@ class Subregion < ApplicationRecord
 
     if max_radius_km.nil? || radius_km<=max_radius_km
 
+      #
+      # just one circle which encompasses the region is enough.
+      #
       self.update_columns lat: centre_lat, lng: centre_lng, radius_km: radius_km
 
     else
     
+      #
+      # if the region is too large, tesselate the circle which encompasses the region
+      # with smaller circles no larger than the maximum allowed radius.
+      #
+
       n_circles_per_edge = ( (2*radius_km / max_radius_km) / Math.sqrt(2) ).ceil
       dlat = 2*max_dlat / n_circles_per_edge
       dlng = 2*max_dlng / n_circles_per_edge
@@ -71,6 +109,10 @@ class Subregion < ApplicationRecord
 
       new_subregions = []
 
+      #
+      # loop over all sub circles
+      #
+
       n_circles_per_edge.times do |ilng|
         lat_circle = lat_circle0
         n_circles_per_edge.times do |ilat|
@@ -80,6 +122,12 @@ class Subregion < ApplicationRecord
         end
         lng_circle += dlng  
       end
+
+      #
+      # with the exception of the first circle (the data is contained in this subregion object),
+      # create subregions for each subcircle, and reference them to this region via the 
+      # parent_subregion_id field
+      #
 
       new_subregions.each_with_index do |s,i|
         if i==0

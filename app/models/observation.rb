@@ -9,6 +9,10 @@ class Observation < ApplicationRecord
   scope :without_creator_name, -> { where creator_name: nil }
   scope :search, -> (q) { where 'search_text LIKE ?', "%#{q.downcase}%" }
 
+  #
+  # an observation may belong to multiple regions, participations, or contests
+  #
+
   has_and_belongs_to_many :regions
   has_and_belongs_to_many :participations
   has_and_belongs_to_many :contests
@@ -33,6 +37,11 @@ class Observation < ApplicationRecord
   end
 
   def update_address
+    #
+    # get the text location for this lat lng, via the google geocode api.
+    # currently not used, was intended to show this data in the observations cards.
+    #
+
     google_api_key = "AIzaSyBFT4VgTIfuHfrL1YYAdMIUEusxzx9jxAQ"
     url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=#{self.lat},#{self.lng}&key=#{google_api_key}"
     begin
@@ -48,10 +57,21 @@ class Observation < ApplicationRecord
     end
   end  
 
+  #
+  #  new method of adding observations to regions, participations, and contests,
+  #  in the case where we need to be continously fetching data for all regions.
+  #
+
   def add_to_regions_and_contests
     added = false
-
     inside = false
+    geokit_point = Geokit::LatLng.new lat, lng
+
+    # 
+    # remove any existing relations with regions, participations
+    # and contests
+    #
+
     regions.each do |region|
       region.get_geokit_polygons.each do |polygon|
         if polygon.contains?(geokit_point) 
@@ -71,8 +91,10 @@ class Observation < ApplicationRecord
       end
     end  
 
-    geokit_point = Geokit::LatLng.new lat, lng
-
+    #
+    # find the regions which the observation is included in
+    #
+    
     Region.all.each do |region|
       region.get_geokit_polygons.each do |polygon|
         if polygon.contains?(geokit_point)
@@ -120,7 +142,12 @@ class Observation < ApplicationRecord
 
 
   def self.get_search_results region_id, contest_id, q
-    Rails.logger.info "here >>>>>>"
+    #
+    # returns observations in a region and/or contest which match
+    # a keyword search for q
+    #
+    # one or both of region and contest may be nil
+    #
 
     if region_id && contest_id
       obj = Participation.where contest_id: contest_id, region_id: region_id
@@ -132,11 +159,7 @@ class Observation < ApplicationRecord
       obj = nil
     end
 
-    Rails.logger.info "here >>>>>>"
-
     q = q.blank? ? '' : q.strip.downcase
-
-Rails.logger.info "here >>>>>>"
 
     if obj.nil?
       observations = q.blank? ? Observation.all : Observation.all.search(q).recent
@@ -149,13 +172,14 @@ Rails.logger.info "here >>>>>>"
     nobservations = observations.count
     nobservations_excluded = nobservations_all - nobservations
 
-Rails.logger.info "here >>>>>>"
-
     { observations: observations, nobservations: nobservations, nobservations_excluded: nobservations_excluded }
   end
 
 
 
+  #
+  #  code used to create observations in the old code
+  #
 
   def self.store observations
     nupdates = 0
@@ -223,6 +247,10 @@ Rails.logger.info "here >>>>>>"
 
 
 
+  #
+  # caching of observations data per page, to speed up page loading
+  # no longer used.
+  #
 
   @@page_cache = {}
   @@page_cache_last_update = {}

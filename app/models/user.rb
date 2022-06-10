@@ -17,9 +17,15 @@ class User < ApplicationRecord
   validates :organization_name, presence: true, uniqueness: true
   
   def reset_tokens
-    new_code = SecureRandom.hex #(0..100000000).to_a.sample.to_s.rjust 8, '0'
+    new_code = SecureRandom.hex
     new_code_expires_at = Time.now + 10.minutes
     payload = { user_id: id, created_at: Time.now }
+
+    #
+    # jwt token is used for login and signup, in a http-only cookie
+    # see application_controller.rb
+    #
+    
     jwt = JWT.encode payload, Rails.application.credentials.secret_key_base, 'HS256'
 
     update_attribute :login_code, new_code

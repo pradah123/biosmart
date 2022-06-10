@@ -3,8 +3,12 @@ class Contest < ApplicationRecord
     
   scope :ordered_by_creation, -> { order created_at: :desc }
   scope :ordered_by_starts_at, -> { order starts_at: :desc }
-  scope :in_progress, -> { where 'contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now }
+
+  #
+  # a contest is considered in progress until the last submission date
+  #
   scope :upcoming, -> { where 'utc_starts_at > ?', Time.now } 
+  scope :in_progress, -> { where 'contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now }
   scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
   scope :online, -> { where status: Contest.statuses[:online] }
 
@@ -17,6 +21,14 @@ class Contest < ApplicationRecord
 
   enum status: [:online, :offline, :deleted, :completed]
   enum rank_regions_by: [:recent]
+
+  #
+  # the dates given here in contest are not utc, rather they are the date times in
+  # the time zone of the participant. Thus a contest has one start date, but if regions
+  # are in different time zones, they will have different utc start dates. These time zone
+  # dependent date times are stored in the participations model. thus if the contest dates
+  # change, the participation dates must be updated.
+  #
 
   def set_utc_start_and_end_times
     if participations.count>0
@@ -31,7 +43,11 @@ class Contest < ApplicationRecord
 
 
 
-
+  #
+  # the slug is used to identify the contest from a url
+  # it is automatically generated from the title of the contest,
+  # replacing spaces with dashes.
+  #
 
   def set_slug
     if slug.nil?
@@ -44,15 +60,31 @@ class Contest < ApplicationRecord
     "/contest/#{slug}"
   end
 
+  #
+  # this is the path to the page for a region showing only data
+  # within the contest.
+  #
+
   def get_region_contest_path region
     region.get_region_contest_path self
   end  
+
+  #
+  # this renders the polygons of all regions in the contest into a format
+  # that can be written into the page as javascript json. see the map in
+  # the view contest.html.erb
+  #
 
   def get_region_polygons
     regions.map { |r| JSON.parse r.raw_polygon_json }.flatten.map { |p| p.to_hash }
   end  
 
 
+
+  #
+  # this is a function for adding an observation to a contest, used in the old
+  # fetching code, when observations were only fetched for regions in contest at that time. 
+  #
 
   def add_observation obs
     added = false
