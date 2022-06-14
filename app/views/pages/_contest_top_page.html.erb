@@ -13,7 +13,7 @@
   </div>
 </div>
 <div class="row my-3 d-flex justify-content-center">
-	<div class="col-10 d-flex justify-content-center"><%= c.description.html_safe %></div>
+	<div class="col-10 d-flex justify-content-center"><%= c.description&.html_safe || '' %></div>
 </div>
 
 <% if c.starts_at>Time.now %>
