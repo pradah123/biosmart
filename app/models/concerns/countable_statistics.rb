@@ -15,7 +15,7 @@ module CountableStatistics
 
     def add_observation region, obs
       region.observations << obs
-      add_observation region.parent_region, obs unless region.parent_subregion_id.nil?
+      add_observation region.parent_region, obs unless region.parent_region_id.nil?
     end
 
     def reset_statistics
