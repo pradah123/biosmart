@@ -9,14 +9,14 @@ module CountableStatistics
     #
 
     def add_and_compute_statistics obs
-      add_observation self, obs
+      self.observations << obs
       reset_statistics
     end
 
-    def add_observation region, obs
-      region.observations << obs
-      add_observation region.parent_region, obs unless region.parent_region_id.nil?
-    end
+    # def add_observation region, obs
+    #   region.observations << obs
+    #   add_observation region.parent_region, obs unless region.parent_region_id.nil?
+    # end
 
     def reset_statistics
       update_column :observations_count, self.observations.count
