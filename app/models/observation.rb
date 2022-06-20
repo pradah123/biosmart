@@ -19,7 +19,8 @@ class Observation < ApplicationRecord
   belongs_to :data_source
   has_many :observation_images
 
-  after_save :update_search_text, :update_address, :add_to_regions_and_contests
+  # after_save :update_search_text, :update_address, :add_to_regions_and_contests
+  after_save :update_search_text, :add_to_regions_and_contests
 
   validates :unique_id, presence: true
   validates :lat, presence: true
@@ -103,7 +104,7 @@ class Observation < ApplicationRecord
           # inside one of the region's polygons
           #
           region.add_and_compute_statistics self
-          Observation.add_observation_to_page_caches self, region
+          # Observation.add_observation_to_page_caches self, region
          
           region.participations.each do |participation|
             if can_participate_in(participation)
@@ -113,7 +114,7 @@ class Observation < ApplicationRecord
               #              
               participation.contest.add_and_compute_statistics self
               participation.add_and_compute_statistics self
-              Observation.add_observation_to_page_caches self, participation              
+              # Observation.add_observation_to_page_caches self, participation              
             end  
           end
 
