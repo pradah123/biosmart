@@ -170,10 +170,10 @@ class Observation < ApplicationRecord
 
     nobservations_all = observations.count
     observations = observations.has_images.has_scientific_name.recent
-    nobservations = observations.count
-    nobservations_excluded = nobservations_all - nobservations
+    nobservations_with_images = observations.count
+    nobservations_excluded = nobservations_all - nobservations_with_images
 
-    { observations: observations, nobservations: nobservations, nobservations_excluded: nobservations_excluded }
+    { observations: observations, nobservations: nobservations_all, nobservations_excluded: nobservations_excluded }
   end
 
 
