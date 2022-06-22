@@ -17,7 +17,13 @@
       <div class="col" id="contest-map" style="width:100%; height:400px;"></div>  
       <script>
         var _region_polygons = [];<%#= JSON.generate(@contest.get_region_polygons).html_safe %>; 
-        var _participants = <%= JSON.generate(@contest.regions.map { |r| { lat: r.lat, lng: r.lng } }).html_safe %>;
+        var _participants = <%= JSON.generate(
+          @contest.regions.map { |r| 
+            { lat: r.lat, lng: r.lng } 
+          }.select{ |ll| 
+            ll[:lat].present? && ll[:lng].present?
+          }
+        ).html_safe %>;
       </script>        
     </div>
   </div>
