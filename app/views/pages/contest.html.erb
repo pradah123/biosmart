@@ -3,9 +3,19 @@
   <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
     <%= @contest.title %>
   </div>
+  <div class="row">
+    <div class="col d-flex justify-content-center fw-bold h6">
+      For observations made between <%= @contest.starts_at.strftime '%Y/%m/%d' %> and <%= @contest.ends_at.strftime '%Y/%m/%d' %>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col d-flex justify-content-center fs-italic h6">
+      Submissions accepted up to <%= @contest.last_submission_accepted_at.strftime '%Y/%m/%d' %>
+    </div>
+  </div>
 </div>
 
-<div class="row justify-content-center mt-5">
+<div class="row justify-content-center mt-3">
   <div class="col-12 col-lg-6 d-flex justify-content-center h6">
     <%= @contest.description %>
   </div>
