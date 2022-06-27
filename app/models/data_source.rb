@@ -147,7 +147,8 @@ class DataSource < ApplicationRecord
     Delayed::Worker.logger.info "fetch_ebird(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
       params = get_query_parameters subregion
-      params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)    
+      params[:back] = (Time.now - starts_at).to_i / (24 * 60 * 60)
+      params[:back] = 30 if params[:back] > 30
       ebird = ::Source::Ebird.new(**params)
       observations = ebird.get_observations() || []
       observations = observations.select{ |o| 
