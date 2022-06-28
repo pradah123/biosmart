@@ -205,12 +205,11 @@ class Region < ApplicationRecord
 
   def self.get_multipolygon_from_raw_polygon_json raw_polygon_json
     polygon_geojson = JSON.parse raw_polygon_json
-    #polygon_geojson = [polygon_geojson] unless polygon_geojson.kind_of?(Array)
-    return 'MULTIPOLYGON(())' if polygon_geojson['coordinates'].nil?
-
+    polygon_geojson = [polygon_geojson] unless polygon_geojson.kind_of?(Array)
+    
+    polygon_strings = []
     polygon_geojson.each do |rpj|
       rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
-      coordinates = rpj['coordinates'].map { |c| "#{c[1]} #{c[0]}" }.join ', ' # check order
       coordinates = rpj['coordinates'].map { |c| "#{c[0]} #{c[1]}" }.join ','
       polygon_strings.push "((#{ coordinates }))"
     end
