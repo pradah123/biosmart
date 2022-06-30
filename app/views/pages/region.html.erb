@@ -62,7 +62,7 @@
     <% if @region.logo_image_url || @region.logo_image %>
       <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="max-height:160px;max-width:50%;">
     <% end %>  
-    <%= @region.description.html_safe %>
+    <%= @region.description&.html_safe || '' %>
   </div>
 </div>
 
@@ -150,4 +150,3 @@
     </div>
   </div>
 <% end %>
-
