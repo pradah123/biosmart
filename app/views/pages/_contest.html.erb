@@ -17,7 +17,7 @@
   </div>
 </div>
 <div class="row mt-3">
-	<div class="col-10"><%= c.description.html_safe %></div>
+	<div class="col-10"><%= c.description&.html_safe || '' %></div>
 </div>
 
 <% if c.starts_at>Time.now %>
