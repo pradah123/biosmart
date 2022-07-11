@@ -32,8 +32,12 @@ module Api::V1
     end
       
     def get_more
-      result = Observation.get_search_results params[:region_id], params[:contest_id], ''
+      nstart = params[:nstart]&.to_i || 0
+      nend   = params[:nend]&.to_i || 24
       
+      result = Observation.get_search_results params[:region_id], params[:contest_id], ''
+      observations = result[:observations][nstart...nend]
+
       observations = observations.map { |obs| {
         scientific_name: obs.scientific_name, 
         common_name: obs.common_name,
