@@ -35,8 +35,8 @@ module Api::V1
       nstart = params[:nstart]&.to_i || 0
       nend   = params[:nend]&.to_i || 24
       
-      result = Observation.get_search_results params[:region_id], params[:contest_id], ''
-      observations = result[:observations][nstart...nend]
+      result = Observation.get_search_results params[:region_id], params[:contest_id], '', nstart, nend
+      observations = result[:observations]
 
       observations = observations.map { |obs| {
         scientific_name: obs.scientific_name, 
