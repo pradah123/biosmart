@@ -78,9 +78,10 @@ class PagesController < ApplicationController
 
 
   def get_more
-    result = Observation.get_search_results params[:region_id], params[:contest_id], cookies[:q]
+    result = Observation.get_search_results params[:region_id], params[:contest_id], cookies[:q],
+                                            params[:nstart].to_i, params[:nend].to_i
     render partial: 'pages/observation_block', locals: { 
-      observations: result[:observations][params[:nstart].to_i...params[:nend].to_i], 
+      observations: result[:observations],
       nobservations: result[:nobservations],
       nobservations_excluded: result[:nobservations_excluded]
     }, layout: false
