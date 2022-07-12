@@ -302,7 +302,77 @@ class Region < ApplicationRecord
     end
   end  
 
+  ## Convert raw_polygon_json text into json object
+  def get_polygon_json
+    if raw_polygon_json.nil?
+      return nil
+    end
 
+    polygon_geojson = JSON.parse raw_polygon_json
+    polygon_geojson = [polygon_geojson] unless polygon_geojson.kind_of?(Array)
+
+    return polygon_geojson
+  end
+
+  ## Calculate minimum and maximum distance of region from a given coordinate
+  def distance_from_point(lat, lng)
+    polygon_geojson = get_polygon_json
+
+    min = max = nil
+    if polygon_geojson.nil?
+      return min, max
+    end
+
+    polygon_geojson.each do |polygon|
+      if !polygon['coordinates'].nil?
+        polygon['coordinates'].each.with_index { |c, i|
+          p1 = Geokit::LatLng.new c[1] , c[0]
+          p2 = Geokit::LatLng.new lat, lng
+          dist = p1.distance_to(p2, units: :kms).ceil()
+          if i == 0
+            min = dist
+            max = dist
+          end
+          if dist <= min
+            min = dist
+          end
+          if dist > max
+            max = dist
+          end
+        }
+      end
+    end
+    return min, max
+
+  end
+
+  ### Find out whether given coordinates and region are within reach of given distance or not
+  def is_region_near_to_point lat, lng, distance_km=50
+    polygon_geojson = get_polygon_json
+    if polygon_geojson.nil?
+      return false
+    end
+
+    geokit_point = Geokit::LatLng.new lat, lng
+
+    ## If given coordinate resides inside the polygon then return as true
+    get_geokit_polygons.each do |polygon|
+      if polygon.contains?(geokit_point)
+        return true
+      end
+    end
+
+    (min_dist, max_dist) = distance_from_point(lat, lng)
+
+    ## Return true, if distance between any polygon coordinate and given coordinate is
+    ## less than or equal to required distance
+    if !min_dist.nil? && min_dist <= distance_km
+      return true
+    else
+      return false
+    end
+
+  end
 
   rails_admin do
     list do

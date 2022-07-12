@@ -293,6 +293,9 @@ class Observation < ApplicationRecord
     true
   end
 
+  def observed_at_utc
+    return "#{ observed_at.strftime '%Y-%m-%d %H:%M' } UTC"
+  end
 
 
 
