@@ -55,8 +55,8 @@ module Api::V1
           end
         end
       end
-      ret = { 'regions': participations }
-      render_success ret
+
+      render_success participations
     end
   end
 end 

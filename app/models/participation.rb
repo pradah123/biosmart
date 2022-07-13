@@ -54,58 +54,31 @@ class Participation < ApplicationRecord
   ### Return participation specific data
   def format_data(include_top_species=false, include_top_people=false,
                   include_recent_sightings=false, offset=0, limit=24)
-    polygon_geojson = region.get_polygon_json
 
-    data = {
-      ### Region specific data
-      region_name:    region.name,
-      description:    region.description,
-      logo_image_url: region.logo_image_url,
-      header_image:   region.header_image,
-      polygon:        polygon_geojson,
-      lat:            region.lat,
-      lng:            region.lng,
+    ### Region specific data
+    region_hash = RegionSerializer.new(region).serializable_hash[:data][:attributes]
 
-      ## Participation data i.e. Region's data related to given contest
-      observations_count:     observations_count,
-      identifications_count:  identifications_count,
-      species_count:          species_count,
-      people_count:           people_count,
-      bioscore:               bioscore,
-      physical_health_score:  physical_health_score,
-      mental_health_score:    mental_health_score
-    }
-    ## Include top species data related to participation
-    if include_top_species == true
-      data['top_species'] = get_top_species(10).map { | species |
-        {
-          name:  species[0],
-          count: species[1]
-        }}
-    end
-    ## Include top people data related to participation
-    if include_top_people == true
-      data['top_observers'] = get_top_people(10).map { | observers |
-          {
-            name:  observers[0],
-            observations_count: observers[1]
-          }}
-    end
+    ## Participation data i.e. Region's data related to given contest
+    participation_hash = ParticipationSerializer.new(self, {params: { include_top_species:include_top_species,
+       include_top_people:include_top_people }}).serializable_hash[:data][:attributes]
+
+    region_hash.merge!(participation_hash)
+
     ## Include the recent sightings data only if recent_sightings query param value is 'true'
     if include_recent_sightings == true
-      data['recent_sightings'] =  observations.has_scientific_name.recent.offset(offset).limit(limit).map { |obs| {
-        scientific_name:  obs.scientific_name,
-        common_name:      obs.common_name,
-        creator_name:     (obs.creator_name.nil? ? '' : obs.creator_name),
-        observed_at:      obs.observed_at_utc,
-        image_urls:       obs.observation_images.pluck(:url),
-        lat:              obs.lat,
-        lng:              obs.lng
-      }}
+      recent_sightings = Hash.new([])
+      recent_sightings[:recent_sightings] = observations.has_scientific_name.recent.offset(offset).limit(limit).map { |obs|
+          ObservationSerializer.new(obs).serializable_hash[:data][:attributes]
+      }
+      region_hash.merge!(recent_sightings)
     end
 
-    return data
+    Rails.logger.debug region_hash
+
+    return region_hash.to_json
   end
+
+
 
 
   rails_admin do
