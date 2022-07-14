@@ -1,8 +1,7 @@
 # config valid for current version and patch releases of Capistrano
 lock "~> 3.17.0"
 
-# set :repo_url, "https://gitlab.com/earthguardians1/biosmart-api.git"
-set :repo_url, "git@gitlab.com:earthguardians1/biosmart-api.git"
+set :repo_url, "https://gitlab.com/earthguardians1/biosmart-api.git"
 
 set :branch, ->{ fetch(:branch) }
 
@@ -26,14 +25,6 @@ set :keep_releases, 2
 set :ssh_options, verify_host_key: :always
 
 set :pty, true
-set :ssh_options, {
-  forward_agent: true,
-  auth_methods: ["publickey"],
-  keys: [
-    '../biosmart-staging.pem',
-    '../bee-staging.pem'
-  ]
-}
 
 after 'deploy:symlink:release', 'assets:compile'
 after 'puma:restart', 'deploy:restart'
