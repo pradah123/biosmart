@@ -75,7 +75,7 @@ class Participation < ApplicationRecord
 
     Rails.logger.debug region_hash
 
-    return region_hash.to_json
+    return region_hash
   end
 
 
