@@ -16,6 +16,7 @@ staging:
         - mkdir -p ~/.ssh
         - chmod 700 ~/.ssh
         - ssh-keyscan $STAGING_HOST >> ~/.ssh/known_hosts
+        - echo "$DEPLOY_PUBLIC_KEY" > ~/.ssh/id_rsa.pub
         - chmod 644 ~/.ssh/known_hosts
         - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
         - git config --global user.email "priyankgt@gmail.com"
@@ -44,6 +45,7 @@ production:
         - mkdir -p ~/.ssh
         - chmod 700 ~/.ssh
         - ssh-keyscan $PRODUCTION_HOST >> ~/.ssh/known_hosts
+        - echo "$DEPLOY_PUBLIC_KEY" > ~/.ssh/id_rsa.pub
         - chmod 644 ~/.ssh/known_hosts
         - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
         - git config --global user.email "priyankgt@gmail.com"
