@@ -7,32 +7,23 @@ module Api::V1
       contest_name = params[:contest_name]
       lat          = params[:lat]
       lng          = params[:lng]
-      distance_km  = params[:distance_km] || 50
+      distance_km  = params[:distance_km]&.to_i || 50
 
-      recent_sightings = !params[:recent_sightings].nil? && params[:recent_sightings] == 'true' ?
-                          recent_sightings = true : recent_sightings = false
+      recent_sightings = params[:recent_sightings].present? && params[:recent_sightings] == 'true'
+      include_top_species = params[:top_species].present? && params[:top_species] == 'true'
+      include_top_people = params[:top_observers].present? && params[:top_observers] == 'true'
 
       nstart = params[:nstart]&.to_i || 0
       nend   = params[:nend]&.to_i   || 24
       offset = nstart
       limit  = nend - nstart
 
-      fail_message = nil
-      fail_message = { status: 'fail', message: 'no contest_name is given' } if contest_name.nil?
+      raise ApiFail.new("No 'contest_name' given") if contest_name.blank?
+      raise ApiFail.new("No 'lat' given") if lat.blank?
+      raise ApiFail.new("No 'lng' given") if lng.blank?
 
-      unless fail_message.nil?
-        render json: fail_message
-        return
-      end
-
-      obj = Contest.where title: contest_name
-
-      if obj.blank?
-        fail_message = { status: 'fail', message: 'no contest found for given name' }
-        render json: fail_message
-        return
-      end
-      obj = obj.first
+      obj = Contest.find_by_title contest_name
+      raise ApiFail.new('No contest found for given name') if obj.blank?
 
       participations = []
       if obj.regions.count > 0
@@ -43,14 +34,10 @@ module Api::V1
             break
           end
 
-          is_region_near_to_point = false
-          if (!lat.nil? && !lng.nil?)
-            is_region_near_to_point = region.is_region_near_to_point(lat, lng, distance_km)
-          else
-            is_region_near_to_point = true ## If lat or lng not given then get all regions data related to the contest
-          end
+          is_region_near_to_point = region.is_region_near_to_point(lat, lng, distance_km)
+
           if is_region_near_to_point == true
-            data = participant.format_data true, true, recent_sightings, offset, limit
+            data = participant.format_data include_top_species, include_top_people, recent_sightings, offset, limit
             participations.push(data)
           end
         end

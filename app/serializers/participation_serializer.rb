@@ -8,22 +8,24 @@ class ParticipationSerializer
   #   object.data_sources.pluck :id
   # end
 
-  attribute :top_species do  |object, params|
-    if !params.blank? && params[:include_top_species] == true
+  attribute :top_species, if: Proc.new { |record, params|
+    !params.blank? && params[:include_top_species] == true
+  } do |object|
       object.get_top_species(10).map { | species |
         {
           name:  species[0],
           count: species[1]
         }}
-    end
   end
-  attribute :top_observers do  |object, params|
-    if !params.blank? && params[:include_top_people] == true
-      object.get_top_people(10).map { | observers |
+
+  attribute :top_observers, if: Proc.new { |record, params|
+    !params.blank? && params[:include_top_people] == true
+  } do |object|
+      object.get_top_people(10).map { | species |
         {
-          name:  observers[0],
-          count: observers[1]
+          name:  species[0],
+          count: species[1]
         }}
-    end
   end
+
 end
