@@ -25,6 +25,10 @@ set :keep_releases, 2
 set :ssh_options, verify_host_key: :always
 
 set :pty, true
+set :ssh_options, {
+  forward_agent: true,
+  auth_methods: ["publickey"]
+}
 
 after 'deploy:symlink:release', 'assets:compile'
 after 'puma:restart', 'deploy:restart'
