@@ -9,36 +9,21 @@ module Api::V1
       lng          = params[:lng]
       distance_km  = params[:distance_km]&.to_i || 50
 
-      recent_sightings = !params[:recent_sightings].nil? && params[:recent_sightings] == 'true' ?
-                          true : false
-
-      include_top_species = !params[:top_species].nil? && params[:top_species] == 'true' ?
-                          true : false
-
-      include_top_people = !params[:top_observers].nil? && params[:top_observers] == 'true' ?
-                          true : false
+      recent_sightings = params[:recent_sightings].present? && params[:recent_sightings] == 'true'
+      include_top_species = params[:top_species].present? && params[:top_species] == 'true'
+      include_top_people = params[:top_observers].present? && params[:top_observers] == 'true'
 
       nstart = params[:nstart]&.to_i || 0
       nend   = params[:nend]&.to_i   || 24
       offset = nstart
       limit  = nend - nstart
 
-      fail_message = nil
+      raise ApiFail.new("No 'contest_name' given") if contest_name.blank?
+      raise ApiFail.new("No 'lat' given") if lat.blank?
+      raise ApiFail.new("No 'lng' given") if lng.blank?
 
-      fail_message = "No 'contest_name' given" if contest_name.blank?
-      raise ApiFail.new(fail_message) unless fail_message.nil?
-
-      fail_message = "No 'lat' given" if lat.blank?
-      raise ApiFail.new(fail_message) unless fail_message.nil?
-
-      fail_message = "No 'lng' given" if lng.blank?
-      raise ApiFail.new(fail_message) unless fail_message.nil?
-      obj = Contest.where title: contest_name
-
-      fail_message = 'No contest found for given name'  if obj.blank?
-      raise ApiFail.new(fail_message) unless fail_message.nil?
-
-      obj = obj.first
+      obj = Contest.find_by_title contest_name
+      raise ApiFail.new('No contest found for given name') if obj.blank?
 
       participations = []
       if obj.regions.count > 0
