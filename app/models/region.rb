@@ -353,14 +353,8 @@ class Region < ApplicationRecord
       return false
     end
 
-    geokit_point = Geokit::LatLng.new lat, lng
-
     ## If given coordinate resides inside the polygon then return as true
-    get_geokit_polygons.each do |polygon|
-      if polygon.contains?(geokit_point)
-        return true
-      end
-    end
+    return true if contains? lat, lng
 
     (min_dist, max_dist) = distance_from_point(lat, lng)
 
