@@ -47,7 +47,7 @@ class Region < ApplicationRecord
 
   enum status: [:online, :offline, :deleted]
 
-  paginates_per 10
+  paginates_per 25
 
 
   #
