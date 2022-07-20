@@ -47,6 +47,8 @@ class Region < ApplicationRecord
 
   enum status: [:online, :offline, :deleted]
 
+  paginates_per 10
+
 
   #
   # the slug is used to identify a region from its url.

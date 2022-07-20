@@ -11,6 +11,7 @@
   <div class="col-3"></div>
 </div>
 
+
 <% @regions.each do |r| %>
   <div class="row mb-3">
   	<div class="col-3 d-flex align-items-center">
@@ -33,4 +34,8 @@
 <% @regions.each do |r| %>
   <%= render partial: 'region_form', locals: { region: r, id: "region_#{ r.id }_modal", title: 'Edit Region' } %>
 <% end %>
+
+<div class="row mb-5"></div>
+
+<%= paginate @regions %>
 
