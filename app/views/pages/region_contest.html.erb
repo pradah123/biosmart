@@ -1,7 +1,7 @@
 
 <div class="row justify-content-center">
   <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
-    <%= @region.name %>
+    <a href="<%= @region.get_path %>" class="proxima section-header h2 fw-bold text-dark"><%= @region.name %></a>
   </div>
 </div>
 
@@ -55,5 +55,6 @@
 </div>
 
 <%= render partial: 'statistics', locals: { object: @region.participations.where(contest_id: @contest.id).first } %>
+<%= render partial: 'species_people_rankings', locals: { object: @region.participations.where(contest_id: @contest.id).first } %>
 
 <%= render partial: 'recent_observations', locals: { observations: @observations, api_parameters: "?contest_id=#{ @contest.id }&region_id=#{ @region.id }" } %>
