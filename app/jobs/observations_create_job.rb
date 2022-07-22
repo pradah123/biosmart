@@ -38,7 +38,16 @@ class ObservationsCreateJob < ApplicationJob
 
         obs.attributes = params
         if obs.changed.empty?
-          nupdates_no_change += 1
+          if obs.update_to_regions_and_contests
+            nupdates += 1
+          else
+            nupdates_failed +=1
+            Delayed::Worker.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+            Delayed::Worker.logger.info "Update to regions and contests failed on observation #{obs.id}"
+            Delayed::Worker.logger.info obs.inspect
+            Delayed::Worker.logger.info params.inspect
+            Delayed::Worker.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n\n"
+          end
         else
           nupdates += 1  
           nfields_updated += obs.changed.length
