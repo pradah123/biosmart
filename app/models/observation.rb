@@ -20,7 +20,7 @@ class Observation < ApplicationRecord
   has_many :observation_images
 
   # after_save :update_search_text, :update_address, :add_to_regions_and_contests
-  after_save :update_search_text, :add_to_regions_and_contests
+  after_save :update_search_text, :update_to_regions_and_contests
 
   validates :unique_id, presence: true
   validates :lat, presence: true
@@ -58,22 +58,54 @@ class Observation < ApplicationRecord
     end
   end  
 
+  ### Method for adding an observation to matching regions, participations and contests
+
+  def add_to_regions_and_contests(geokit_point)
+
+    Region.all.each do |region|
+      region.get_geokit_polygons.each do |polygon|
+
+        if polygon.contains?(geokit_point)
+          ## Add observation to region only if it's not already added
+          if region.observations.where(id: id).blank?
+            region.observations << self
+          end
+
+          region.participations.each do |participation|
+            if can_participate_in(participation)
+              #
+              # this observation is in this contest in time and space
+              # add references for this observation to contest, participation only if
+              # doesn't exist already
+              obj = participation.contest.observations.where(id: self.id)
+
+              if participation.contest.observations.where(id: self.id).blank?
+                participation.contest.observations << self
+              end
+              if participation.observations.where(id: self.id).blank?
+                participation.observations << self
+              end
+            end
+          end
+          break
+        end
+      end
+    end
+  end
+
   #
-  #  new method of adding observations to regions, participations, and contests,
+  #  Method of updating observations to regions, participations, and contests,
   #  in the case where we need to be continously fetching data for all regions.
   #
-
-  def add_to_regions_and_contests
-    added = false
-    inside = false
+  def update_to_regions_and_contests ()
     geokit_point = Geokit::LatLng.new lat, lng
 
     # 
     # remove any existing relations with regions, participations
-    # and contests
+    # and contests only if observation exists in the system
     #
-
     regions.each do |region|
+      inside = false
       region.get_geokit_polygons.each do |polygon|
         if polygon.contains?(geokit_point) 
           inside = true
@@ -87,43 +119,13 @@ class Observation < ApplicationRecord
 
     participations.each do |participation|
       unless can_participate_in(participation)
-        participation.observations.where(observation_id: id).delete_all
-        participation.contest.observations.where(observation_id: id).delete_all
+        participation.observations.where(id: id).delete_all
+        participation.contest.observations.where(id: id).delete_all
       end
     end  
-
-    #
-    # find the regions which the observation is included in
-    #
     
-    Region.all.each do |region|
-      region.get_geokit_polygons.each do |polygon|
-        if polygon.contains?(geokit_point)
-
-          #
-          # inside one of the region's polygons
-          #
-          region.add_and_compute_statistics self
-          # Observation.add_observation_to_page_caches self, region
-         
-          region.participations.each do |participation|
-            if can_participate_in(participation)
-              #
-              # this observation is in this contest in time and space
-              # add references for this observation to contest, participation, and region
-              #              
-              participation.contest.add_and_compute_statistics self
-              participation.add_and_compute_statistics self
-              # Observation.add_observation_to_page_caches self, participation              
-            end  
-          end
-
-          break
-        end
-      end
-    end
-
-    added
+    ## Add observation to regions and contests
+    self.add_to_regions_and_contests geokit_point
   end
 
   def can_participate_in participation

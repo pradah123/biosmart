@@ -45,7 +45,7 @@ class PagesController < ApplicationController
     if @user.nil?
       render :top 
     else
-      @regions = @user.admin? ? Region.all : @user.regions
+      @regions = @user.admin? ? Region.all.order(created_at: :desc).page(params[:page]) : @user.regions.order(created_at: :desc).page(params[:page])
     end
   end
 

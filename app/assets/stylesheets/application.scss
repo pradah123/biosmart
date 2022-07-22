@@ -77,3 +77,22 @@ textarea { resize: none; }
 .fw-huge { font-size: 32px; }
 
 .card-overlay-opacity:hover { background-color: rgba(0,0,0,0.2); z-index: 1000; }
+
+.pagination a,  .pagination span.gap, .pagination span.current {
+  display: flex;
+  padding: 0 14px;
+  line-height: 30px;
+  text-decoration: none;
+  background-color: white;
+  border: 1px solid #DDD;
+  font-size: 14px;
+  font-weight: 600;
+  color: #616061;
+}
+
+.pagination a:hover { background-color: #e9e9e9; }
+
+.pagination span.current {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}

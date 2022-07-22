@@ -96,20 +96,11 @@ class DataSource < ApplicationRecord
       loop do                
           observations = ob_org.get_observations() || []
 
-          #
-          # from peter: this check is not required- 
-          # its a duplicate of the checks inside 
-          # observations_create_job
-          #
-          observations = observations.select{ |o| 
-            subregion.region.contains? o[:lat], o[:lng]
+          observations.each{ |o|
+            if subregion.region.contains? o[:lat], o[:lng]
+              ObservationsCreateJob.perform_later self, [o]
+            end
           }
-          if observations.present?
-            # Divide eBird observations in chunks of 400 instead of
-            # processing all the observations together
-            chunks = observations.each_slice(200).to_a
-            chunks.each{ |chunk| ObservationsCreateJob.perform_later self, chunk }
-          end
           break if ob_org.done()
           ob_org.increment_offset()
       end
@@ -129,12 +120,12 @@ class DataSource < ApplicationRecord
       loop do
         break if inat.done()
         observations = inat.get_observations() || []
-        observations = observations.select{ |o| 
-          subregion.region.contains? o[:lat], o[:lng]
+
+        observations.each{ |o|
+          if subregion.region.contains? o[:lat], o[:lng]
+            ObservationsCreateJob.perform_later self, [o]
+          end
         }
-        if observations.present?
-          ObservationsCreateJob.perform_later self, observations
-        end
         inat.increment_page()
       end
     rescue => e
@@ -151,12 +142,12 @@ class DataSource < ApplicationRecord
       params[:back] = 30 if params[:back] > 30
       ebird = ::Source::Ebird.new(**params)
       observations = ebird.get_observations() || []
-      observations = observations.select{ |o| 
-        subregion.region.contains? o[:lat], o[:lng]
+
+      observations.each { |o|
+        if subregion.region.contains? o[:lat], o[:lng]
+          ObservationsCreateJob.perform_later self, [o]
+        end
       }
-      if observations.present?
-        ObservationsCreateJob.perform_later self, observations
-      end
     rescue => e
       Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
@@ -173,12 +164,12 @@ class DataSource < ApplicationRecord
       loop do      
         break if qgame.done()
         observations = qgame.get_observations() || []
-        observations = observations.select{ |o| 
-          subregion.region.contains? o[:lat], o[:lng]
+
+        observations.each { |o|
+          if subregion.region.contains? o[:lat], o[:lng]
+            ObservationsCreateJob.perform_later self, [o]
+          end
         }
-        if observations.present?
-          ObservationsCreateJob.perform_later self, observations
-        end
         qgame.increment_offset()
       end
     rescue => e
