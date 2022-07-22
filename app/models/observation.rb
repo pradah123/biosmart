@@ -77,12 +77,10 @@ class Observation < ApplicationRecord
               # this observation is in this contest in time and space
               # add references for this observation to contest, participation only if
               # doesn't exist already
-              obj = participation.contest.observations.where(id: self.id)
-
-              if participation.contest.observations.where(id: self.id).blank?
+              if participation.contest.observations.exists?(self.id)
                 participation.contest.observations << self
               end
-              if participation.observations.where(id: self.id).blank?
+              if participation.observations.exists?(self.id)
                 participation.observations << self
               end
             end
