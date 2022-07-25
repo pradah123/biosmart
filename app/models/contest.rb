@@ -17,7 +17,8 @@ class Contest < ApplicationRecord
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
 
-  after_save :set_last_submission_accepted_at, :set_slug
+  after_save :set_last_submission_accepted_at, :set_slug,
+             :set_start_and_end_times_for_participations
 
   enum status: [:online, :offline, :deleted, :completed]
   enum rank_regions_by: [:recent]
@@ -30,8 +31,15 @@ class Contest < ApplicationRecord
   # change, the participation dates must be updated.
   #
 
+  def set_start_and_end_times_for_participations
+    participations.each {|p|
+      p.set_start_and_end_times
+    }
+  end
+
+
   def set_utc_start_and_end_times
-    if participations.count>0
+    if participations.count > 0
       update_column :utc_starts_at, participations.pluck(:starts_at).compact.min
       update_column :utc_ends_at, participations.pluck(:ends_at).compact.max
     end
