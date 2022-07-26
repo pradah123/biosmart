@@ -273,15 +273,22 @@ function get_info_window_for_observation(info_window, id) {
   var no_of_images = observation.image_urls.length;
   _current_image = 1;
 
+  var common_name = '';
+
+  if (observation.scientific_name != '') {
+    common_name = (observation.common_name ? '<div class="row mb-0"></div> (' + observation.common_name + ')' : '');
+  }
+  else {
+    common_name = (observation.common_name ? '<span class="info_text">' + observation.common_name + '</span>' : '');
+  }
   var image_content = get_image_content(no_of_images, observation.image_urls);
   const content_string = '<div id="obs_content" style="display:inline-block;">' +
                             '<div id="obs_body" style="float:left; padding:10px;">' +
-                              'Scientific name: <span class="info_text">' + observation.scientific_name + '</span>' +
-                              '<div class="row mb-3"></div>' +
-                              'Common name: <span class="info_text">' + observation.common_name + '</span>' +
-                              '<div class="row mb-3"></div>' +
-                              'Creator name: <span class="info_text">' + observation.creator_name + '</span>' +
-                              '<div class="row mb-3"></div>' +
+                              '<h5>' + observation.scientific_name + '</h5>' +
+                              common_name +
+                              '<div class="row mb-2"></div>' +
+                              'Created by: <span class="info_text">' + observation.creator_name + '</span>' +
+                              '<div class="row mb-2"></div>' +
                               'Observed at: <span class="info_text">' + observation.observed_at + '</span>' +
                             '</div>' +
                             image_content +
