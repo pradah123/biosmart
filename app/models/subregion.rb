@@ -4,8 +4,17 @@ class Subregion < ApplicationRecord
   belongs_to :data_source_new
   after_save :update_geometry
 
-  enum status: [:not_processing, :processing]
+  enum status: [:stopped, :processing]
   enum fetch_every: [:fifteen_minutes, :thirty_minutes, :one_hour, :two_hours, :four_hours, :eight_hours]
+
+  def contains? lat, lng
+    json = JSON.parse raw_polygon_json
+    return false if json['coordinates'].blank?
+    points = json['coordinates'].map { |c| Geokit::LatLng.new c[1], c[0] }
+    polygon = Geokit::Polygon.new(points)
+
+    return polygon.contains?(Geokit::LatLng.new lat, lng)
+  end
 
   #
   #  function called by a subregion job to

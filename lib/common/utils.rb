@@ -26,19 +26,9 @@ module Utils
     return utc_dttm.to_s
   end
 
-  def self.get_bounding_box(region_polygon)
-    west = nil
-    east = nil
-    south = nil
-    north = nil
-    region_polygon.each do |p|
-      min_lng, max_lng = p["coordinates"].map{|co| co.first}.minmax
-      min_lat, max_lat = p["coordinates"].map{|co| co.last}.minmax
-      west = min_lng if west.blank? || min_lng < west
-      east = max_lng if east.blank? || max_lng > east
-      south = min_lat if south.blank? || min_lat < south
-      north = max_lat if north.blank? || max_lat > north
-    end
+  def self.get_bounding_box(subregion_polygon)
+    west, east = subregion_polygon["coordinates"].map{|co| co.first}.minmax
+    south, north = subregion_polygon["coordinates"].map{|co| co.last}.minmax
     
     return west, east, south, north
   end
