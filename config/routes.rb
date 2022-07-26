@@ -47,6 +47,8 @@ Rails.application.routes.draw do
       get '/observations/region/:id', to: 'observation#region'
       get '/observations/participation/:id', to: 'observation#participation'
       get '/observations/contest/:id', to: 'observation#contest'
+      get '/observations/:id', to: 'observation#data'
+
     end
   end
 

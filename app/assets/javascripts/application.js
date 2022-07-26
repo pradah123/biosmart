@@ -14,6 +14,8 @@ var _processing_modal = new bootstrap.Modal(document.getElementById('processing_
 var _gallery_carousel = null;
 
 var _nshow_more = 1
+var _current_image = 1;
+
 
 $(document).ready(function() { 
   set_up_authentication();
@@ -210,6 +212,97 @@ function set_up_contest_page() {
   });
 }
 
+function show_image(view_action, no_of_images) {
+  var id;
+  id = (view_action == 'prev' ? (_current_image - 1) : _current_image + 1);
+
+  // Display image if it's withing range of array length
+  if (id > 0 && id <= no_of_images) {
+    document.getElementById("image" + id).style.display = "block";
+    _current_image = id;
+  }
+  for(i = 1; i <= no_of_images; i++) {
+    // Set display to none except current image which is being displayed
+    if (i != _current_image) {
+      document.getElementById("image" + i).style.display="none";
+    }
+  }
+}
+
+// Create div elements for displaying images on information window of map
+function get_image_content(no_of_images, urls) {
+  var image_content = '';
+
+  if (no_of_images > 0) {
+    image_content = '<div style="float:right;padding: 10px;">';
+    if (no_of_images > 1 ) {
+      //Add Prev and next elements
+      image_content += '<a class="slide round" onclick="show_image(' + "'prev'," +
+                      no_of_images + ')">&#8249;</a>';
+      image_content += '<a class="slide round" onclick="show_image(' +
+                      "'next'," + no_of_images + ')">&#8250;</a>';
+      image_content += '<div class="row mb-1"></div>'
+    }
+    for (i = 0; i < no_of_images; i++ ) {
+      // By default display first image
+      var display = (i == 0 ? 'display:block' : 'display:none');
+
+      image_content += '<div id="image' + (i + 1) + '" style="' + display +'">' +
+                      '<img class="thumbnail" style="cursor:pointer;" src="' +
+                      urls[i] +
+                    '" onclick="window.open(this.src, ' + "'_blank'"+');"></div>' ;
+    }
+    image_content += '</div>';
+  }
+  return image_content;
+}
+
+/* Fill the info window with observation details and images
+   which will be displayed on map on click of marker */
+function get_info_window_for_observation(info_window, id) {
+   var observation;
+   api_url = _api + '/observations/' + id;
+
+  // Get observation details
+  $.ajax({ url: api_url, type: 'get', contentType: 'application/json',
+           async: false})
+  .done(function(data, status) {
+    observation = data['data']['observation'];
+  });
+
+  var no_of_images = observation.image_urls.length;
+  _current_image = 1;
+
+  var common_name = '';
+
+  if (observation.scientific_name != '') {
+    common_name = (observation.common_name ? '<div class="row mb-0"></div> (' + observation.common_name + ')' : '');
+  }
+  else {
+    common_name = (observation.common_name ? '<span class="info_text">' + observation.common_name + '</span>' : '');
+  }
+  var image_content = get_image_content(no_of_images, observation.image_urls);
+  const content_string = '<div id="obs_content" style="display:inline-block;">' +
+                            '<div id="obs_body" style="float:left; padding:10px;">' +
+                              '<h5>' + observation.scientific_name + '</h5>' +
+                              common_name +
+                              '<div class="row mb-2"></div>' +
+                              'Created by: <span class="info_text">' + observation.creator_name + '</span>' +
+                              '<div class="row mb-2"></div>' +
+                              'Observed at: <span class="info_text">' + observation.observed_at + '</span>' +
+                            '</div>' +
+                            image_content +
+                          '</div>';
+  info_window.setContent(content_string);
+  return info_window;
+}
+
+function close_info_windows(info_windows) {
+  for( var i = 0 ; i < info_windows.length ; i++ ) {
+    info_windows[i].close();
+  }
+}
+
 function set_up_region_page() {
   if($('#region-map').length==0) return; 
 
@@ -243,17 +336,29 @@ function set_up_region_page() {
 
     $.get(_api+_observations_filename, function() {})
     .done(function(data, status) {
-      console.log(data);
       if(data['data']==undefined || data['data']['observations']==undefined || data['data']['observations'].length==0) {
         
       } else {
         var observations = data['data']['observations']
+
         var markers = [];
-        for( var i = 0 ; i<observations.length ; i++ ) {
-          var marker = new google.maps.Marker({ position: observations[i] });
+        var info_windows = [];
+        var info_window = new google.maps.InfoWindow();
+
+        for( var i = 0 ; i < observations.length ; i++ ) {
+          obs = observations[i];
+          var marker = new google.maps.Marker(
+            { position: {lat: obs.lat, lng: obs.lng}, id: obs.id });
           marker.setMap(map);
+
+          marker.addListener("click", function() {
+              close_info_windows(info_windows);
+              info_window = get_info_window_for_observation(info_window, this.id);
+              info_window.open({ anchor: this, map, shouldFocus: false });
+              info_windows.push(info_window);
+           });
+
           markers.push(marker);
-          //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
         } 
         const mc = new markerClusterer.MarkerClusterer({ map, markers });
       }
@@ -305,7 +410,8 @@ function set_up_participations() {
       p['data_source_ids'] = [];
       $('input[name="data-sources-'+id+'"]:checked').each(function() { p['data_source_ids'].push(parseInt($(this).val())); });
 
-      $.ajax({ url: (_api+'/participation'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'participation': p }) })
+      $.ajax({ url: (_api+'/participation'), type: verb, contentType: 'application/json',
+               data: JSON.stringify({ 'participation': p }) })
       .done(function(data, status) {
         console.log(data);
         if(data['status']=='fail') {

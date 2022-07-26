@@ -54,8 +54,24 @@ module Api::V1
 
     def get_map_observations obj
       j = {}
-      j['observations'] = obj.nil? ? [] : obj.observations.map { |o| { lat: o.lat, lng: o.lng } }
+      j['observations'] = obj.nil? ? [] : obj.observations.map { |o|
+         { id:  o.id,
+           lat: o.lat,
+           lng: o.lng
+         } }
+
       render_success j
+    end
+
+    def get_observation_details obj
+      j = {}
+      j['observation'] = ObservationSerializer.new(obj).serializable_hash[:data][:attributes]
+
+      render_success j
+    end
+
+    def data
+      get_observation_details Observation.find_by_id params[:id]
     end
 
     def region
