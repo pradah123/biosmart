@@ -58,7 +58,7 @@ class DataSource < ApplicationRecord
       end
     when 'mushroom_observer'
       if subregion.region.raw_polygon_json.present?
-        parsed_polygon = JSON.parse(subregion.region.raw_polygon_json)
+        parsed_polygon = JSON.parse(subregion.raw_polygon_json)
         west, east, south, north = Utils.get_bounding_box(parsed_polygon)
         return {
           north: north,
@@ -104,7 +104,7 @@ class DataSource < ApplicationRecord
       loop do                
           observations = mushroom_observer.get_observations() || []
           observations.each{ |o|
-            if subregion.region.contains? o[:lat], o[:lng]
+            if subregion.contains? o[:lat], o[:lng]
               ObservationsCreateJob.perform_later self, [o]
             end
           }
