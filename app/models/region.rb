@@ -157,7 +157,10 @@ class Region < ApplicationRecord
       Subregion.create! data_source_id: DataSource.find_by_name('observation.org').id, region_id: self.id, raw_polygon_json: '{}'
 
       # questagame does not need a radius- but will use polygon in multipolygon db query format
-      Subregion.create! data_source_id: DataSource.find_by_name('qgame').id, region_id: self.id, raw_polygon_json: p.to_json   
+      Subregion.create! data_source_id: DataSource.find_by_name('qgame').id, region_id: self.id, raw_polygon_json: p.to_json
+
+      # mushroom observer needs north, south, east, west
+      Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json   
     end
   end
 
