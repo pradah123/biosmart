@@ -2,6 +2,7 @@ require_relative '../../lib/source/inaturalist.rb'
 require_relative '../../lib/source/ebird.rb'
 require_relative '../../lib/source/qgame.rb'
 require_relative '../../lib/source/observation_org.rb'
+require_relative '../../lib/source/mushroom_observer.rb'
 
 class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
@@ -55,7 +56,19 @@ class DataSource < ApplicationRecord
           limit: 100
         }
       end
-
+    when 'mushroom_observer'
+      if subregion.region.raw_polygon_json.present?
+        parsed_polygon = JSON.parse(subregion.region.raw_polygon_json)
+        west, east, south, north = Utils.get_bounding_box(parsed_polygon)
+        return {
+          north: north,
+          south: south,
+          east: east,
+          west: west
+        }
+      else
+        raise ArgumentError.new("Polygon does not exists for region #{subregion.region.id}")
+      end
     else
       {}
     end     
@@ -74,9 +87,32 @@ class DataSource < ApplicationRecord
         fetch_qgame sr, starts_at, ends_at
       when 'observation.org'
         fetch_observations_dot_org sr, starts_at, ends_at
+      when 'mushroom_observer'
+        fetch_mushroom_observer sr, starts_at, ends_at
       else
         self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
       end
+    end
+  end
+
+  def fetch_mushroom_observer subregion, starts_at, ends_at
+    Delayed::Worker.logger.info "fetch_mushroom_observer(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = get_query_parameters subregion
+      params[:date] = "#{starts_at.strftime('%Y%m%d')}-#{ends_at.strftime('%Y%m%d')}"
+      mushroom_observer = ::Source::MushroomObserver.new(**params)
+      loop do                
+          observations = mushroom_observer.get_observations() || []
+          observations.each{ |o|
+            if subregion.region.contains? o[:lat], o[:lng]
+              ObservationsCreateJob.perform_later self, [o]
+            end
+          }
+          mushroom_observer.increment_page()
+          break if mushroom_observer.done()
+      end
+    rescue => e
+      Delayed::Worker.logger.error "fetch_mushroom_observer: #{e.full_message}"
     end
   end
 
