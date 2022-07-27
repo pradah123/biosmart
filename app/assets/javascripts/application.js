@@ -141,19 +141,11 @@ function set_up_top_page() {
 
       for( var i = 0 ; i < _all_regions.length ; i++ ) {
         var r = _all_regions[i];
-
-        const content_string = '<div id="content">' +
-          '<div id="bodyContent">' +
-            '<a class="text-muted" href="' + r.url + '"/>' + r.name + '</a>' +
-          '</div>' +
-        '</div>';
-
         var position = { lat: r.lat, lng: r.lng };
-        
-        const info_window = new google.maps.InfoWindow({ content: content_string });
+
+        const info_window = get_region_info_window(r);
         const marker = new google.maps.Marker({ position: position, map, title: r.name, animation: google.maps.Animation.DROP });//, visible: false });
         marker.addListener("click", () => { info_window.open({ anchor: marker, map, shouldFocus: false }); });
-        //info_window.open({ anchor: marker, map, shouldFocus: false });
 
         bounds.extend(position);
         markers.push(marker);
@@ -172,6 +164,17 @@ function set_up_top_page() {
   });  
 }
 
+function get_region_info_window(region) {
+  var content_string = '<div id="content">' +
+                          '<div id="bodyContent">' +
+                            '<a class="text-muted" href="' + region.url + '"/>' + region.name + '</a>' +
+                          '</div>' +
+                        '</div>';
+  var info_window = new google.maps.InfoWindow({ content: content_string });
+
+  return info_window;
+}
+
 function set_up_contest_page() {
   if($('#contest-map').length==0) return; 
 
@@ -185,11 +188,15 @@ function set_up_contest_page() {
     if(_participants!=undefined) {
       var markers = [];
       for( var i = 0 ; i<_participants.length ; i++ ) {
-        var marker = new google.maps.Marker({ position: _participants[i] });
-        marker.setMap(map);
+        var participant = _participants[i];
+        var position = { lat: participant.lat, lng: participant.lng };
+
+        const info_window = get_region_info_window(participant);
+        const marker = new google.maps.Marker({ position: position, map, title: participant.name });
+        marker.addListener("click", () => { info_window.open({ anchor: marker, map, shouldFocus: false }); });
+
         markers.push(marker);
-        bounds.extend(_participants[i]);
-        //marker.addListener("click", () => { infoWindow.setContent(label); infoWindow.open(map, marker); });
+        bounds.extend(position);
       }
     }    
 

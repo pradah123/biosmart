@@ -29,7 +29,7 @@
         var _region_polygons = [];<%#= JSON.generate(@contest.get_region_polygons).html_safe %>; 
         var _participants = <%= JSON.generate(
           @contest.regions.map { |r| 
-            { lat: r.lat, lng: r.lng } 
+            { lat: r.lat, lng: r.lng , url: r.get_path, name: r.name}
           }.select{ |ll| 
             ll[:lat].present? && ll[:lng].present?
           }
