@@ -58,7 +58,7 @@ group :development do
   gem 'capistrano-rails'
   gem 'capistrano-rvm'
   gem 'capistrano3-puma'
-  gem 'capistrano3-delayed-job', '~> 1.0'
+  # gem 'capistrano3-delayed-job', '~> 1.0'
   gem 'web-console', '>= 4.1.0'
   #gem 'rack-mini-profiler', '~> 2.0'
   gem 'listen', '~> 3.3'
@@ -70,5 +70,3 @@ group :test do
   gem 'selenium-webdriver'
   gem 'webdrivers'
 end
-
-

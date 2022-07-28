@@ -30,5 +30,19 @@ set :ssh_options, {
   auth_methods: ["publickey"]
 }
 
+namespace :delayed_job do
+	desc "Restart delayed jobs"
+	task :restart do
+		on roles(:app) do |host|
+			within "#{current_path}" do
+				with RAILS_ENV: fetch(:rails_env) do
+					execute :sudo, :service, :delayed_job_biosmart_production, :restart
+				end
+			end
+		end
+	end
+end
+
 after 'deploy:symlink:release', 'assets:compile'
 after 'puma:restart', 'deploy:restart'
+after 'puma:restart', 'delayed_job:restart'
