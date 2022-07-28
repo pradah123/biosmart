@@ -36,7 +36,7 @@ namespace :delayed_job do
 		on roles(:app) do |host|
 			within "#{current_path}" do
 				with RAILS_ENV: fetch(:rails_env) do
-					execute :sudo, :service, :delayed_job_biosmart_production, :restart
+					execute :sudo, :service, :delayed_job, :restart
 				end
 			end
 		end
