@@ -64,7 +64,19 @@ function set_up_counters() {
   });
 }
 
+function clear_search_cookie() {
+  var stored_pathname = Cookies.get("pathname");
+  Cookies.remove(stored_pathname);
+  Cookies.remove("q");
+}
+
 function set_up_observations() {
+
+  var pathname = window.location.pathname;
+  var stored_pathname = Cookies.get("pathname");
+  if (pathname !== stored_pathname) {
+    clear_search_cookie();
+  }
 
   $(document).on('click', '.gallery-link', function() { 
     var link = $(this);    
@@ -99,14 +111,19 @@ function set_up_observations() {
     return false;
   });
 
-  $('#search_clear').click(function() { 
+  $('#search_clear').click(function() {
+    clear_search_cookie(); 
     $('#search_input').val(''); $('#search_button').click(); 
   });
 
-  $('#search_button').click(function() {
-    var q = $('#search_input').val().toLowerCase().trim();
-    Cookies.set('q', q);
-    reload('recent_observations');
+  $("#search_button").click(function () {
+    var q = $("#search_input").val().toLowerCase().trim();
+    if (q) {
+      Cookies.set("pathname", pathname);
+      Cookies.set("q", q);
+    }
+
+    reload("recent_observations");
   });
 
   $(document).keyup(function(e) {
