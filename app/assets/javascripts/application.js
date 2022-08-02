@@ -20,7 +20,7 @@ const icon = {
   url: "https://questagame.s3.ap-southeast-2.amazonaws.com/maps-icon.png", // url
   scaledSize: new google.maps.Size(31, 40), // scaled size
   origin: new google.maps.Point(0, 0), // origin
-  anchor: new google.maps.Point(0, 0), // anchor
+  anchor: new google.maps.Point(15, 40), // anchor
 };
 
 $(document).ready(function() { 
