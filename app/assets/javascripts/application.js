@@ -16,6 +16,12 @@ var _gallery_carousel = null;
 var _nshow_more = 1
 var _current_image = 1;
 
+const icon = {
+  url: "https://questagame.s3.ap-southeast-2.amazonaws.com/maps-icon.png", // url
+  scaledSize: new google.maps.Size(31, 40), // scaled size
+  origin: new google.maps.Point(0, 0), // origin
+  anchor: new google.maps.Point(0, 0), // anchor
+};
 
 $(document).ready(function() { 
   set_up_authentication();
@@ -161,7 +167,7 @@ function set_up_top_page() {
         var position = { lat: r.lat, lng: r.lng };
 
         const info_window = get_region_info_window(r);
-        const marker = new google.maps.Marker({ position: position, map, title: r.name, animation: google.maps.Animation.DROP });//, visible: false });
+        const marker = new google.maps.Marker({ position: position, map, title: r.name, animation: google.maps.Animation.DROP, icon: icon });//, visible: false });
         marker.addListener("click", () => { info_window.open({ anchor: marker, map, shouldFocus: false }); });
 
         bounds.extend(position);
@@ -209,7 +215,7 @@ function set_up_contest_page() {
         var position = { lat: participant.lat, lng: participant.lng };
 
         const info_window = get_region_info_window(participant);
-        const marker = new google.maps.Marker({ position: position, map, title: participant.name });
+        const marker = new google.maps.Marker({ position: position, map, title: participant.name, icon: icon });
         marker.addListener("click", () => { info_window.open({ anchor: marker, map, shouldFocus: false }); });
 
         markers.push(marker);
@@ -372,7 +378,7 @@ function set_up_region_page() {
         for( var i = 0 ; i < observations.length ; i++ ) {
           obs = observations[i];
           var marker = new google.maps.Marker(
-            { position: {lat: obs.lat, lng: obs.lng}, id: obs.id });
+            { position: {lat: obs.lat, lng: obs.lng}, id: obs.id, icon: icon });
           marker.setMap(map);
 
           marker.addListener("click", function() {
