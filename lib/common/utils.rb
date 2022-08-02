@@ -32,4 +32,22 @@ module Utils
     
     return west, east, south, north
   end
+
+
+  ## Generate polygon coordinates from given lat,lng and radius
+  def self.get_boundary_for_greater_area center_lat, center_lng, radius
+    point = Geokit::LatLng.new center_lat, center_lng
+
+    east  = point.endpoint(0,   radius, units: :kms)
+    ne    = point.endpoint(45,  radius, units: :kms)
+    north = point.endpoint(90,  radius, units: :kms)
+    nw    = point.endpoint(135, radius, units: :kms)
+    west  = point.endpoint(180, radius, units: :kms)
+    sw    = point.endpoint(225, radius, units: :kms)
+    south = point.endpoint(270, radius, units: :kms)
+    se    = point.endpoint(315, radius, units: :kms)
+
+    return east, ne, north, nw, west, sw, south, se
+  end
+
 end

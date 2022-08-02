@@ -18,9 +18,9 @@ class Region < ApplicationRecord
 
   belongs_to :parent_region, class_name: 'Region', optional: true
   has_many :child_regions, class_name: 'Region', foreign_key: 'parent_region_id'
-
   has_many :participations, dependent: :delete_all
   has_many :subregions, dependent: :delete_all
+  has_many :neighbor_regions, class_name: 'Region', foreign_key: 'base_region_id', dependent: :delete_all
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
  
@@ -28,8 +28,9 @@ class Region < ApplicationRecord
   # subregions are used in fetching data when the region size is too large
   # for one api call to cover
   #
-  after_create :compute_subregions 
-  after_update :compute_subregions if :saved_change_to_raw_polygon_json
+  after_create :compute_subregions, :set_lat_lng, :compute_neighbor_regions
+  after_update :compute_subregions, :set_lat_lng, if: :saved_change_to_raw_polygon_json
+  after_update :compute_neighbor_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
 
   #
   # the timezone of the centre point of the region is found using a google
@@ -42,7 +43,7 @@ class Region < ApplicationRecord
   # region. geokit polygons are used to acheive this, and since they are reused 
   # many times, the geokit polygon objects are cached.
   #
-  after_save :update_polygon_cache, :set_lat_lng, :set_time_zone_from_polygon
+  after_save :update_polygon_cache, :set_time_zone_from_polygon
   after_save :set_slug
 
   enum status: [:online, :offline, :deleted]
@@ -128,8 +129,6 @@ class Region < ApplicationRecord
 
   end
 
-  
-
 
 
 
@@ -160,7 +159,94 @@ class Region < ApplicationRecord
       Subregion.create! data_source_id: DataSource.find_by_name('qgame').id, region_id: self.id, raw_polygon_json: p.to_json
 
       # mushroom observer needs north, south, east, west
-      Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json   
+      Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json
+
+    end
+  end
+
+
+  ## Generate polygon geojson array from boundary coordinates
+  def generate_polygon east, ne, north, nw, west, sw, south, se
+    geojson_polygons = []
+    geojson = {}
+    geojson['type'] = 'Polygon'
+    geojson['coordinates'] = []
+
+    geojson['coordinates'].push([east.lng, east.lat])
+    geojson['coordinates'].push([ne.lng, ne.lat])
+    geojson['coordinates'].push([north.lng, north.lat])
+    geojson['coordinates'].push([nw.lng, nw.lat])
+    geojson['coordinates'].push([west.lng, west.lat])
+    geojson['coordinates'].push([sw.lng, sw.lat])
+    geojson['coordinates'].push([south.lng, south.lat])
+    geojson['coordinates'].push([se.lng, se.lat])
+    geojson['coordinates'].push([east.lng, east.lat])
+
+    geojson_polygons.push geojson unless geojson['coordinates'].empty?
+
+    return geojson_polygons
+  end
+
+
+
+  # Add or update neighbor region
+  def save_neighbor_region radius=nil, index=nil, action=nil, name=nil,
+                          base_polygon_geojson=nil, base_lat=nil, base_lng=nil,
+                          name_changed=nil, polygon_changed=nil
+    if action == 'create'
+      base_region_id = self.id
+      base_lat = self.lat
+      base_lng = self.lng
+      base_polygon_geojson = self.get_polygon_json
+    elsif action == 'update'
+      base_region_id = self.base_region_id
+      radius = self.size
+      suffix = (self.name =~ /Locality$/ ? ' Locality' : (self.name =~ /Greater Area$/ ? ' Greater Area' : ''))
+    end
+
+    geojson_polygons = []
+
+    if (!base_lat.nil? && !base_lng.nil? &&
+    (action == 'create' || (action == 'update' && !polygon_changed.blank?)))
+      (min_dist, max_dist) = self.distance_from_point(base_lat, base_lng, base_polygon_geojson)
+      max_radius = max_dist * radius
+      (east, ne, north, nw, west, sw, south, se) = Utils.get_boundary_for_greater_area(base_lat, base_lng, max_radius)
+      geojson_polygons = generate_polygon east, ne, north, nw, west, sw, south, se
+    end
+
+    raw_polygon = JSON.generate geojson_polygons
+    if action == 'create'
+      ## Create neighbor regions
+      Region.create! name: name,
+                    base_region_id: base_region_id,
+                    raw_polygon_json: raw_polygon,
+                    size: radius,
+                    description: description
+    elsif action == 'update'
+      ## Update neighbor regions
+      self.update! name: name + suffix if (!name_changed.blank? && polygon_changed.blank?)
+      self.update! base_region_id: base_region_id, name: name + suffix, raw_polygon_json: raw_polygon, size: radius if (!polygon_changed.blank?)
+    end
+  end
+
+
+
+  # Add or update neighbor regions for the base region only for the ones which are added as base regions
+  # and not for the neighbor regions
+  def compute_neighbor_regions
+    if size.blank?
+      # Create new neighbor regions
+      if neighbor_regions.blank?
+        neighbor_name = name + " Locality"
+        self.save_neighbor_region(5, 1, 'create', neighbor_name)
+        neighbor_name = name + " Greater Area"
+        self.save_neighbor_region(25, 2, 'create', neighbor_name)
+      else      # Update existing neighbor regions
+        polygon_geojson = self.get_polygon_json
+        neighbor_regions.each { |r|
+          r.save_neighbor_region(nil, nil, 'update', name, polygon_geojson, lat, lng, saved_change_to_name, saved_change_to_raw_polygon_json )
+        }
+      end
     end
   end
 
@@ -320,9 +406,7 @@ class Region < ApplicationRecord
   end
 
   ## Calculate minimum and maximum distance of region from a given coordinate
-  def distance_from_point(lat, lng)
-    polygon_geojson = get_polygon_json
-
+  def distance_from_point(lat, lng, polygon_geojson)
     min = max = nil
     if polygon_geojson.nil?
       return min, max
@@ -333,7 +417,7 @@ class Region < ApplicationRecord
         polygon['coordinates'].each.with_index { |c, i|
           p1 = Geokit::LatLng.new c[1] , c[0]
           p2 = Geokit::LatLng.new lat, lng
-          dist = p1.distance_to(p2, units: :kms).ceil()
+          dist = p1.distance_to(p2, units: :kms)
           if i == 0
             min = dist
             max = dist
@@ -361,17 +445,17 @@ class Region < ApplicationRecord
     ## If given coordinate resides inside the polygon then return as true
     return true if contains? lat, lng
 
-    (min_dist, max_dist) = distance_from_point(lat, lng)
+    (min_dist, max_dist) = distance_from_point(lat, lng, polygon_geojson)
 
     ## Return true, if distance between any polygon coordinate and given coordinate is
     ## less than or equal to required distance
-    if !min_dist.nil? && min_dist <= distance_km
+    if !min_dist.nil? && min_dist.ceil() <= distance_km
       return true
     else
       return false
     end
-
   end
+
 
   rails_admin do
     list do
