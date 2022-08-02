@@ -25,6 +25,8 @@ module Biosmart
     config.active_job.queue_adapter = :delayed_job
     config.active_job.queue_name_prefix = "observations_#{Rails.env}"
 
+    config.active_record.legacy_connection_handling = false
+
     #config.middleware.insert_before 0, Rack::Cors do
     #  allow do
     #    origins '*'
