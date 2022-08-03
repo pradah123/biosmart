@@ -28,9 +28,9 @@ class Region < ApplicationRecord
   # subregions are used in fetching data when the region size is too large
   # for one api call to cover
   #
-  after_create :compute_subregions, :set_lat_lng, :neighboring_regions
+  after_create :compute_subregions, :set_lat_lng, :compute_neighboring_regions
   after_update :compute_subregions, :set_lat_lng, if: :saved_change_to_raw_polygon_json
-  after_update :neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
+  after_update :compute_neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
 
   #
   # the timezone of the centre point of the region is found using a google
