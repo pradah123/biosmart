@@ -20,7 +20,7 @@ class Region < ApplicationRecord
   has_many :child_regions, class_name: 'Region', foreign_key: 'parent_region_id'
   has_many :participations, dependent: :delete_all
   has_many :subregions, dependent: :delete_all
-  has_many :neighbor_regions, class_name: 'Region', foreign_key: 'base_region_id', dependent: :delete_all
+  has_many :neighboring_regions, class_name: 'Region', foreign_key: 'base_region_id', dependent: :delete_all
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
  
@@ -28,9 +28,9 @@ class Region < ApplicationRecord
   # subregions are used in fetching data when the region size is too large
   # for one api call to cover
   #
-  after_create :compute_subregions, :set_lat_lng, :compute_neighbor_regions
+  after_create :compute_subregions, :set_lat_lng, :neighboring_regions
   after_update :compute_subregions, :set_lat_lng, if: :saved_change_to_raw_polygon_json
-  after_update :compute_neighbor_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
+  after_update :neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
 
   #
   # the timezone of the centre point of the region is found using a google
@@ -166,19 +166,19 @@ class Region < ApplicationRecord
 
 
   # Add or update neighbor regions for the base region
-  def compute_neighbor_regions
-    if size.blank?
-      # Create new neighbor regions
-      if neighbor_regions.blank?
-        NeighborRegion.new().create_neighbor_regions(self)
-      else
-        # Update existing neighbor regions
-        NeighborRegion.new().update_neighbor_regions self, saved_change_to_name, saved_change_to_raw_polygon_json
-      end
-    end
+  def compute_neighboring_regions
+    return if size.blank?
+    
+    # Create or update locality
+    nr_locality = NeighboringRegion.new(self, 5)
+    r_locality = nr_locality.get_region()
+    # https://apidock.com/rails/ActiveRecord/Base/save
+    r_locality.save
+    # Create or update greater region
+    nr_greater_region = NeighboringRegion.new(self, 25)
+    r_greater_region = nr_greater_region.get_region()
+    r_greater_region.save
   end
-
-
 
   #
   #  polygon caching and computation functions,
@@ -333,35 +333,53 @@ class Region < ApplicationRecord
     return polygon_geojson
   end
 
-  ## Calculate minimum and maximum distance of region from a given coordinate
-  def distance_from_point(lat, lng, polygon_geojson)
-    min = max = nil
-    if polygon_geojson.nil?
-      return min, max
-    end
-
-    polygon_geojson.each do |polygon|
-      if !polygon['coordinates'].nil?
-        polygon['coordinates'].each.with_index { |c, i|
-          p1 = Geokit::LatLng.new c[1] , c[0]
-          p2 = Geokit::LatLng.new lat, lng
-          dist = p1.distance_to(p2, units: :kms)
-          if i == 0
-            min = dist
-            max = dist
-          end
-          if dist <= min
-            min = dist
-          end
-          if dist > max
-            max = dist
-          end
-        }
+  ## Calculate distance of farthest point from the center of the region
+  def get_distance_of_farthest_point()
+    polygons = get_polygon_json()
+    return nil if polygons.blank?
+    farthest_distance = nil
+    center_point = Geokit::LatLng.new(base_lat, base_lng)
+    polygons.each do |polygon|
+      next if polygon['coordinates'].blank?
+      polygon['coordinates'].each do |c|
+        boundry_point = Geokit::LatLng.new(c[1] , c[0])
+        dist = center_point.distance_to(boundry_point, units: :kms)
+        farthest_distance = dist if farthest_distance.blank? || dist > farthest_distance
       end
     end
-    return min, max
+
+    return farthest_distance
 
   end
+
+  # def distance_from_point(lat, lng, polygon_geojson)
+  #   min = max = nil
+  #   if polygon_geojson.nil?
+  #     return min, max
+  #   end
+
+  #   polygon_geojson.each do |polygon|
+  #     if !polygon['coordinates'].nil?
+  #       polygon['coordinates'].each.with_index { |c, i|
+  #         p1 = Geokit::LatLng.new c[1] , c[0]
+  #         p2 = Geokit::LatLng.new lat, lng
+  #         dist = p1.distance_to(p2, units: :kms)
+  #         if i == 0
+  #           min = dist
+  #           max = dist
+  #         end
+  #         if dist <= min
+  #           min = dist
+  #         end
+  #         if dist > max
+  #           max = dist
+  #         end
+  #       }
+  #     end
+  #   end
+  #   return min, max
+
+  # end
 
   ### Find out whether given coordinates and region are within reach of given distance or not
   def is_region_near_to_point lat, lng, distance_km=50
