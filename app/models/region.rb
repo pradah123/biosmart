@@ -165,87 +165,15 @@ class Region < ApplicationRecord
   end
 
 
-  ## Generate polygon geojson array from boundary coordinates
-  def generate_polygon east, ne, north, nw, west, sw, south, se
-    geojson_polygons = []
-    geojson = {}
-    geojson['type'] = 'Polygon'
-    geojson['coordinates'] = []
-
-    geojson['coordinates'].push([east.lng, east.lat])
-    geojson['coordinates'].push([ne.lng, ne.lat])
-    geojson['coordinates'].push([north.lng, north.lat])
-    geojson['coordinates'].push([nw.lng, nw.lat])
-    geojson['coordinates'].push([west.lng, west.lat])
-    geojson['coordinates'].push([sw.lng, sw.lat])
-    geojson['coordinates'].push([south.lng, south.lat])
-    geojson['coordinates'].push([se.lng, se.lat])
-    geojson['coordinates'].push([east.lng, east.lat])
-
-    geojson_polygons.push geojson unless geojson['coordinates'].empty?
-
-    return geojson_polygons
-  end
-
-
-
-  # Add or update neighbor region
-  def save_neighbor_region radius=nil, index=nil, action=nil, name=nil,
-                          base_polygon_geojson=nil, base_lat=nil, base_lng=nil,
-                          name_changed=nil, polygon_changed=nil
-    if action == 'create'
-      base_region_id = self.id
-      base_lat = self.lat
-      base_lng = self.lng
-      base_polygon_geojson = self.get_polygon_json
-    elsif action == 'update'
-      base_region_id = self.base_region_id
-      radius = self.size
-      suffix = (self.name =~ /Locality$/ ? ' Locality' : (self.name =~ /Greater Area$/ ? ' Greater Area' : ''))
-    end
-
-    geojson_polygons = []
-
-    if (!base_lat.nil? && !base_lng.nil? &&
-    (action == 'create' || (action == 'update' && !polygon_changed.blank?)))
-      (min_dist, max_dist) = self.distance_from_point(base_lat, base_lng, base_polygon_geojson)
-      max_radius = max_dist * radius
-      (east, ne, north, nw, west, sw, south, se) = Utils.get_boundary_for_greater_area(base_lat, base_lng, max_radius)
-      geojson_polygons = generate_polygon east, ne, north, nw, west, sw, south, se
-    end
-
-    raw_polygon = JSON.generate geojson_polygons
-    if action == 'create'
-      ## Create neighbor regions
-      Region.create! name: name,
-                    base_region_id: base_region_id,
-                    raw_polygon_json: raw_polygon,
-                    size: radius,
-                    description: description
-    elsif action == 'update'
-      ## Update neighbor regions
-      self.update! name: name + suffix if (!name_changed.blank? && polygon_changed.blank?)
-      self.update! base_region_id: base_region_id, name: name + suffix, raw_polygon_json: raw_polygon, size: radius if (!polygon_changed.blank?)
-    end
-  end
-
-
-
-  # Add or update neighbor regions for the base region only for the ones which are added as base regions
-  # and not for the neighbor regions
+  # Add or update neighbor regions for the base region
   def compute_neighbor_regions
     if size.blank?
       # Create new neighbor regions
       if neighbor_regions.blank?
-        neighbor_name = name + " Locality"
-        self.save_neighbor_region(5, 1, 'create', neighbor_name)
-        neighbor_name = name + " Greater Area"
-        self.save_neighbor_region(25, 2, 'create', neighbor_name)
-      else      # Update existing neighbor regions
-        polygon_geojson = self.get_polygon_json
-        neighbor_regions.each { |r|
-          r.save_neighbor_region(nil, nil, 'update', name, polygon_geojson, lat, lng, saved_change_to_name, saved_change_to_raw_polygon_json )
-        }
+        NeighborRegion.new().create_neighbor_regions(self)
+      else
+        # Update existing neighbor regions
+        NeighborRegion.new().update_neighbor_regions self, saved_change_to_name, saved_change_to_raw_polygon_json
       end
     end
   end

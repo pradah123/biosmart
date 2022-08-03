@@ -35,7 +35,7 @@ module Utils
 
 
   ## Generate polygon coordinates from given lat,lng and radius
-  def self.get_boundary_for_greater_area center_lat, center_lng, radius
+  def self.get_boundary_for_greater_area(center_lat, center_lng, radius)
     point = Geokit::LatLng.new center_lat, center_lng
 
     east  = point.endpoint(0,   radius, units: :kms)
@@ -48,6 +48,28 @@ module Utils
     se    = point.endpoint(315, radius, units: :kms)
 
     return east, ne, north, nw, west, sw, south, se
+  end
+
+  ## Generate polygon geojson array from boundary coordinates
+  def self.generate_polygon_geojson(east, ne, north, nw, west, sw, south, se)
+    geojson_polygons = []
+    geojson = {}
+    geojson['type'] = 'Polygon'
+    geojson['coordinates'] = []
+
+    geojson['coordinates'].push([east.lng, east.lat])
+    geojson['coordinates'].push([ne.lng, ne.lat])
+    geojson['coordinates'].push([north.lng, north.lat])
+    geojson['coordinates'].push([nw.lng, nw.lat])
+    geojson['coordinates'].push([west.lng, west.lat])
+    geojson['coordinates'].push([sw.lng, sw.lat])
+    geojson['coordinates'].push([south.lng, south.lat])
+    geojson['coordinates'].push([se.lng, se.lat])
+    geojson['coordinates'].push([east.lng, east.lat])
+
+    geojson_polygons.push geojson unless geojson['coordinates'].empty?
+
+    return geojson_polygons
   end
 
 end
