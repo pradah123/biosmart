@@ -8,17 +8,11 @@ class NeighboringRegion
 
   # get_region() -> Region
   def get_region()
-    r = @existing_region
-    
     # NOTE: If neighboring region does not exists, create new region
-    r = Region.new() if r.blank?
-
+    r = @existing_region || Region.new()
     r.size = @size
     r.name = name()
     r.base_region_id = @base_region.id
-    r.base_lat = @base_region.lat
-    r.base_lng = @base_region.lng
-    r.base_polygon_geojson = @base_region.get_polygon_json
     r.raw_polygon_json = get_polygon_geojson()
         
     return r    
@@ -31,19 +25,9 @@ class NeighboringRegion
 
   # get_polygon_geojson() -> String
   def get_polygon_geojson()
-    farthest_point_dist = @base_region.get_distance_of_farthest_point()
+    scaled_polygons = @base_region.scaled_bbox_geojson(with_multiplier: @size)
     
-    # Get bounding box for larger region
-    ne, nw, sw, se = Utils.get_bounding_box_coordinates_with(
-      center_lat: @base_region.base_lat, 
-      center_lng: @base_region.base_lng, 
-      at_distance: farthest_point_dist * @size
-    )
-
-    # Generate geojson from bounding box
-    polygon_geojson = Utils.generate_polygon_geojson(ne, nw, sw, se)
-
-    return polygon_geojson
+    return scaled_polygons.to_json
   end
 
 end
