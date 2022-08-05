@@ -1,3 +1,5 @@
+require_relative '../../lib/region/neighboring_region.rb'
+
 class Region < ApplicationRecord
   include CountableStatistics
   
@@ -20,7 +22,7 @@ class Region < ApplicationRecord
   has_many :child_regions, class_name: 'Region', foreign_key: 'parent_region_id'
   has_many :participations, dependent: :delete_all
   has_many :subregions, dependent: :delete_all
-  has_many :neighbor_regions, class_name: 'Region', foreign_key: 'base_region_id', dependent: :delete_all
+  has_many :neighboring_regions, class_name: 'Region', foreign_key: 'base_region_id', dependent: :delete_all
   has_many :contests, through: :participations
   has_and_belongs_to_many :observations
  
@@ -28,9 +30,9 @@ class Region < ApplicationRecord
   # subregions are used in fetching data when the region size is too large
   # for one api call to cover
   #
-  after_create :compute_subregions, :set_lat_lng, :compute_neighbor_regions
+  after_create :compute_subregions, :set_lat_lng, :compute_neighboring_regions
   after_update :compute_subregions, :set_lat_lng, if: :saved_change_to_raw_polygon_json
-  after_update :compute_neighbor_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
+  after_update :compute_neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
 
   #
   # the timezone of the centre point of the region is found using a google
@@ -164,21 +166,20 @@ class Region < ApplicationRecord
     end
   end
 
-
   # Add or update neighbor regions for the base region
-  def compute_neighbor_regions
-    if size.blank?
-      # Create new neighbor regions
-      if neighbor_regions.blank?
-        NeighborRegion.new().create_neighbor_regions(self)
-      else
-        # Update existing neighbor regions
-        NeighborRegion.new().update_neighbor_regions self, saved_change_to_name, saved_change_to_raw_polygon_json
-      end
-    end
+  def compute_neighboring_regions
+    return if size.present? || base_region_id.present?
+    
+    # Create or update locality
+    nr_locality = NeighboringRegion.new(self, 2.5)
+    r_locality = nr_locality.get_region()
+    # https://apidock.com/rails/ActiveRecord/Base/save
+    r_locality.save
+    # Create or update greater region
+    nr_greater_region = NeighboringRegion.new(self, 5)
+    r_greater_region = nr_greater_region.get_region()
+    r_greater_region.save
   end
-
-
 
   #
   #  polygon caching and computation functions,
@@ -333,36 +334,6 @@ class Region < ApplicationRecord
     return polygon_geojson
   end
 
-  ## Calculate minimum and maximum distance of region from a given coordinate
-  def distance_from_point(lat, lng, polygon_geojson)
-    min = max = nil
-    if polygon_geojson.nil?
-      return min, max
-    end
-
-    polygon_geojson.each do |polygon|
-      if !polygon['coordinates'].nil?
-        polygon['coordinates'].each.with_index { |c, i|
-          p1 = Geokit::LatLng.new c[1] , c[0]
-          p2 = Geokit::LatLng.new lat, lng
-          dist = p1.distance_to(p2, units: :kms)
-          if i == 0
-            min = dist
-            max = dist
-          end
-          if dist <= min
-            min = dist
-          end
-          if dist > max
-            max = dist
-          end
-        }
-      end
-    end
-    return min, max
-
-  end
-
   ### Find out whether given coordinates and region are within reach of given distance or not
   def is_region_near_to_point lat, lng, distance_km=50
     polygon_geojson = get_polygon_json
@@ -384,6 +355,59 @@ class Region < ApplicationRecord
     end
   end
 
+  # bounds() -> [Geokit::Bounds]
+  def bounds()
+    bounds = []
+    polygons = get_polygon_json()
+    polygons.each do |polygon|
+      min_lat, max_lat = polygon["coordinates"].map{ |c| c.last }.minmax
+      min_lng, max_lng = polygon["coordinates"].map{ |c| c.first }.minmax
+      bounds.push(
+        Geokit::Bounds.new(
+          # sw
+          Geokit::LatLng.new(min_lat, min_lng), 
+          # ne
+          Geokit::LatLng.new(max_lat, max_lng)
+        )
+      )
+    end
+
+    return bounds
+  end
+
+  # scaled_bbox_geojson(with_multiplier:) -> Geokit::Bounds
+  def scaled_bbox_geojson(with_multiplier:)
+    scaled_polygons = []
+    bounds().each do |bound|
+      scaled_ne = bound.center.endpoint(
+        bound.center.heading_to(bound.ne), 
+        bound.center.distance_to(bound.ne, units: :kms) * with_multiplier, 
+        units: :kms
+      )
+      scaled_sw = bound.center.endpoint(
+        bound.center.heading_to(bound.sw), 
+        bound.center.distance_to(bound.sw, units: :kms) * with_multiplier, 
+        units: :kms
+      )
+      scaled_polygons.push({
+        "type" => "Polygon",
+        "coordinates" => [
+          # nw
+          [scaled_sw.lng, scaled_ne.lat],
+          # ne
+          [scaled_ne.lng, scaled_ne.lat],
+          # se
+          [scaled_ne.lng, scaled_sw.lat],
+          # sw
+          [scaled_sw.lng, scaled_sw.lat],
+          # nw to close polygon
+          [scaled_sw.lng, scaled_ne.lat]
+        ]
+      })
+    end
+
+    return scaled_polygons
+  end
 
   rails_admin do
     list do
