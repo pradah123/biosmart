@@ -26,4 +26,12 @@ module Utils
     return utc_dttm.to_s
   end
 
+  def self.get_bounding_box(subregion_polygon)
+    west, east = subregion_polygon["coordinates"].map{|co| co.first}.minmax
+    south, north = subregion_polygon["coordinates"].map{|co| co.last}.minmax
+
+    return west, east, south, north
+  end
+
+
 end
