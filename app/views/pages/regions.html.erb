@@ -21,7 +21,11 @@
         <%= r.name %>
       <% end %>
     </div>
-  	<div class="col-6 d-flex align-items-center"><%= r.description.truncate_words 10 %></div>
+    <% if r.description %>
+  	  <div class="col-6 d-flex align-items-center"><%= r.description.truncate_words 10 %></div>    
+    <% else %>
+      <div class="col-6 d-flex align-items-center"> - </div>
+    <% end %>
   	<div class="col-3">
       <a role="button" class="btn btn-secondary" href="<%= r.get_path %>" target="_blank">View</a>
       <a role="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#region_<%= r.id %>_modal">Edit</a>
