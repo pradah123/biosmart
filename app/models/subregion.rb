@@ -167,7 +167,6 @@ class Subregion < ApplicationRecord
       field :created_at      
     end
     edit do 
-      field :user
       field :region          
       field :data_source
       field :lat

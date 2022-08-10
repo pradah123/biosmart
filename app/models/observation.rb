@@ -59,10 +59,11 @@ class Observation < ApplicationRecord
   end  
 
   ### Method for adding an observation to matching regions, participations and contests
-
-  def add_to_regions_and_contests(geokit_point)
-
-    Region.all.each do |region|
+  def add_to_regions_and_contests(geokit_point, regions=nil)
+    if regions.nil?
+      regions = Region.all
+    end
+    regions.each do |region|
       region.get_geokit_polygons.each do |polygon|
 
         if polygon.contains?(geokit_point)
@@ -129,6 +130,9 @@ class Observation < ApplicationRecord
   def can_participate_in participation
     # from one of the requested data sources
     return false unless participation.data_sources.include?(data_source) 
+
+    # Check if competition is on going or not
+    return false unless participation.is_active?
 
     # observed in the period of the contest
     return false unless observed_at>=participation.starts_at && observed_at<participation.ends_at 
