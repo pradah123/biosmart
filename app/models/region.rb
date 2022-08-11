@@ -78,7 +78,7 @@ class Region < ApplicationRecord
   end  
 
   def self.get_all_regions
-    arr = Region.where('base_region_id is null').where.not(lat: nil, lng: nil).map { |r| { name: r.name, url: r.get_path, lat: r.lat, lng: r.lng } }
+    arr = Region.where(base_region_id: nil).where.not(lat: nil, lng: nil).map { |r| { name: r.name, url: r.get_path, lat: r.lat, lng: r.lng } }
     Rails.logger.info arr
     arr
   end  
