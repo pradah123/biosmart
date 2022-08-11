@@ -46,8 +46,8 @@ class PagesController < ApplicationController
       render :top 
     else
       @regions = @user.admin? ?
-                 Region.where('base_region_id is null').order(created_at: :desc).page(params[:page]) :
-                 @user.regions.where('base_region_id is null').order(created_at: :desc).page(params[:page])
+                 Region.where(base_region_id: nil).order(created_at: :desc).page(params[:page]) :
+                 @user.regions.where(base_region_id: nil).order(created_at: :desc).page(params[:page])
     end
   end
 
