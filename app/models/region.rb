@@ -185,7 +185,7 @@ class Region < ApplicationRecord
     r_greater_region.save
 
     # Fetch and store observations for greater region
-    GbifObservationsFetchJob.perform_later(region_id: r_greater_region.id) if saved_change_to_raw_polygon_json
+    GbifObservationsFetchJob.perform_later(greater_region_id: r_greater_region.id) if saved_change_to_raw_polygon_json
   end
 
   #
@@ -466,7 +466,7 @@ class Region < ApplicationRecord
   ## Get largest neighboring region by size
   def get_largest_neighboring_region()
     largest_nr = nil
-    if !neighboring_regions.blank?
+    if neighboring_regions.present?
       largest_nr = neighboring_regions.order("size").last
     end
 

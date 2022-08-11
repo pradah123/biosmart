@@ -48,7 +48,7 @@ module Source
     end
 
     def done()
-      return  !@count.nil? && 
+      return  @count.present? &&
               (@offset > @count)    
     end
 
@@ -65,9 +65,8 @@ module Source
         t = Source::GBIF::Transformer.new()
         result[:results].each do |gbif_obs|
           ## Process data only if datasetkey matches with the required set
-          if !Source::GBIF.get_dataset_name(gbif_obs[:datasetKey]).blank?
+          if Source::GBIF.get_dataset_name(gbif_obs[:datasetKey]).present?
             transformed_obs = t.call(gbif_obs)
-              
             if transformed_obs.present?
               validation_result = Source::Schema::ObservationSchema.call(transformed_obs)
 

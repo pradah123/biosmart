@@ -19,7 +19,7 @@ module Source
 
       def self.populate_images(hash)
         images = hash[:media]
-        image_urls = images.map { |image| image[:identifier] }
+        image_urls = images.filter_map { |image| image[:identifier] if image[:type] == 'StillImage'}
         hash.merge({
           image_urls: image_urls
         })
@@ -31,7 +31,7 @@ module Source
         unique_id = unique_id.gsub(/\./, '')
          
         prefix = Source::GBIF.get_dataset_name(hash[:datasetKey])
-        unique_id = "#{prefix}-#{unique_id}" if !prefix.blank? && prefix != 'ebird' ## We don't store prefix for ebird
+        unique_id = "#{prefix}-#{unique_id}" if prefix.present? && prefix != 'ebird' ## We don't store prefix for ebird
 
         hash.merge({
           unique_id: unique_id
@@ -40,7 +40,7 @@ module Source
       def self.populate_creator_name(hash)
         creator_name = hash[:recordedBy]
 
-        # For questagame we get recordedBy contains a href tag,e.g "<a href='https://bee.questagame.com/#/profile/31109?questagame_user_id=31109'>OriAM|questagame.com</a>",
+        # For questagame, recordedBy contains a href tag e.g "<a href='https://bee.questagame.com/#/profile/31109?questagame_user_id=31109'>OriAM|questagame.com</a>",
         creator_name = hash[:recordedBy].match(/<a.*?>(.*?)[\|<]/).captures[0] if creator_name =~ /<a /
         hash.merge({
           creator_name: creator_name
