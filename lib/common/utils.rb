@@ -33,5 +33,15 @@ module Utils
     return west, east, south, north
   end
 
+  def self.convert_to_seconds(unit:, value:)
+    seconds = 0
+    if unit == 'year'
+      seconds = value * 365.25 * 24 * 3600
+    end
+    if unit == 'days'
+      seconds = value * 24 * 3600
+    end
+    return seconds
+  end
 
 end

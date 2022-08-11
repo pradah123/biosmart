@@ -163,6 +163,9 @@ class Region < ApplicationRecord
       # mushroom observer needs north, south, east, west
       Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json
 
+      # gbif needs polygon
+      Subregion.create! data_source_id: DataSource.find_by_name('gbif').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
+
     end
   end
 
@@ -175,10 +178,14 @@ class Region < ApplicationRecord
     r_locality = nr_locality.get_region()
     # https://apidock.com/rails/ActiveRecord/Base/save
     r_locality.save
+
     # Create or update greater region
     nr_greater_region = NeighboringRegion.new(self, 5)
     r_greater_region = nr_greater_region.get_region()
     r_greater_region.save
+
+    # Fetch and store observations for greater region
+    GbifObservationsFetchJob.perform_later(greater_region_id: r_greater_region.id) if saved_change_to_raw_polygon_json
   end
 
   #
@@ -216,6 +223,21 @@ class Region < ApplicationRecord
   def contains? lat, lng
     get_geokit_polygons.each { |polygon| return true if polygon.contains?(Geokit::LatLng.new lat, lng) }
     return false    
+  end
+
+  # Conversion code from geojson polygon format to polygon db query format(wkt format).
+  def get_polygon_from_raw_polygon_json raw_polygon_json
+    polygon_geojson = JSON.parse raw_polygon_json
+    polygon_geojson = [polygon_geojson] unless polygon_geojson.kind_of?(Array)
+
+    polygon_strings = []
+    polygon_geojson.each do |rpj|
+      rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
+      coordinates = rpj['coordinates'].map { |c| "#{c[0]} #{c[1]}" }.join ','
+      polygon_strings.push "(#{ coordinates })"
+    end
+
+    "POLYGON(#{ polygon_strings.join ', ' })"
   end
 
 
@@ -439,6 +461,16 @@ class Region < ApplicationRecord
     end
 
     return scaled_polygons
+  end
+
+  ## Get largest neighboring region by size
+  def get_largest_neighboring_region()
+    largest_nr = nil
+    if neighboring_regions.present?
+      largest_nr = neighboring_regions.order("size").last
+    end
+
+    return largest_nr
   end
 
   rails_admin do
