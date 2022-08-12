@@ -464,13 +464,14 @@ class Region < ApplicationRecord
   end
 
   ## Get largest neighboring region by size
-  def get_largest_neighboring_region()
-    largest_nr = nil
+  def get_neighboring_region(region_type: )
+    nr = nil
     if neighboring_regions.present?
-      largest_nr = neighboring_regions.order("size").last
+      nr = neighboring_regions.order("size").first if region_type == 'locality'
+      nr = neighboring_regions.order("size").last if region_type == 'greater_region'
     end
 
-    return largest_nr
+    return nr
   end
 
   rails_admin do
