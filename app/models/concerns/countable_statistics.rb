@@ -57,7 +57,7 @@ module CountableStatistics
     # Compute observations count for given object, optionally for given date range
     def get_observations_count(start_dt: nil, end_dt: nil)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at > ? and observed_at <= ?", start_dt ,end_dt).count
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).count
       else
         return self.observations.count
       end
@@ -66,7 +66,7 @@ module CountableStatistics
     # Compute species count for given object, optionally for given date range
     def get_species_count(start_dt: nil, end_dt: nil)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at > ? and observed_at <= ?", start_dt ,end_dt).has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
       else
         return self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
       end
@@ -75,7 +75,7 @@ module CountableStatistics
     # Compute people count for given object, optionally for given date range
     def get_people_count(start_dt: nil, end_dt: nil)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at > ? and observed_at <= ?", start_dt ,end_dt).select(:creator_name).compact.uniq.count
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).select(:creator_name).compact.uniq.count
       else
         return self.observations.select(:creator_name).compact.uniq.count
       end
@@ -107,15 +107,14 @@ module CountableStatistics
       if region_type.present?
         nr = get_neighboring_region(region_type: region_type)
         if nr.present?
-            if score_type == 'observations_score'
-              return nr.observations_count != 0 ? (observations_count * 100/nr.observations_count) : 0
-            end
-            if score_type == 'species_score'
-              return nr.species_count != 0 ? (species_count * 100/nr.species_count) : 0
-            end
-            if score_type == 'people_score'
-              return nr.people_count != 0 ? (people_count * 100/nr.people_count) : 0
-            end
+          case score_type
+          when 'observations_score'
+            return nr.observations_count != 0 ? (observations_count * 100/nr.observations_count) : 0
+          when 'species_score'
+            return nr.species_count != 0 ? (species_count * 100/nr.species_count) : 0
+          when 'people_score'
+            return nr.people_count != 0 ? (people_count * 100/nr.people_count) : 0
+          end
         end
       end
     end
@@ -124,15 +123,16 @@ module CountableStatistics
     def get_yearly_score(score_type: , num_years:)
       end_dt = Time.now
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: num_years)
-      if score_type == 'observations_score'
+
+      total_count = yearly_count = 0
+      case score_type
+      when 'observations_score'
         yearly_count = get_observations_count(start_dt: start_dt, end_dt: end_dt)
         total_count = get_observations_count()
-      end
-      if score_type == 'species_score'
+      when 'species_score'
         yearly_count = get_species_count(start_dt: start_dt, end_dt: end_dt)
         total_count = get_species_count()
-      end
-      if score_type == 'people_score'
+      when 'people_score'
         yearly_count = get_people_count(start_dt: start_dt, end_dt: end_dt)
         total_count = get_people_count()
       end

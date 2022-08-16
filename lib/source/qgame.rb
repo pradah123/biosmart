@@ -62,8 +62,10 @@ module Source
           biosmart_obs.push(transformed_obs)
         end
       else
-        @count = 0      
+        @count = 0
+        Delayed::Worker.logger.info "Source::QGame.get_observations: #{response}"
       end
+      Delayed::Worker.logger.info "Source::QGame.get_observations biosmart_obs count: #{biosmart_obs.length}"
 
       return biosmart_obs
     end

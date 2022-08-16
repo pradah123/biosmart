@@ -49,7 +49,7 @@ module Source
 
     def done()
       return  @count.present? &&
-              (@offset > @count)    
+              (@offset >= @count)
     end
 
     def get_observations()
@@ -61,7 +61,6 @@ module Source
       if response.success? && !response.body.nil?
         result = JSON.parse(response.body, symbolize_names: true)
         @count = result[:count]
-
         t = Source::GBIF::Transformer.new()
         result[:results].each do |gbif_obs|
           ## Process data only if datasetkey matches with the required set
@@ -80,7 +79,8 @@ module Source
             end
           end
         end
-      else 
+      else
+        @count = 0
         Delayed::Worker.logger.info "Source::GBIF.get_observations: #{response}"
       end
       Delayed::Worker.logger.info "Source::GBIF.get_observations biosmart_obs count: #{biosmart_obs.length}"

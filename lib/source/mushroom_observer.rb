@@ -65,7 +65,12 @@ module Source
           end
           biosmart_obs.append(transformed_obs)
         end
+      else
+        @number_of_pages = 0
+        Delayed::Worker.logger.info "Source::MushroomObserver.get_observations: #{response}"
       end
+      Delayed::Worker.logger.info "Source::MushroomObserver.get_observations biosmart_obs count: #{biosmart_obs.length}"
+
       return biosmart_obs
     end
   end
