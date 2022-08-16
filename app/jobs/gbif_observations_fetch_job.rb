@@ -8,7 +8,7 @@ class GbifObservationsFetchJob < ApplicationJob
       greater_regions = Region.where(id: greater_region_id)
     else
       Region.all.each { |r|
-        largest_nr = r.get_largest_neighboring_region()
+        largest_nr = r.get_neighboring_region(region_type: 'greater_region')
         greater_regions.push(largest_nr) if largest_nr.present?
       }
     end

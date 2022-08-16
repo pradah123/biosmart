@@ -53,7 +53,11 @@ module Source
           end
           biosmart_obs.push(transformed_obs)
         end
+      else
+        @count = 0
+        Delayed::Worker.logger.info "Source::ObservationOrg.get_observations: #{response}"
       end
+      Delayed::Worker.logger.info "Source::ObservationOrg.get_observations biosmart_obs count: #{biosmart_obs.length}"
 
       return biosmart_obs
     end

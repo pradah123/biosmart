@@ -66,7 +66,11 @@ module Source
           end
           biosmart_obs.append(transformed_obs)
         end
+      else
+        @total_results = 0
+        Delayed::Worker.logger.info "Source::Inaturalist.get_observations: #{response}"
       end
+      Delayed::Worker.logger.info "Source::Inaturalist.get_observations biosmart_obs count: #{biosmart_obs.length}"
 
       return biosmart_obs
     end

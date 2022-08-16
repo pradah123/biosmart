@@ -115,6 +115,7 @@ module Source
           end
         end
       end
+      Delayed::Worker.logger.info "Source::Ebird.get_observations biosmart_obs count: #{biosmart_obs.length}"
 
       return biosmart_obs
     end

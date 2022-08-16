@@ -1,3 +1,5 @@
+require_relative '../../../lib/common/utils.rb'
+
 module CountableStatistics
   extend ActiveSupport::Concern
   included do
@@ -52,6 +54,33 @@ module CountableStatistics
       ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
     end
 
+    # Compute observations count for given object, optionally for given date range
+    def get_observations_count(start_dt: nil, end_dt: nil)
+      if start_dt.present? && end_dt.present?
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).count
+      else
+        return self.observations.count
+      end
+    end
+
+    # Compute species count for given object, optionally for given date range
+    def get_species_count(start_dt: nil, end_dt: nil)
+      if start_dt.present? && end_dt.present?
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+      else
+        return self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+      end
+    end
+
+    # Compute people count for given object, optionally for given date range
+    def get_people_count(start_dt: nil, end_dt: nil)
+      if start_dt.present? && end_dt.present?
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).select(:creator_name).compact.uniq.count
+      else
+        return self.observations.select(:creator_name).compact.uniq.count
+      end
+    end
+
     #
     # these functions compute the rankings of people and species
     # used on the regions and contest page.
@@ -71,6 +100,43 @@ module CountableStatistics
       # when n is nil take all values, otherwise take the top n
       #
       arr.tally.sort_by { |k,v| -v }.first (n.nil? || n<1 ? arr.length : n)
+    end
+
+    # Compute regions scores by comparing the counts with that of neighboring regions
+    def get_regions_score(region_type: nil, score_type: , num_years: nil)
+      if region_type.present?
+        nr = get_neighboring_region(region_type: region_type)
+        if nr.present?
+          case score_type
+          when 'observations_score'
+            return nr.observations_count != 0 ? (observations_count * 100/nr.observations_count) : 0
+          when 'species_score'
+            return nr.species_count != 0 ? (species_count * 100/nr.species_count) : 0
+          when 'people_score'
+            return nr.people_count != 0 ? (people_count * 100/nr.people_count) : 0
+          end
+        end
+      end
+    end
+
+    # Compute yearly scores by comparing yearly counts for given no. of years vs total count
+    def get_yearly_score(score_type: , num_years:)
+      end_dt = Time.now
+      start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: num_years)
+
+      total_count = yearly_count = 0
+      case score_type
+      when 'observations_score'
+        yearly_count = get_observations_count(start_dt: start_dt, end_dt: end_dt)
+        total_count = get_observations_count()
+      when 'species_score'
+        yearly_count = get_species_count(start_dt: start_dt, end_dt: end_dt)
+        total_count = get_species_count()
+      when 'people_score'
+        yearly_count = get_people_count(start_dt: start_dt, end_dt: end_dt)
+        total_count = get_people_count()
+      end
+      return total_count != 0 ? (yearly_count * 100 /total_count) : 0
     end
 
   end

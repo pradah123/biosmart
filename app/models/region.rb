@@ -185,7 +185,7 @@ class Region < ApplicationRecord
     r_greater_region.save
 
     # Fetch and store observations for greater region
-    GbifObservationsFetchJob.perform_later(greater_region_id: r_greater_region.id) if saved_change_to_raw_polygon_json
+    #GbifObservationsFetchJob.perform_later(greater_region_id: r_greater_region.id) if saved_change_to_raw_polygon_json
   end
 
   #
@@ -232,7 +232,9 @@ class Region < ApplicationRecord
 
     polygon_strings = []
     polygon_geojson.each do |rpj|
-      rpj['coordinates'].push rpj['coordinates'][0] unless rpj['coordinates'].empty?
+      if rpj['coordinates'].present? && rpj['coordinates'][0].join != rpj['coordinates'][-1].join
+        rpj['coordinates'].push rpj['coordinates'][0]
+      end
       coordinates = rpj['coordinates'].map { |c| "#{c[0]} #{c[1]}" }.join ','
       polygon_strings.push "(#{ coordinates })"
     end
@@ -464,13 +466,14 @@ class Region < ApplicationRecord
   end
 
   ## Get largest neighboring region by size
-  def get_largest_neighboring_region()
-    largest_nr = nil
+  def get_neighboring_region(region_type: )
+    nr = nil
     if neighboring_regions.present?
-      largest_nr = neighboring_regions.order("size").last
+      nr = neighboring_regions.order("size").first if region_type == 'locality'
+      nr = neighboring_regions.order("size").last if region_type == 'greater_region'
     end
 
-    return largest_nr
+    return nr
   end
 
   rails_admin do
