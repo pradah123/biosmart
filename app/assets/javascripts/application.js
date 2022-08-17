@@ -23,6 +23,12 @@ const icon = {
   anchor: new google.maps.Point(15, 40), // anchor
 };
 
+const line_symbol = {
+  path: "M 0,-1 0,1",
+  strokeOpacity: 1,
+  scale: 3,
+};
+
 $(document).ready(function() { 
   set_up_authentication();
   set_up_top_page();
@@ -333,6 +339,40 @@ function close_info_windows(info_windows) {
   }
 }
 
+function draw_neighboring_regions_polygon(map, bounds) {
+  for( var i = 0 ; i < _neighboring_regions_json.length ; i++ ) {
+    var nr = _neighboring_regions_json[i];
+    stroke_color =  (i == 0 ? 'blue' : 'green');
+
+    for( var j = 0 ; j < nr.length ; j++ ) {
+
+      var coordinates = nr[j]['coordinates'];
+      var googlemaps_points = [];
+      for( var k = 0 ; k <coordinates.length ; k++ ) googlemaps_points.push({ lng: coordinates[k][0], lat: coordinates[k][1] });
+      var polygon = new google.maps.Polygon({ paths: googlemaps_points, visible: false, map: map });
+
+      new google.maps.Polyline({
+          strokeColor: stroke_color,
+          strokeOpacity: 0,
+          strokeWeight: '1px',
+          icons:[{
+              icon: line_symbol,
+              offset:'0',
+              repeat:'15px'
+          }],
+          path: googlemaps_points,
+          map: map
+        });
+
+      polygon.getPaths().forEach(function(path) {
+        var ar = path.getArray();
+        for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);
+      });
+    }
+  }
+
+}
+
 function set_up_region_page() {
   if($('#region-map').length==0) return; 
 
@@ -354,8 +394,10 @@ function set_up_region_page() {
         var ar = path.getArray();
         for(var j = 0, l = ar.length; j < l; j++) bounds.extend(ar[j]);  
       });
-    }  
-
+    }
+    if(typeof _neighboring_regions_json != "undefined") {
+      draw_neighboring_regions_polygon(map, bounds);
+    }
     if(bounds.getNorthEast().lat()==-1 && bounds.getSouthWest().lat()==1 && bounds.getNorthEast().lng()==-180 && bounds.getSouthWest().lng()==180) {
 
     } else {
