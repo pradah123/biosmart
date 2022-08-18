@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
     @meta_image_height = 2000
     @active_tab = nil
     @banner_messages = BannerMessage.all.where online: true
-    @nobservations = 33    
+    @nobservations = 18
   end
 
   def get_user
