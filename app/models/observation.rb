@@ -28,7 +28,7 @@ class Observation < ApplicationRecord
   validates :observed_at, presence: true
     
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
-  @@nobservations_per_page = 33
+  @@nobservations_per_page = 18
 
 
 
@@ -63,13 +63,18 @@ class Observation < ApplicationRecord
     if regions.nil?
       regions = Region.all
     end
+
     regions.each do |region|
       region.get_geokit_polygons.each do |polygon|
 
         if polygon.contains?(geokit_point)
           ## Add observation to region only if it's not already added
-          if region.observations.where(id: id).blank?
-            region.observations << self
+          if !region.observations.exists?(self.id)
+            begin
+              region.observations << self
+            rescue => error
+              Delayed::Worker.logger.info("ERROR for region_id: #{region.id}, observation_id: #{id}: #{error.message}")
+            end  
           end
 
           region.participations.each do |participation|
@@ -154,7 +159,7 @@ class Observation < ApplicationRecord
     # one or both of region and contest may be nil
     #
     nstart = nstart || 0
-    nend   = nend   || 24
+    nend   = nend   || 18
     offset = nstart
     limit  = nend - nstart
 

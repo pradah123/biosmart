@@ -102,42 +102,72 @@ module CountableStatistics
       arr.tally.sort_by { |k,v| -v }.first (n.nil? || n<1 ? arr.length : n)
     end
 
+    # Calculate start date and end date which will be used to fetch different report scores
+    def get_date_range_for_report(format: false)
+      nr = get_neighboring_region(region_type: 'greater_region')
+      end_dt = Time.now.utc
+      start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: 3)
+      if nr.present?
+        start_dt = nr.observations.order("observed_at").first.observed_at if nr.observations.order("observed_at").first.present? 
+        end_dt = nr.observations.order("observed_at").last.observed_at if nr.observations.order("observed_at").last.present? 
+      else
+        start_dt = observations.order("observed_at").first.observed_at if observations.order("observed_at").first.present?
+        end_dt = observations.order("observed_at").last.observed_at if observations.order("observed_at").last.present?
+      end
+
+      return format == true ? [start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d")] : [start_dt, end_dt]
+
+    end
+
+
     # Compute regions scores by comparing the counts with that of neighboring regions
     def get_regions_score(region_type: nil, score_type: , num_years: nil)
       if region_type.present?
         nr = get_neighboring_region(region_type: region_type)
+
         if nr.present?
+          (report_start_dt, report_end_dt) = get_date_range_for_report()
           case score_type
           when 'observations_score'
-            return nr.observations_count != 0 ? (observations_count * 100/nr.observations_count) : 0
+            nr_obs_count = nr.get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            base_region_obs_count = get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            return nr_obs_count.present? && nr_obs_count != 0 ? sprintf('%.2f', base_region_obs_count * 100/nr_obs_count.to_f) : sprintf('%.2f', 0)
           when 'species_score'
-            return nr.species_count != 0 ? (species_count * 100/nr.species_count) : 0
+            nr_species_count = nr.get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            base_region_species_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            return nr_species_count.present? && nr_species_count != 0 ? sprintf('%.2f', base_region_species_count * 100/nr_species_count.to_f) : sprintf('%.2f', 0)
           when 'people_score'
-            return nr.people_count != 0 ? (people_count * 100/nr.people_count) : 0
+            nr_people_count = nr.get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            base_region_people_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            return nr_people_count.present? && nr_people_count != 0 ? sprintf('%.2f', base_region_people_count * 100/nr_people_count.to_f) : sprintf('%.2f', 0)
           end
         end
       end
     end
 
+
     # Compute yearly scores by comparing yearly counts for given no. of years vs total count
     def get_yearly_score(score_type: , num_years:)
-      end_dt = Time.now
+      (report_start_dt, report_end_dt) = get_date_range_for_report()
+
+      end_dt = report_end_dt
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: num_years)
 
       total_count = yearly_count = 0
       case score_type
       when 'observations_score'
         yearly_count = get_observations_count(start_dt: start_dt, end_dt: end_dt)
-        total_count = get_observations_count()
+        total_count = get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt)
       when 'species_score'
         yearly_count = get_species_count(start_dt: start_dt, end_dt: end_dt)
-        total_count = get_species_count()
+        total_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
       when 'people_score'
         yearly_count = get_people_count(start_dt: start_dt, end_dt: end_dt)
-        total_count = get_people_count()
+        total_count = get_people_count(start_dt: report_start_dt, end_dt: report_end_dt)
       end
-      return total_count != 0 ? (yearly_count * 100 /total_count) : 0
+      return total_count != 0 ? sprintf('%.2f', yearly_count * 100 /total_count.to_f) : sprintf('%.2f', 0)
     end
-
   end
 end
+
+
