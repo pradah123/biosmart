@@ -103,7 +103,7 @@ module CountableStatistics
     end
 
     # Calculate start date and end date which will be used to fetch different report scores
-    def get_date_range_for_report()
+    def get_date_range_for_report(format: false)
       nr = get_neighboring_region(region_type: 'greater_region')
       end_dt = Time.now.utc
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: 3)
@@ -114,8 +114,11 @@ module CountableStatistics
         start_dt = observations.order("observed_at").first.observed_at if observations.order("observed_at").first.present?
         end_dt = observations.order("observed_at").last.observed_at if observations.order("observed_at").last.present?
       end
-      return start_dt, end_dt
+
+      return format == true ? [start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d")] : [start_dt, end_dt]
+
     end
+
 
     # Compute regions scores by comparing the counts with that of neighboring regions
     def get_regions_score(region_type: nil, score_type: , num_years: nil)
