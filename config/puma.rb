@@ -18,11 +18,11 @@ worker_timeout 3600 if rails_env == "development"
 workers ENV.fetch("WEB_CONCURRENCY") { 2 }
 port ENV.fetch("PORT") { 3000 }
 
-max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
-min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
+max_threads_count = (rails_env == "development" ? 1 : ENV.fetch("RAILS_MAX_THREADS"))
+min_threads_count = (rails_env == "development" ? 1 : ENV.fetch("RAILS_MIN_THREADS"))
 threads min_threads_count, max_threads_count
 
-preload_app!
+# preload_app!
 rackup      DefaultRackup
 
 bind "unix://#{dir_path}/tmp/sockets/puma.sock"
