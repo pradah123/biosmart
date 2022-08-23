@@ -54,6 +54,7 @@ module CountableStatistics
       ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
     end
 
+
     # Compute observations count for given object, optionally for given date range
     def get_observations_count(start_dt: nil, end_dt: nil)
       if start_dt.present? && end_dt.present?
@@ -75,9 +76,9 @@ module CountableStatistics
     # Compute people count for given object, optionally for given date range
     def get_people_count(start_dt: nil, end_dt: nil)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).select(:creator_name).compact.uniq.count
+        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).select(:creator_name).where.not(creator_name: nil).distinct.count
       else
-        return self.observations.select(:creator_name).compact.uniq.count
+        return self.observations.select(:creator_name).where.not(creator_name: nil).distinct.count
       end
     end
 
