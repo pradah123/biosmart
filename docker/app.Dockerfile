@@ -1,5 +1,7 @@
 FROM ruby:3.0.2
 
+SHELL ["/bin/bash", "-c"]
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         postgresql-client \
@@ -17,6 +19,8 @@ COPY --chown=app:app Gemfile Gemfile.lock ./
 RUN bundle install
 
 COPY --chown=app:app . ./
+RUN mkdir -p $INSTALL_PATH/tmp/sockets
+RUN chown -R app:app $INSTALL_PATH/tmp/sockets
 
 EXPOSE 8080
 
