@@ -137,8 +137,8 @@ module CountableStatistics
             base_region_species_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
             return nr_species_count.present? && nr_species_count != 0 ? sprintf('%.2f', base_region_species_count * 100/nr_species_count.to_f) : sprintf('%.2f', 0)
           when 'people_score'
-            nr_people_count = nr.get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
-            base_region_people_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            nr_people_count = nr.get_people_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            base_region_people_count = get_people_count(start_dt: report_start_dt, end_dt: report_end_dt)
             return nr_people_count.present? && nr_people_count != 0 ? sprintf('%.2f', base_region_people_count * 100/nr_people_count.to_f) : sprintf('%.2f', 0)
           end
         end
