@@ -76,20 +76,7 @@
   </div>
 <% end %>
 
-<div class="row justify-content-center">
-  <div class="col-10 my-5 h6">
-    <% if @region.logo_image_url || @region.logo_image %>
-      <% if @region.region_url %>
-        <a href="<%= @region.region_url %>" target="_blank">
-          <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="max-height:160px;max-width:50%;">
-        </a>
-      <% else %>
-        <img src="<%= @region.logo_image_url ? @region.logo_image_url : @region.logo_image %>" class="float-start me-4 mb-2" style="max-height:160px;max-width:50%;">
-      <% end %>
-    <% end %>  
-    <%= @region.description&.html_safe || '' %>
-  </div>
-</div>
+<%= render partial: 'region_details', locals: { object: @region } %>
 
 <%= render partial: 'statistics', locals: { object: @region } %>
 
