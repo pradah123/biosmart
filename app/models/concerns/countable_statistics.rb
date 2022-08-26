@@ -21,12 +21,19 @@ module CountableStatistics
     # end
 
     def reset_statistics
-      update_column :observations_count, self.observations.count
-      update_column :identifications_count, self.observations.pluck(:identifications_count).sum
-      update_column :people_count, self.observations.pluck(:creator_name).compact.uniq.count
+      if self.is_a? "Region"
+        update_column :observations_count, self.get_observations_count(include_gbif: true)
+        update_column :people_count, self.get_people_count(include_gbif: true)
+        update_column :species_count, self.get_species_count(include_gbif: true)
+        update_column :identifications_count, self.get_identifications_count(include_gbif: true)
+      else 
+        update_column :observations_count, self.observations.count
+        update_column :identifications_count, self.observations.pluck(:identifications_count).sum
+        update_column :people_count, self.observations.pluck(:creator_name).compact.uniq.count
+        update_column :species_count, self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+      end
       update_column :physical_health_score, get_physical_health_score
       update_column :mental_health_score, get_mental_health_score
-
       #
       # update_column :species_count, self.observations.pluck(:accepted_name).uniq.count
       # 
@@ -34,7 +41,6 @@ module CountableStatistics
       # data sources. thus the same species will have multiple names, and counts of unique values
       # is not possible
       #
-      update_column :species_count, self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
     end
 
     def get_physical_health_score
@@ -50,35 +56,59 @@ module CountableStatistics
     end
 
     def get_score constant, constant_a, constant_b
-      total_hours = Constant.find_by_name('average_hours_per_observation').value * self.observations.count
-      ( (total_hours<5 ? constant_a : constant_b) * constant * self.people_count ).round
+      if self.is_a? Region 
+        observations = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+        people_count = get_people_count(include_gbif: true)
+      else 
+        observations = self.observations
+        people_count = self.people_count
+      end 
+      total_hours = Constant.find_by_name('average_hours_per_observation').value * observations.count
+      ( (total_hours < 5 ? constant_a : constant_b) * constant * people_count ).round
     end
 
-    # Compute observations count for given object, optionally for given date range
-    def get_observations_count(start_dt: nil, end_dt: nil)
+    # Compute observations count for given region, optionally for given date range
+    def get_observations_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).count
+        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
       else
-        return self.observations.count
+        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
       end
+
+      return obs.count
     end
 
-    # Compute species count for given object, optionally for given date range
-    def get_species_count(start_dt: nil, end_dt: nil)
+    # Compute species count for given region, optionally for given date range
+    def get_species_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
       else
-        return self.observations.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
       end
+
+      return obs.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
     end
 
-    # Compute people count for given object, optionally for given date range
-    def get_people_count(start_dt: nil, end_dt: nil)
+    # Compute people count for given region, optionally for given date range
+    def get_people_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        return self.observations.where("observed_at BETWEEN ? and ?", start_dt ,end_dt).select(:creator_name).compact.uniq.count
+        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
       else
-        return self.observations.select(:creator_name).compact.uniq.count
+        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
       end
+
+      return obs.select(:creator_name).where.not(creator_name: nil).distinct.count
+    end
+
+    # Compute identifications count for given region, optionally for given date range
+    def get_identifications_count(start_dt: nil, end_dt: nil, include_gbif: false)
+      if start_dt.present? && end_dt.present?
+        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
+      else
+        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
+      end
+
+      return obs.sum(:identifications_count)
     end
 
     #
@@ -87,11 +117,21 @@ module CountableStatistics
     #
 
     def get_top_species n=nil
-      get_ranking self.observations.pluck(:scientific_name), n
+      if self.is_a? Region
+        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+        get_ranking obs.pluck(:scientific_name), n
+      else 
+        get_ranking self.observations.pluck(:scientific_name), n
+      end
     end  
 
     def get_top_people n=nil
-      get_ranking self.observations.pluck(:creator_name), n
+      if self.is_a? Region
+        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+        get_ranking obs.pluck(:creator_name), n
+      else 
+        get_ranking self.observations.pluck(:creator_name), n
+      end
     end  
 
     def get_ranking arr, n
@@ -107,13 +147,11 @@ module CountableStatistics
       nr = get_neighboring_region(region_type: 'greater_region')
       end_dt = Time.now.utc
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: 3)
-      if nr.present?
-        start_dt = nr.observations.order("observed_at").first.observed_at if nr.observations.order("observed_at").first.present? 
-        end_dt = nr.observations.order("observed_at").last.observed_at if nr.observations.order("observed_at").last.present? 
-      else
-        start_dt = observations.order("observed_at").first.observed_at if observations.order("observed_at").first.present?
-        end_dt = observations.order("observed_at").last.observed_at if observations.order("observed_at").last.present?
-      end
+
+      region_id = nr.present? ? nr.id : self.id
+      obs = Observation.get_observations_for_region(region_id: region_id, include_gbif: true)
+      start_dt =  obs&.order("observed_at")&.first&.observed_at || start_dt
+      end_dt   =  obs&.order("observed_at")&.last&.observed_at || end_dt
 
       return format == true ? [start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d")] : [start_dt, end_dt]
 
@@ -129,16 +167,16 @@ module CountableStatistics
           (report_start_dt, report_end_dt) = get_date_range_for_report()
           case score_type
           when 'observations_score'
-            nr_obs_count = nr.get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt)
-            base_region_obs_count = get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            nr_obs_count = nr.get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
+            base_region_obs_count = get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
             return nr_obs_count.present? && nr_obs_count != 0 ? sprintf('%.2f', base_region_obs_count * 100/nr_obs_count.to_f) : sprintf('%.2f', 0)
           when 'species_score'
-            nr_species_count = nr.get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
-            base_region_species_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            nr_species_count = nr.get_species_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
+            base_region_species_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
             return nr_species_count.present? && nr_species_count != 0 ? sprintf('%.2f', base_region_species_count * 100/nr_species_count.to_f) : sprintf('%.2f', 0)
           when 'people_score'
-            nr_people_count = nr.get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
-            base_region_people_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+            nr_people_count = nr.get_people_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
+            base_region_people_count = get_people_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
             return nr_people_count.present? && nr_people_count != 0 ? sprintf('%.2f', base_region_people_count * 100/nr_people_count.to_f) : sprintf('%.2f', 0)
           end
         end
@@ -156,14 +194,14 @@ module CountableStatistics
       total_count = yearly_count = 0
       case score_type
       when 'observations_score'
-        yearly_count = get_observations_count(start_dt: start_dt, end_dt: end_dt)
-        total_count = get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt)
+        yearly_count = get_observations_count(start_dt: start_dt, end_dt: end_dt, include_gbif: true)
+        total_count = get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
       when 'species_score'
-        yearly_count = get_species_count(start_dt: start_dt, end_dt: end_dt)
-        total_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt)
+        yearly_count = get_species_count(start_dt: start_dt, end_dt: end_dt, include_gbif: true)
+        total_count = get_species_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
       when 'people_score'
-        yearly_count = get_people_count(start_dt: start_dt, end_dt: end_dt)
-        total_count = get_people_count(start_dt: report_start_dt, end_dt: report_end_dt)
+        yearly_count = get_people_count(start_dt: start_dt, end_dt: end_dt, include_gbif: true)
+        total_count = get_people_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
       end
       return total_count != 0 ? sprintf('%.2f', yearly_count * 100 /total_count.to_f) : sprintf('%.2f', 0)
     end

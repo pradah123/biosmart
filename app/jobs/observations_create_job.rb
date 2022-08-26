@@ -38,7 +38,7 @@ class ObservationsCreateJob < ApplicationJob
 
         obs.attributes = params
         if obs.changed.empty?
-          if obs.update_to_regions_and_contests
+          if obs.update_to_regions_and_contests(data_source_id: data_source.id)
             nupdates += 1
           else
             nupdates_failed +=1
