@@ -54,7 +54,12 @@ module Api::V1
 
     def get_map_observations obj
       j = {}
-      j['observations'] = obj.nil? ? [] : obj.observations.map { |o|
+      if obj.is_a? Region
+        observations = Observation.get_observations_for_region(region_id: obj.id, include_gbif: true)
+      else
+        observations = obj.observations
+      end
+      j['observations'] = obj.nil? ? [] : observations.map { |o|
          { id:  o.id,
            lat: o.lat,
            lng: o.lng

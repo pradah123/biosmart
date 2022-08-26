@@ -59,21 +59,23 @@ class Observation < ApplicationRecord
   end  
 
   ### Method for adding an observation to matching regions, participations and contests
-  def add_to_regions_and_contests(geokit_point, regions=nil)
-    if regions.nil?
-      regions = Region.all
-    end
-
-    regions.each do |region|
+  def add_to_regions_and_contests(geokit_point, data_source_id=nil)
+    Region.all.each do |region|
       region.get_geokit_polygons.each do |polygon|
 
         if polygon.contains?(geokit_point)
           ## Add observation to region only if it's not already added
-          if !region.observations.exists?(self.id)
+          obs = find_observation(region_id: region.id,
+                                 observation_id: self.id,
+                                 data_source_id: data_source_id)
+
+          if obs.blank?
             begin
-              region.observations << self
+              insert_sql = get_observations_regions_insert_statement(region_id: region.id,
+                                  observation_id: self.id, data_source_id: data_source_id)
+              ActiveRecord::Base.connection.execute insert_sql
             rescue => error
-              Delayed::Worker.logger.info("ERROR for region_id: #{region.id}, observation_id: #{id}: #{error.message}")
+              Delayed::Worker.logger.info("ERROR for region_id: #{region.id}, observation_id: #{id}, data_source_id: #{data_source_id} #{error.message}")
             end  
           end
 
@@ -101,35 +103,49 @@ class Observation < ApplicationRecord
   #  Method of updating observations to regions, participations, and contests,
   #  in the case where we need to be continously fetching data for all regions.
   #
-  def update_to_regions_and_contests ()
+  def update_to_regions_and_contests(data_source_id: nil)
     geokit_point = Geokit::LatLng.new lat, lng
+    data_source_id = data_source_id.present? ? data_source_id : data_source.id
 
     # 
     # remove any existing relations with regions, participations
     # and contests only if observation exists in the system
     #
-    regions.each do |region|
-      inside = false
-      region.get_geokit_polygons.each do |polygon|
-        if polygon.contains?(geokit_point) 
-          inside = true
-          break
-        end
-      end
-      if inside==false         
-        region.observations.where(id: id).delete_all
-      end    
-    end
 
-    participations.each do |participation|
-      unless can_participate_in(participation)
-        participation.observations.where(id: id).delete_all
-        participation.contest.observations.where(id: id).delete_all
-      end
-    end  
-    
+    ## Commenting following code as of now because currently if observation doesn't belong to any region
+    ## anymore, it is getting deleted but it's not checking whether it belongs to any other
+    ## region or not. Will fix in Trello 362
+    # regions.each do |region|
+    #   inside = false
+    #   region.get_geokit_polygons.each do |polygon|
+    #     if polygon.contains?(geokit_point)
+    #       inside = true
+    #       break
+    #     end
+    #   end
+    #   if inside==false
+    #     Delayed::Worker.logger.info("Deleting observation id: #{id} with unique id : #{unique_id}
+    #       for region - #{region.name}, #{region.id}")
+    #     region.observations.where(id: id).delete_all
+    #   end
+    # end
+
+    ## Commenting following code as of now because currently if observation doesn't belong
+    ## to any participation anymore, it is not getting deleted
+    ## but it's getting deleted for gbif as we don't add gbif in participation
+    ## Will fix in Trello 362
+    # participations.each do |participation|
+    #   unless can_participate_in(participation)
+    #     Delayed::Worker.logger.info("Deleting observation id: #{id} with unique id : #{unique_id}
+    #       for participation - #{participation.id}")
+    #     participation.observations.where(id: id).delete_all
+    #     participation.contest.observations.where(id: id).delete_all
+    #   end
+    # end
+
     ## Add observation to regions and contests
-    self.add_to_regions_and_contests geokit_point
+    self.add_to_regions_and_contests geokit_point, data_source_id
+
   end
 
   def can_participate_in participation
@@ -148,8 +164,39 @@ class Observation < ApplicationRecord
     true
   end  
 
+  ## This will return observations associated with observations_regions for given region_id, data source(gbif or no gbif),  and date range
+  def self.get_observations_for_region(region_id: , start_dt: nil, end_dt: nil, include_gbif: false)
+    obs = Observation.joins("JOIN OBSERVATIONS_REGIONS obsr ON obsr.observation_id = observations.id").
+                            where(["obsr.region_id = ?", region_id])
+    data_source_clause = (include_gbif == true ? "obsr.data_source_id = ?" : "obsr.data_source_id != ?")
+    obs = obs.where([data_source_clause, DataSource.find_by_name('gbif').id])
+
+    if start_dt.present? && end_dt.present?
+      return obs.where("observed_at BETWEEN ? and ?", start_dt ,end_dt)
+    else
+      return obs
+    end
+  end
 
 
+  # This will return an Observation associated with OBSERVATIONS_REGIONS for given region_id, observation_id and data source
+  def find_observation(region_id: , observation_id: nil, data_source_id:)
+    obs = Observation.joins(" JOIN OBSERVATIONS_REGIONS obsr ON obsr.observation_id = observations.id").
+                            where(["obsr.observation_id = ?", observation_id]).
+                            where(["obsr.region_id = ?", region_id]).
+                            where(["obsr.data_source_id = ?", data_source_id])
+
+    return obs
+  end
+
+  # This will return insert statement for OBSERVATIONS_REGIONS table
+  def get_observations_regions_insert_statement(region_id: , observation_id: , data_source_id:)
+    insert_sql = "INSERT INTO OBSERVATIONS_REGIONS(region_id, observation_id, data_source_id,
+                                                  created_at, updated_at)
+                  VALUES(#{region_id}, #{observation_id}, #{data_source_id},
+                        '#{Time.now}', '#{Time.now}')"
+    return insert_sql
+  end
 
   def self.get_search_results region_id, contest_id, q, nstart, nend
     #
@@ -163,11 +210,12 @@ class Observation < ApplicationRecord
     offset = nstart
     limit  = nend - nstart
 
-
+    start_dt = end_dt = nil
     if region_id && contest_id
       obj = Participation.where contest_id: contest_id, region_id: region_id
     elsif region_id
       obj = Region.where id: region_id
+      (start_dt, end_dt) = obj.first.get_date_range_for_report()
     elsif contest_id
       obj = Contest.where id: contest_id
     else
@@ -179,9 +227,16 @@ class Observation < ApplicationRecord
     if obj.nil?
       observations = q.blank? ? Observation.all : Observation.all.search(q).recent
     else 
-      observations = q.blank? ? obj.first.observations : obj.first.observations.search(q)
+      if (start_dt.present? && end_dt.present?)
+        obs = get_observations_for_region(region_id:    obj.first.id,
+                                          start_dt:     start_dt,
+                                          end_dt:       end_dt,
+                                          include_gbif: true)
+        observations = q.blank? ? obs : obs.search(q)
+      else
+        observations = q.blank? ? obj.first.observations : obj.first.observations.search(q)
+      end
     end
-
     nobservations_all = observations.count
     nobservations_with_images = observations.has_images.has_scientific_name.recent.count
     nobservations_excluded = nobservations_all - nobservations_with_images

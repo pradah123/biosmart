@@ -111,31 +111,40 @@ class DataSource < ApplicationRecord
     end
   end
 
+  ## Get total count for gbif request
+  def fetch_gbif_observations_count region, starts_at, ends_at
+    return fetch_gbif(region, starts_at, ends_at, true)
+  end
 
-  def fetch_gbif region, starts_at, ends_at
+
+  def fetch_gbif region, starts_at, ends_at, fetch_count=false
     Delayed::Worker.logger.info "fetch_observations_gbif(#{region.id}, #{starts_at}, #{ends_at})"
 
     begin
       params = get_query_parameters region
       params[:eventDate] = "#{starts_at.strftime('%Y-%m-%d')},#{ends_at.strftime('%Y-%m-%d')}"
-      params[:dataset_key] = Source::GBIF.get_dataset_keys()
 
       gbif = ::Source::GBIF.new(**params)
       loop do
-          observations = gbif.get_observations() || []
-          observations.each{ |o|
-            geokit_point = Geokit::LatLng.new o[:lat], o[:lng]
-            region.get_geokit_polygons.each do |polygon|
-              if polygon.contains?(geokit_point)
-                ObservationsCreateJob.perform_later self, [o]
-              end
+        if fetch_count.present?
+          count = gbif.get_observations(fetch_count: fetch_count) || 0
+          return count
+        end
+        observations = gbif.get_observations() || []
+
+        observations.each{ |o|
+          geokit_point = Geokit::LatLng.new o[:lat], o[:lng]
+          region.get_geokit_polygons.each do |polygon|
+            if polygon.contains?(geokit_point)
+              ObservationsCreateJob.perform_later self, [o]
             end
-          }
-          gbif.increment_page()
-          break if gbif.done()
+          end
+        }
+        gbif.increment_page()
+        break if gbif.done()
       end
     rescue => e
-      Delayed::Worker.logger.error "fetch_gbif_observer: #{e.full_message}"
+      Delayed::Worker.logger.error "fetch_gbif: #{e.full_message}"
     end
   end
 
@@ -209,7 +218,7 @@ class DataSource < ApplicationRecord
         inat.increment_page()
       end
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
+      Rails.logger.error "fetch_inat: #{e.full_message}"
     end
   end 
 
@@ -229,7 +238,7 @@ class DataSource < ApplicationRecord
         end
       }
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
+      Rails.logger.error "fetch_ebird: #{e.full_message}"
     end
   end
 
@@ -253,7 +262,7 @@ class DataSource < ApplicationRecord
         qgame.increment_offset()
       end
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"
+      Rails.logger.error "fetch_qgame: #{e.full_message}"
     end
   end 
   
