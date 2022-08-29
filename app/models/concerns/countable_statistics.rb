@@ -21,7 +21,7 @@ module CountableStatistics
     # end
 
     def reset_statistics
-      if self.is_a? "Region"
+      if self.is_a? Region
         update_column :observations_count, self.get_observations_count(include_gbif: true)
         update_column :people_count, self.get_people_count(include_gbif: true)
         update_column :species_count, self.get_species_count(include_gbif: true)
