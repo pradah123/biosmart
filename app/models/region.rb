@@ -136,6 +136,8 @@ class Region < ApplicationRecord
 
 
   def compute_subregions
+    return if size.present? || base_region_id.present?
+
     subregions.delete_all
     polygons = JSON.parse raw_polygon_json
 
@@ -152,16 +154,16 @@ class Region < ApplicationRecord
       Subregion.create! data_source_id: DataSource.find_by_name('inaturalist').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
 
       # ebird subregions have default 50 km max radius
-      Subregion.create! data_source_id: DataSource.find_by_name('ebird').id, region_id: self.id, raw_polygon_json: p.to_json
+      #Subregion.create! data_source_id: DataSource.find_by_name('ebird').id, region_id: self.id, raw_polygon_json: p.to_json
 
       # observation.org does not need a radius- but will use the observation_dot_org_id from the region
       Subregion.create! data_source_id: DataSource.find_by_name('observation.org').id, region_id: self.id, raw_polygon_json: '{}'
 
       # questagame does not need a radius- but will use polygon in multipolygon db query format
-      Subregion.create! data_source_id: DataSource.find_by_name('qgame').id, region_id: self.id, raw_polygon_json: p.to_json
+      Subregion.create! data_source_id: DataSource.find_by_name('qgame').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
 
       # mushroom observer needs north, south, east, west
-      Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json
+      Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
 
       # gbif needs polygon
       Subregion.create! data_source_id: DataSource.find_by_name('gbif').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
