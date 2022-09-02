@@ -81,7 +81,7 @@ class DataSource < ApplicationRecord
       end
     when 'gbif'
       if subregion.raw_polygon_json.present?
-        polygon_wkt = subregion.get_polygon_from_raw_polygon_json(subregion.raw_polygon_json)
+        polygon_wkt = Region.get_polygon_from_raw_polygon_json(subregion.raw_polygon_json)
         return {
           offset: 0,
           limit: 300,
@@ -97,40 +97,43 @@ class DataSource < ApplicationRecord
 
 
   def fetch_observations region, starts_at, ends_at, extra_params=nil
-    if name == 'gbif'
-      fetch_gbif region, starts_at, ends_at ## We can directly fetch for whole region for gbif
-    else
-      subregions = Subregion.where(region_id: region.id, data_source_id: id)
-      subregions.each do |sr|
-        case name
-        when 'inaturalist'
-          fetch_inat sr, starts_at, ends_at, extra_params
-        when 'ebird'
-          fetch_ebird sr, starts_at, ends_at
-        when 'qgame'
-          fetch_qgame sr, starts_at, ends_at, extra_params
-        when 'observation.org'
-          fetch_observations_dot_org sr, starts_at, ends_at, extra_params
-        when 'mushroom_observer'
-          fetch_mushroom_observer sr, starts_at, ends_at
-        else
-          self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
-        end
+    subregions = Subregion.where(region_id: region.id, data_source_id: id)
+    subregions.each do |sr|
+      case name
+      when 'inaturalist'
+        fetch_inat sr, starts_at, ends_at, extra_params
+      when 'ebird'
+        fetch_ebird sr, starts_at, ends_at
+      when 'qgame'
+        fetch_qgame sr, starts_at, ends_at, extra_params
+      when 'observation.org'
+        fetch_observations_dot_org sr, starts_at, ends_at, extra_params
+      when 'mushroom_observer'
+        fetch_mushroom_observer sr, starts_at, ends_at
+      when 'gbif'
+        fetch_gbif sr, starts_at, ends_at
+      else
+        self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
       end
     end
   end
 
   ## Get total count for gbif request
   def fetch_gbif_observations_count region, starts_at, ends_at
-    return fetch_gbif(region, starts_at, ends_at, true)
+    subregions = Subregion.where(region_id: region.id, data_source_id: id)
+    total_count = 0
+    subregions.each do |sr|
+      total_count = total_count + fetch_gbif(sr, starts_at, ends_at, true)
+    end
+    return total_count
   end
 
 
-  def fetch_gbif region, starts_at, ends_at, fetch_count=false
-    Delayed::Worker.logger.info "fetch_observations_gbif(#{region.id}, #{starts_at}, #{ends_at})"
+  def fetch_gbif subregion, starts_at, ends_at, fetch_count=false
+    Delayed::Worker.logger.info "fetch_observations_gbif(#{subregion.id}, #{starts_at}, #{ends_at})"
 
     begin
-      params = get_query_parameters region
+      params = get_query_parameters subregion
       params[:eventDate] = "#{starts_at.strftime('%Y-%m-%d')},#{ends_at.strftime('%Y-%m-%d')}"
 
       gbif = ::Source::GBIF.new(**params)
@@ -140,13 +143,9 @@ class DataSource < ApplicationRecord
           return count
         end
         observations = gbif.get_observations() || []
-
         observations.each{ |o|
-          geokit_point = Geokit::LatLng.new o[:lat], o[:lng]
-          region.get_geokit_polygons.each do |polygon|
-            if polygon.contains?(geokit_point)
-              ObservationsCreateJob.perform_later self, [o]
-            end
+          if subregion.contains? o[:lat], o[:lng]
+            ObservationsCreateJob.perform_later self, [o]
           end
         }
         gbif.increment_page()
