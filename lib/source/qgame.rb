@@ -22,9 +22,6 @@ module Source
     def get_params()
       params = Source::QGame.dry_initializer.attributes(self)
       params.delete(:count)
-      if category_ids.present?
-        params[:category_ids] = category_ids
-      end
 
       return params
     end
@@ -46,6 +43,7 @@ module Source
         },
         # debug_output: $stdout
       )
+      Delayed::Worker.logger.info "Source::QGame.api_url: #{response.request.last_uri.to_s}"
       if response.success? && !response.body.nil?
         result = JSON.parse(response.body, symbolize_names: true)
         t = Source::QGame::Transformer.new()

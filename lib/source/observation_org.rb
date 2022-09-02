@@ -18,6 +18,7 @@ module Source
     option :limit, reader: :private, type: Types::Coercible::Integer
     option :offset, reader: :private, type: Types::Coercible::Integer
     option :location_id, reader: :private, type: Types::Coercible::Integer
+    option :species_group, optional: true, reader: :private, type: Types::Strict::String
 
     def get_params()
       params = Source::ObservationOrg.dry_initializer.attributes(self)
@@ -38,6 +39,8 @@ module Source
         },
         # debug_output: $stdout
       )
+      Delayed::Worker.logger.info "Source::ObservationOrg.api_url: #{response.request.last_uri.to_s}"
+
       if response.success? && !response.body.nil?
         result = JSON.parse(response.body, symbolize_names: true)
         t = Source::ObservationOrg::Transformer.new()

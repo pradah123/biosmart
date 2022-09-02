@@ -50,6 +50,7 @@ module Source
         },
         debug_output: $stdout
       )
+      Delayed::Worker.logger.info "Source::MushroomObserver.api_url: #{response.request.last_uri.to_s}"
       if response.success? && !response.body.nil?
         result = JSON.parse(response.body, symbolize_names: true)
         @number_of_pages = result[:number_of_pages]

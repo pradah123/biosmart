@@ -8,7 +8,7 @@ module Source
       import Dry::Transformer::HashTransformations
 
       def self.populate_identifications_count(hash)
-        identifications_count = hash[:votes].count || 0
+        identifications_count = hash[:votes]&.count || 0
         if identifications_count < 1 && hash[:scientific_name].present?
           identifications_count = 1
         end
@@ -19,7 +19,8 @@ module Source
 
       def self.populate_images(hash)
         images = hash[:images] || [hash[:primary_image]] || []
-        image_urls = images.map { |image| image[:original_url] }
+        image_urls = images.present? ? images.map { |image| 
+          image.present? ? image[:original_url] : '' } : []
         hash.merge({
           image_urls: image_urls
         })

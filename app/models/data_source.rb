@@ -9,18 +9,20 @@ class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
   has_many :observations
   has_many :api_request_logs
+  has_many :params, dependent: :delete_all
+  has_many :contests, through: :params
 
   #
   # this is where to control the query parameters format
   # for each data source
   #
 
-  def get_query_parameters subregion
+  def get_query_parameters subregion, extra_params=nil
     return {} if subregion.nil?
 
     case name
     when 'inaturalist'
-      {
+      params = {
         lat: subregion.lat,
         lng: subregion.lng,
         radius: subregion.radius_km.ceil,
@@ -30,6 +32,8 @@ class DataSource < ApplicationRecord
         per_page: 200,
         page: 1
       }
+      params.merge!(extra_params) if extra_params.present?
+      return params
 
     when 'ebird'
       {
@@ -41,21 +45,26 @@ class DataSource < ApplicationRecord
 
     when 'qgame'
       multipolygon_wkt = Region.get_multipolygon_from_raw_polygon_json subregion.raw_polygon_json
-      {
+      params = {
         multipolygon: multipolygon_wkt, 
         offset: 0, 
         limit: 50
       }
-
+      params.merge!(extra_params) if extra_params.present?
+      params[:category_ids] = params[:category_ids].join(",") if params[:category_ids].present?
+      return params
     when 'observation.org'
       if subregion.region.observation_dot_org_id.nil?
         {}
       else
-        {
+        params = {
           location_id: (subregion.region.observation_dot_org_id), 
           offset: 0, 
           limit: 100
         }
+        params.merge!(extra_params) if extra_params.present?
+        params[:species_group] = params[:species_group].join(",") if params[:species_group].present?
+        return params
       end
     when 'mushroom_observer'
       if subregion.region.raw_polygon_json.present?
@@ -87,7 +96,7 @@ class DataSource < ApplicationRecord
   end
 
 
-  def fetch_observations region, starts_at, ends_at
+  def fetch_observations region, starts_at, ends_at, extra_params=nil
     if name == 'gbif'
       fetch_gbif region, starts_at, ends_at ## We can directly fetch for whole region for gbif
     else
@@ -95,13 +104,13 @@ class DataSource < ApplicationRecord
       subregions.each do |sr|
         case name
         when 'inaturalist'
-          fetch_inat sr, starts_at, ends_at
+          fetch_inat sr, starts_at, ends_at, extra_params
         when 'ebird'
           fetch_ebird sr, starts_at, ends_at
         when 'qgame'
-          fetch_qgame sr, starts_at, ends_at
+          fetch_qgame sr, starts_at, ends_at, extra_params
         when 'observation.org'
-          fetch_observations_dot_org sr, starts_at, ends_at
+          fetch_observations_dot_org sr, starts_at, ends_at, extra_params
         when 'mushroom_observer'
           fetch_mushroom_observer sr, starts_at, ends_at
         else
@@ -169,7 +178,7 @@ class DataSource < ApplicationRecord
     end
   end
 
-  def fetch_observations_dot_org subregion, starts_at, ends_at
+  def fetch_observations_dot_org subregion, starts_at, ends_at, extra_params
     # fetch logic here
     Delayed::Worker.logger.info "fetch_observations_dot_org(#{subregion.id}, #{starts_at}, #{ends_at})"
 
@@ -178,9 +187,10 @@ class DataSource < ApplicationRecord
 # of observations
 
     begin
-      params = get_query_parameters subregion
+      params = get_query_parameters subregion, extra_params
       params[:date_after] = starts_at.strftime('%F')
       params[:date_before] = ends_at.strftime('%F')
+
       ob_org = ::Source::ObservationOrg.new(**params)
       loop do                
           observations = ob_org.get_observations() || []
@@ -198,13 +208,14 @@ class DataSource < ApplicationRecord
     end
   end 
 
-  def fetch_inat subregion, starts_at, ends_at # PRW: we should change this to fetch_inaturalist to be consistent
+  def fetch_inat subregion, starts_at, ends_at, extra_params # PRW: we should change this to fetch_inaturalist to be consistent
     # fetch logic here
     Delayed::Worker.logger.info "fetch_inat(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
-      params = get_query_parameters subregion
+      params = get_query_parameters subregion, extra_params
       params[:d1] = starts_at.strftime('%F')
       params[:d2] = ends_at.strftime('%F')
+
       inat = ::Source::Inaturalist.new(**params)
       loop do
         break if inat.done()
@@ -242,13 +253,14 @@ class DataSource < ApplicationRecord
     end
   end
 
-  def fetch_qgame subregion, starts_at, ends_at
+  def fetch_qgame subregion, starts_at, ends_at, extra_params
     # fetch logic here
     Delayed::Worker.logger.info "fetch_qgame(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
-      params = get_query_parameters subregion
+      params = get_query_parameters subregion, extra_params
       params[:start_dttm] = starts_at.strftime('%F')
       params[:end_dttm] = ends_at.strftime('%F')
+
       qgame = ::Source::QGame.new(**params)    
       loop do      
         break if qgame.done()
