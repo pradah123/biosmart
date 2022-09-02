@@ -1,6 +1,14 @@
 <div class="row justify-content-center flex-nowrap flex-shrink-1 p-2" >
   <div class="col-2 flex-nowrap flex-shrink-1" style="padding: 0 0 0 0; ">
-    <img src="<%= object.logo_image_url ? object.logo_image_url : object.logo_image %>" class="float-start" style="max-height:160px;max-width:100%;">
+    <% if object.logo_image_url || object.logo_image %>
+      <% if object.region_url %>
+        <a href="<%= object.region_url %>" target="_blank">
+          <img src="<%= object.logo_image_url ? object.logo_image_url : object.logo_image %>" class="float-start" style="max-height:160px;max-width:100%;">
+        </a>
+      <% else %>
+        <img src="<%= object.logo_image_url ? object.logo_image_url : object.logo_image %>" class="float-start" style="max-height:160px;max-width:100%;">
+      <% end %>
+    <% end %>
   </div>
   <div class="col-5 flex-nowrap flex-shrink-1" style="padding: 1 0 0 0; " >
     <%= object.description&.html_safe || '' %>

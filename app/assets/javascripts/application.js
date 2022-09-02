@@ -23,10 +23,15 @@ const icon = {
   anchor: new google.maps.Point(15, 40), // anchor
 };
 
-const line_symbol = {
+const dashed_line_symbol = {
   path: "M 0,-1 0,1",
   strokeOpacity: 1,
-  scale: 3,
+  scale: 6,
+};
+const line_symbol = {
+  path: "M 0, 1 0,1",
+  strokeOpacity: 1,
+  scale: 4,
 };
 
 $(document).ready(function() { 
@@ -342,8 +347,23 @@ function close_info_windows(info_windows) {
 function draw_neighboring_regions_polygon(map, bounds) {
   for( var i = 0 ; i < _neighboring_regions_json.length ; i++ ) {
     var nr = _neighboring_regions_json[i];
-    stroke_color =  (i == 0 ? 'blue' : 'green');
-
+    var icons = [];
+    if (i == 1) {
+      icons = [{
+        icon: dashed_line_symbol,
+        offset:'0',
+        repeat:'30px'
+        }];
+    }
+    else {
+      icons = [{
+        icon: line_symbol,
+        offset:'0',
+        repeat:'1px'
+        }];
+      
+    }
+    
     for( var j = 0 ; j < nr.length ; j++ ) {
 
       var coordinates = nr[j]['coordinates'];
@@ -351,15 +371,11 @@ function draw_neighboring_regions_polygon(map, bounds) {
       for( var k = 0 ; k <coordinates.length ; k++ ) googlemaps_points.push({ lng: coordinates[k][0], lat: coordinates[k][1] });
       var polygon = new google.maps.Polygon({ paths: googlemaps_points, visible: false, map: map });
 
+      
       new google.maps.Polyline({
-          strokeColor: stroke_color,
+          strokeColor: 'white',
           strokeOpacity: 0,
-          strokeWeight: '1px',
-          icons:[{
-              icon: line_symbol,
-              offset:'0',
-              repeat:'15px'
-          }],
+          icons: icons,
           path: googlemaps_points,
           map: map
         });
@@ -377,7 +393,11 @@ function set_up_region_page() {
   if($('#region-map').length==0) return; 
 
   var s = { lat: 0, lng: 0 };
-  var map = new google.maps.Map(document.getElementById('region-map'), { zoom: 2, center: s, controlSize: 20 });
+  var map = new google.maps.Map(document.getElementById('region-map'), 
+  { zoom: 2, center: s, controlSize: 20, mapTypeId: 'satellite', mapTypeControlOptions: {
+    mapTypeIds: [google.maps.MapTypeId.SATELLITE]
+  },
+ });
   var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
@@ -387,7 +407,7 @@ function set_up_region_page() {
       var coordinates = _polygon_json[i]['coordinates'];
       var googlemaps_points = [];
       for( var j = 0 ; j<coordinates.length ; j++ ) googlemaps_points.push({ lng: coordinates[j][0], lat: coordinates[j][1] });
-      var polygon = new google.maps.Polygon({ paths: googlemaps_points });
+      var polygon = new google.maps.Polygon({ paths: googlemaps_points, strokeColor: 'yellow', strokeWeight: 4 });
       polygon.setMap(map);
 
       polygon.getPaths().forEach(function(path) {
@@ -637,7 +657,7 @@ function set_up_regions() {
 
    
     var s = { lat: 0, lng: 0 };
-    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 2, center: s, controlSize: 20 });
+    var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 2, center: s, controlSize: 20  });
 
     $('#polygon-json-'+modalid+' .polygon-draw').click(function() {
       // validate json

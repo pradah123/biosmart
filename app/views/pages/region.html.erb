@@ -1,7 +1,15 @@
 <% if !@region.header_image_url.blank? || !@region.header_image.blank? %>
   <div class="row m-0 p-0">
     <div class="col d-flex justify-content-center">
+      <% if @region.header_image_url %>
+      <% if @region.region_url %>
+        <a href="<%= @region.region_url %>" target="_blank">
+          <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid">
+        </a>
+      <% else %>
       <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid">
+      <% end %>
+    <% end %>
     </div>    
   </div>
 <% end %>  
@@ -39,17 +47,20 @@
       </div-->
 
       <% if @region.neighboring_regions.count > 0 %>
-        <div style="height:30px; display: table;">
-            <div style="display: table-cell;width:35%;"></div>
-            <div style="display: table-cell;border-bottom: 4px dashed #002699; width:10%;"></div>
-            <div style="display: table-cell; font-weight:bold; vertical-align:bottom;width:10%;">&nbsp;&nbsp;&nbsp;   Locality</div>
-            <div style="display: table-cell;width:10%;"></div>
-            <div style="display: table-cell;border-bottom: 4px dashed green; width:10%;"></div>
-            <div style="display: table-cell; font-weight:bold;vertical-align:bottom;width:20%;">&nbsp;&nbsp;&nbsp;Greater Region</div>
-            <div style="display: table-cell;width:15%;"></div>
+        <div class="row border border-1 rounded-2 p-2 flex-nowrap flex-shrink-1" style="height:40px; padding:0 !important;">
+
+          <div style="display: table; background-color:black;width:100%; ">
+              <div style="display: table-cell;width:30%;"></div>
+              <div style="display: table-cell; font-weight:bold;width:5%;vertical-align:middle;"><Strike style="color:white;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Strike></div> 
+              <div style="display: table-cell; color:white;font-weight:bold; vertical-align:middle;width:10%;">&nbsp;&nbsp;&nbsp;   Locality</div>
+              <div style="display: table-cell;width:5%;"></div>
+              <div style="display: table-cell; color:white;font-weight:bold; vertical-align:middle;width:7%;">- - - - - - -</div>
+              <div style="display: table-cell; color:white;font-weight:bold;vertical-align:middle;width:20%;">&nbsp;&nbsp;&nbsp;Greater Region</div>
+              <div style="display: table-cell;width:23%;"></div>
+          </div>
         </div>
       <% end %>
-      <div class="row my-3">
+      <div class="row my-2">
         <div class="col" id="region-map" style="width:100%; height:600px;"></div>  
         <script>  
           <% if @region.child_regions.count>0 %>
