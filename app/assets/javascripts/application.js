@@ -393,11 +393,8 @@ function set_up_region_page() {
   if($('#region-map').length==0) return; 
 
   var s = { lat: 0, lng: 0 };
-  var map = new google.maps.Map(document.getElementById('region-map'), 
-  { zoom: 2, center: s, controlSize: 20, mapTypeId: 'satellite', mapTypeControlOptions: {
-    mapTypeIds: [google.maps.MapTypeId.SATELLITE]
-  },
- });
+  var map = new google.maps.Map(document.getElementById('region-map'),
+            { zoom: 2, center: s, controlSize: 20, mapTypeId: 'satellite'});
   var infoWindow = new google.maps.InfoWindow({ content: "", disableAutoPan: true, });
     
   google.maps.event.addListenerOnce(map, 'idle', function() { 
