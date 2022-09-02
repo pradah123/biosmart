@@ -22,15 +22,12 @@ module Source
     option :order, default: proc { 'desc' }, reader: :private, type: Types::Strict::String
     option :order_by, default: proc { 'observed_on' }, reader: :private, type: Types::Strict::String
     option :per_page, default: proc { 200 }, reader: :private, type: Types::Strict::Integer
-    option :iconic_taxa, optional: true, reader: :private, type: Types::Strict::String
+    option :iconic_taxa, optional: true, reader: :private, type: Types::Strict::Array
     option :page, default: proc { 1 }, reader: :private, type: Types::Strict::Integer
 
     def get_params()
       params = Source::Inaturalist.dry_initializer.attributes(self)
       params.delete(:total_results)
-      if iconic_taxa.present?
-        params[:iconic_taxa] = iconic_taxa
-      end
 
       return params
     end
@@ -51,6 +48,8 @@ module Source
         query: get_params(),
         # debug_output: $stdout
       )
+      Delayed::Worker.logger.info "Source::Inaturalist.api_url: #{response.request.last_uri.to_s}"
+
       if response.success? && !response.body.nil?
         result = JSON.parse(response.body, symbolize_names: true)
         @total_results = result[:total_results]

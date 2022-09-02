@@ -16,6 +16,9 @@ class Contest < ApplicationRecord
   has_many :participations, dependent: :delete_all
   has_many :regions, through: :participations
   has_and_belongs_to_many :observations
+  has_many :params, dependent: :delete_all
+  has_many :data_sources, through: :params
+
 
   after_save :set_last_submission_accepted_at, :set_slug,
              :set_start_and_end_times_for_participations
@@ -144,7 +147,17 @@ class Contest < ApplicationRecord
   end  
 
 
-
+  def get_extra_params(data_source_id: )
+    if data_sources.where(id: data_source_id).first&.params.present?
+      params = data_sources.where(id: data_source_id).first.params
+      extra_params = {}
+      params.each {|p|
+        extra_params[:"#{p.name}"] = [] if !extra_params[:"#{p.name}"].present?
+        extra_params[:"#{p.name}"].push(p.value)
+      }
+      return extra_params
+    end
+  end
 
 
   rails_admin do
