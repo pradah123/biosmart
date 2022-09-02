@@ -96,7 +96,7 @@ class DataSource < ApplicationRecord
   end
 
 
-  def fetch_observations region, starts_at, ends_at, extra_params
+  def fetch_observations region, starts_at, ends_at, extra_params=nil
     if name == 'gbif'
       fetch_gbif region, starts_at, ends_at ## We can directly fetch for whole region for gbif
     else

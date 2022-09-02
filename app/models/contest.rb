@@ -148,12 +148,12 @@ class Contest < ApplicationRecord
 
 
   def get_extra_params(data_source_id: )
-    if data_sources.where(id: data_source_id).first&.params.present?
-      params = data_sources.where(id: data_source_id).first.params
+    if data_sources.find_by_id(data_source_id)&.params.present?
+      params = data_sources.find_by_id(data_source_id).params
       extra_params = {}
       params.each {|p|
-        extra_params[:"#{p.name}"] = [] if !extra_params[:"#{p.name}"].present?
-        extra_params[:"#{p.name}"].push(p.value)
+        extra_params[p.name.to_sym] = [] if !extra_params[p.name.to_sym].present?
+        extra_params[p.name.to_sym].push(p.value)
       }
       return extra_params
     end
