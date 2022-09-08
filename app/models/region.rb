@@ -163,6 +163,9 @@ class Region < ApplicationRecord
 
         # mushroom observer needs north, south, east, west
         Subregion.create! data_source_id: DataSource.find_by_name('mushroom_observer').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
+
+        # Naturespot needs north, south, east, west
+        Subregion.create! data_source_id: DataSource.find_by_name('naturespot').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
       end
       # gbif needs polygon
       Subregion.create! data_source_id: DataSource.find_by_name('gbif').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil

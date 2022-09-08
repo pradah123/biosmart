@@ -4,6 +4,7 @@ require_relative '../../lib/source/qgame.rb'
 require_relative '../../lib/source/observation_org.rb'
 require_relative '../../lib/source/mushroom_observer.rb'
 require_relative '../../lib/source/gbif.rb'
+require_relative '../../lib/source/naturespot.rb'
 
 class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
@@ -90,6 +91,21 @@ class DataSource < ApplicationRecord
       else
         raise ArgumentError.new("Polygon does not exists for region #{subregion.id}")
       end
+    when 'naturespot'
+      if subregion.region.raw_polygon_json.present?
+        parsed_polygon = JSON.parse(subregion.raw_polygon_json)
+        west, east, south, north = Utils.get_bounding_box(parsed_polygon)
+        params = {
+          longitude__lt: east,
+          longitude__gt: west,
+          latitude__lt: north,
+          latitude__gt: south
+        }
+        params.merge!(extra_params) if extra_params.present?
+        return params
+      else
+        raise ArgumentError.new("Polygon does not exists for region #{subregion.region.id}")
+      end
     else
       {}
     end     
@@ -112,6 +128,8 @@ class DataSource < ApplicationRecord
         fetch_mushroom_observer sr, starts_at, ends_at
       when 'gbif'
         fetch_gbif sr, starts_at, ends_at
+      when 'naturespot'
+        fetch_naturespot sr, starts_at, ends_at, extra_params
       else
         self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
       end
@@ -155,6 +173,31 @@ class DataSource < ApplicationRecord
       Delayed::Worker.logger.error "fetch_gbif: #{e.full_message}"
     end
   end
+
+
+  def fetch_naturespot subregion, starts_at, ends_at, extra_params
+    Delayed::Worker.logger.info "fetch_naturespot(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = get_query_parameters subregion, extra_params
+      params[:created_at__gt] = starts_at.strftime('%F')
+      params[:created_at__lt] = ends_at.strftime('%F')
+
+      naturespot = ::Source::NatureSpot.new(**params)
+      loop do
+        observations = naturespot.get_observations() || []
+        observations.each{ |o|
+          if subregion.region.contains? o[:lat], o[:lng]
+            ObservationsCreateJob.perform_later self, [o]
+          end
+        }
+        break if naturespot.done()
+        naturespot.increment_page()
+      end
+    rescue => e
+      Delayed::Worker.logger.error "fetch_naturespot: #{e.full_message}"
+    end
+  end
+
 
   def fetch_mushroom_observer subregion, starts_at, ends_at
     Delayed::Worker.logger.info "fetch_mushroom_observer(#{subregion.id}, #{starts_at}, #{ends_at})"
@@ -203,7 +246,7 @@ class DataSource < ApplicationRecord
           ob_org.increment_offset()
       end
     rescue => e
-      Rails.logger.error "fetch_observations_dot_org: #{e.full_message}"      
+      Delayed::Worker.logger.error "fetch_observations_dot_org: #{e.full_message}"
     end
   end 
 
@@ -228,7 +271,7 @@ class DataSource < ApplicationRecord
         inat.increment_page()
       end
     rescue => e
-      Rails.logger.error "fetch_inat: #{e.full_message}"
+      Delayed::Worker.logger.error "fetch_inat: #{e.full_message}"
     end
   end 
 
@@ -248,7 +291,7 @@ class DataSource < ApplicationRecord
         end
       }
     rescue => e
-      Rails.logger.error "fetch_ebird: #{e.full_message}"
+      Delayed::Worker.logger.error "fetch_ebird: #{e.full_message}"
     end
   end
 
@@ -273,7 +316,7 @@ class DataSource < ApplicationRecord
         qgame.increment_offset()
       end
     rescue => e
-      Rails.logger.error "fetch_qgame: #{e.full_message}"
+      Delayed::Worker.logger.error "fetch_qgame: #{e.full_message}"
     end
   end 
   
