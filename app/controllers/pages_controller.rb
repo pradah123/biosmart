@@ -29,7 +29,7 @@ class PagesController < ApplicationController
   end
 
   def region
-    @region = Region.find_by_slug params[:slug]
+    @region = Region.all.online.find_by_slug params[:slug]
     render :top if @region.nil?
   end
 
