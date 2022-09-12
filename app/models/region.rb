@@ -166,6 +166,10 @@ class Region < ApplicationRecord
 
         # Naturespot needs north, south, east, west
         Subregion.create! data_source_id: DataSource.find_by_name('naturespot').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
+        
+        # CitSci does not need a polygon- but will use the project_id from the params
+        Subregion.create! data_source_id: DataSource.find_by_name('citsci').id, region_id: self.id, raw_polygon_json: '{}'
+
       end
       # gbif needs polygon
       Subregion.create! data_source_id: DataSource.find_by_name('gbif').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
@@ -501,6 +505,7 @@ class Region < ApplicationRecord
       field :raw_polygon_json
       field :observation_dot_org_id
       field :inaturalist_place_id
+      field :citsci_project_id
       field :created_at
     end
     show do 
@@ -517,6 +522,7 @@ class Region < ApplicationRecord
       field :raw_polygon_json
       field :observation_dot_org_id
       field :inaturalist_place_id
+      field :citsci_project_id
       field :created_at
     end  
   end

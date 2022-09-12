@@ -5,6 +5,7 @@ require_relative '../../lib/source/observation_org.rb'
 require_relative '../../lib/source/mushroom_observer.rb'
 require_relative '../../lib/source/gbif.rb'
 require_relative '../../lib/source/naturespot.rb'
+require_relative '../../lib/source/citsci.rb'
 
 class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
@@ -106,6 +107,14 @@ class DataSource < ApplicationRecord
       else
         raise ArgumentError.new("Polygon does not exists for region #{subregion.region.id}")
       end
+    when 'citsci'
+      if subregion.region.citsci_project_id.present?
+        return {
+          project_id: subregion.region.citsci_project_id
+        }
+      else
+        return {}
+      end
     else
       {}
     end     
@@ -130,6 +139,8 @@ class DataSource < ApplicationRecord
         fetch_gbif sr, starts_at, ends_at
       when 'naturespot'
         fetch_naturespot sr, starts_at, ends_at, extra_params
+      when 'citsci'
+        fetch_citsci sr, starts_at, ends_at
       else
         self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
       end
@@ -171,6 +182,29 @@ class DataSource < ApplicationRecord
       end
     rescue => e
       Delayed::Worker.logger.error "fetch_gbif: #{e.full_message}"
+    end
+  end
+
+
+  def fetch_citsci subregion, starts_at, ends_at
+    Delayed::Worker.logger.info "fetch_citsci(#{subregion.id}, #{starts_at}, #{ends_at})"
+    begin
+      params = get_query_parameters subregion
+      params[:observed_at] = "#{starts_at.strftime('%Y-%m-%d')},#{ends_at.strftime('%Y-%m-%d')}"
+
+      citsci = ::Source::CitSci.new(**params)
+      loop do
+        observations = citsci.get_observations() || []
+        observations.each{ |o|
+          if subregion.region.contains? o[:lat], o[:lng]
+            ObservationsCreateJob.perform_later self, [o]
+          end
+        }
+        break if citsci.done()
+        citsci.increment_page()
+      end
+    rescue => e
+      Delayed::Worker.logger.error "fetch_citsci: #{e.full_message}"
     end
   end
 
