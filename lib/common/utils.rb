@@ -33,6 +33,14 @@ module Utils
     return west, east, south, north
   end
 
+  def self.get_center_of_bounding_box(west, east, south, north)
+    # ne
+    ne = Geokit::LatLng.new(north, east)
+    # sw
+    sw = Geokit::LatLng.new(south, west)
+    return sw.midpoint_to(ne)
+  end
+
   def self.convert_to_seconds(unit:, value:)
     seconds = 0
     if unit == 'year'
