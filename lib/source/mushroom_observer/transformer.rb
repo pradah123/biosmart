@@ -25,6 +25,27 @@ module Source
           image_urls: image_urls
         })
       end
+
+      def self.populate_lat_lng(hash)
+        if !hash[:latitude].present? || !hash[:longitude].present?
+          west = hash[:location][:longitude_west] || ''
+          east = hash[:location][:longitude_east] || ''
+          south = hash[:location][:latitude_south] || ''
+          north = hash[:location][:latitude_north] || ''
+          if (west.present? && east.present? && south.present? && north.present?)
+            center = Utils.get_center_of_bounding_box(west, east, south, north)
+            hash.merge({
+              lat: center.lat,
+              lng: center.lng
+            })
+          end
+        else
+          hash.merge({
+            lat: hash[:latitude],
+            lng: hash[:longitude]
+          })
+        end
+      end
     end
 
     class Transformer < Dry::Transformer::Pipe
@@ -33,24 +54,17 @@ module Source
         
       define! do
         deep_symbolize_keys
-        # transform :unique_id
         map_value :id, -> v { "mo-#{v}" }
         rename_keys id: :unique_id
-        # transform :sname, :cname & :clean_sname
         unwrap :consensus, [:name]
         rename_keys name: :scientific_name
         copy_keys scientific_name: :accepted_name
-        # transform :username & :user_id
         unwrap :owner, [:legal_name, :id]
         map_value :id, -> v { v.to_s }
         rename_keys id: :creator_id
         rename_keys legal_name: :creator_name
-        # transform :photos & :photos_count
         populate_images()
-        # transform :lat & :lng
-        rename_keys latitude: :lat
-        rename_keys longitude: :lng
-        # transform :obs_dttm
+        populate_lat_lng()
         rename_keys date: :observed_at
         populate_identifications_count()
         accept_keys [
