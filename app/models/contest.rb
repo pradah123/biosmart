@@ -148,7 +148,7 @@ class Contest < ApplicationRecord
 
 
   def get_extra_params(data_source_id: )
-    params = data_sources.find_by_id(data_source_id)&.params
+    params = data_sources.find_by_id(data_source_id)&.params.where(contest_id: self.id)
     if params.present?
       extra_params = {}
       params.each {|p|
