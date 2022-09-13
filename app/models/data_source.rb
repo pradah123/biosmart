@@ -191,17 +191,20 @@ class DataSource < ApplicationRecord
     begin
       params = get_query_parameters subregion
       params[:observed_at] = "#{starts_at.strftime('%Y-%m-%d')},#{ends_at.strftime('%Y-%m-%d')}"
-
-      citsci = ::Source::CitSci.new(**params)
-      loop do
-        observations = citsci.get_observations() || []
-        observations.each{ |o|
-          if subregion.region.contains? o[:lat], o[:lng]
-            ObservationsCreateJob.perform_later self, [o]
-          end
-        }
-        break if citsci.done()
-        citsci.increment_page()
+      if params[:project_id].present?
+        citsci = ::Source::CitSci.new(**params)
+        loop do
+          observations = citsci.get_observations() || []
+          observations.each{ |o|
+            if subregion.region.contains? o[:lat], o[:lng]
+              ObservationsCreateJob.perform_later self, [o]
+            end
+          }
+          break if citsci.done()
+          citsci.increment_page()
+        end
+      else
+        Delayed::Worker.logger.info "fetch_citsci: Skipping get_observations as citsci_project_id is missing for the region '#{subregion.region.name}'"
       end
     rescue => e
       Delayed::Worker.logger.error "fetch_citsci: #{e.full_message}"
