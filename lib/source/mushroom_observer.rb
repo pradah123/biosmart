@@ -40,8 +40,9 @@ module Source
 
     def get_observations()
       biosmart_obs = []
+      api_url = "#{API_URL}?api_key=#{ENV.fetch('MUSHROOM_OBSERVER_API_KEY')}"
       response = HTTParty.get(
-        API_URL,
+        api_url,
         query: get_params(),
         headers: {
             'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ' + 
@@ -71,7 +72,7 @@ module Source
         Delayed::Worker.logger.info "Source::MushroomObserver.get_observations: #{response}"
       end
       Delayed::Worker.logger.info "Source::MushroomObserver.get_observations biosmart_obs count: #{biosmart_obs.length}"
-
+      sleep 5
       return biosmart_obs
     end
   end
