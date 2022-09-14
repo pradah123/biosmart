@@ -28,10 +28,10 @@ module Source
 
       def self.populate_lat_lng(hash)
         if !hash[:latitude].present? || !hash[:longitude].present?
-          west = hash[:location][:longitude_west] || ''
-          east = hash[:location][:longitude_east] || ''
-          south = hash[:location][:latitude_south] || ''
-          north = hash[:location][:latitude_north] || ''
+          west  = hash.dig(:location, :longitude_west) || ''
+          east  = hash.dig(:location, :longitude_east) || ''
+          south = hash.dig(:location, :latitude_south) || ''
+          north = hash.dig(:location, :latitude_north) || ''
           if (west.present? && east.present? && south.present? && north.present?)
             center = Utils.get_center_of_bounding_box(west, east, south, north)
             hash.merge({
