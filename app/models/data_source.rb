@@ -6,6 +6,8 @@ require_relative '../../lib/source/mushroom_observer.rb'
 require_relative '../../lib/source/gbif.rb'
 require_relative '../../lib/source/naturespot.rb'
 require_relative '../../lib/source/citsci.rb'
+require_relative '../../lib/delayed_jobs/helpers/status.rb'
+
 
 class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
@@ -297,7 +299,6 @@ class DataSource < ApplicationRecord
 
       inat = ::Source::Inaturalist.new(**params)
       loop do
-        break if inat.done()
         observations = inat.get_observations() || []
 
         observations.each{ |o|
@@ -305,6 +306,7 @@ class DataSource < ApplicationRecord
             ObservationsCreateJob.perform_later self, [o]
           end
         }
+        break if inat.done()
         inat.increment_page()
       end
     rescue => e
