@@ -6,7 +6,6 @@ require_relative '../../lib/source/mushroom_observer.rb'
 require_relative '../../lib/source/gbif.rb'
 require_relative '../../lib/source/naturespot.rb'
 require_relative '../../lib/source/citsci.rb'
-require_relative '../../lib/delayed_jobs/helpers/status.rb'
 
 
 class DataSource < ApplicationRecord

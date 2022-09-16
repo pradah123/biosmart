@@ -32,13 +32,15 @@ class Region < ApplicationRecord
   #
   after_create :compute_subregions, :set_lat_lng, :compute_neighboring_regions
   after_update :compute_subregions, :set_lat_lng, if: :saved_change_to_raw_polygon_json
-  after_update :compute_neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name}
+  after_update :compute_neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name }
+  after_update :update_neighboring_region, if: :saved_change_to_size
 
   #
   # the timezone of the centre point of the region is found using a google
   # api. this is used in working out the utc date times in this region for a contest
   #
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
+  after_save :set_slug, if: :saved_change_to_name
 
   #
   # polygon computations are required to decide if an observation lies inside this
@@ -46,7 +48,6 @@ class Region < ApplicationRecord
   # many times, the geokit polygon objects are cached.
   #
   after_save :update_polygon_cache, :set_time_zone_from_polygon
-  after_save :set_slug
 
   enum status: [:online, :offline, :deleted]
 
@@ -58,13 +59,11 @@ class Region < ApplicationRecord
   #
 
   def set_slug
-    if slug.nil?
-      slug = name.blank? ? SecureRandom.hex(8) : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
-      slug += '1' if ['contest'].include?(slug) || Region.all.where(slug: slug).count>0
-      update_column :slug, slug
-    end
+    slug = name.blank? ? SecureRandom.hex(8) : name.downcase.gsub(/[^[:word:]\s]/, '').gsub(/ /, '-')
+    slug += '1' if ['contest'].include?(slug) || Region.all.where(slug: slug).count > 0
+    update_column :slug, slug
   end
-    
+
   def get_path
     "/#{slug}"
   end  
@@ -181,19 +180,33 @@ class Region < ApplicationRecord
   def compute_neighboring_regions
     return if size.present? || base_region_id.present?
     
+    locality_size = get_neighboring_region(region_type: 'locality')&.size || 5
+    greater_region_size = get_neighboring_region(region_type: 'greater_region')&.size || 12.5
+
     # Create or update locality
-    nr_locality = NeighboringRegion.new(self, 2.5)
+    nr_locality = NeighboringRegion.new(self, nil, locality_size)
     r_locality = nr_locality.get_region()
     # https://apidock.com/rails/ActiveRecord/Base/save
     r_locality.save
 
     # Create or update greater region
-    nr_greater_region = NeighboringRegion.new(self, 5)
+    nr_greater_region = NeighboringRegion.new(self, nil, greater_region_size)
     r_greater_region = nr_greater_region.get_region()
     r_greater_region.save
 
     # Fetch and store observations for greater region
     #GbifObservationsFetchJob.perform_later(greater_region_id: r_greater_region.id) if saved_change_to_raw_polygon_json
+  end
+
+
+  def update_neighboring_region()
+    base_region = Region.find_by_id(self.base_region_id)
+    nr = NeighboringRegion.new(base_region, self, saved_change_to_size[1])
+    nr = nr.get_region()
+    nr.save
+
+    # Will add this later
+    #GbifObservationsDeleteJob.perform_later(region_id: nr.id)
   end
 
   #
@@ -490,13 +503,19 @@ class Region < ApplicationRecord
       field :name          
       field :description
       field :raw_polygon_json
-      field :created_at      
+      field :created_at
+      field :size
     end
     edit do 
       field :user
       field :status
       field :name
-      field :slug     
+      field :slug
+      field :size do
+        visible do
+          bindings[:object].base_region_id.present?
+        end
+      end
       field :description
       field :region_url
       field :population
@@ -513,7 +532,8 @@ class Region < ApplicationRecord
       field :user
       field :status
       field :name
-      field :slug     
+      field :slug
+      field :size
       field :description
       field :region_url
       field :population
