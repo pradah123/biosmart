@@ -1,8 +1,9 @@
 class ObservationsCreateJob < ApplicationJob
   queue_as :queue_observations_create
 
-  def perform data_source, observations
-    Delayed::Worker.logger.info "\n\n\n\n>>>>>>>>>> processing #{observations.count} observations from #{data_source.name}"
+  def perform data_source, observations, participant_id = nil
+    Delayed::Worker.logger.info "\n\n\n\n"
+    Delayed::Worker.logger.info ">>>>>>>>>>ObservationsCreateJob processing #{observations.count} observations from #{data_source.name}"
     
     nupdates = 0
     nupdates_no_change = 0
@@ -38,7 +39,7 @@ class ObservationsCreateJob < ApplicationJob
 
         obs.attributes = params
         if obs.changed.empty?
-          if obs.update_to_regions_and_contests(data_source_id: data_source.id)
+          if obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
             nupdates += 1
           else
             nupdates_failed +=1

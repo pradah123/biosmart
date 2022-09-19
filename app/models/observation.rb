@@ -59,7 +59,7 @@ class Observation < ApplicationRecord
   end  
 
   ### Method for adding an observation to matching regions, participations and contests
-  def add_to_regions_and_contests(geokit_point, data_source_id=nil)
+  def add_to_regions_and_contests(geokit_point, data_source_id=nil, participant_id=nil)
     Region.all.each do |region|
       region.get_geokit_polygons.each do |polygon|
 
@@ -79,7 +79,8 @@ class Observation < ApplicationRecord
             end  
           end
 
-          region.participations.each do |participation|
+          participations = (participant_id.present? ? region.participations.where(id: participant_id) : region.participations)
+          participations.each do |participation|
             if can_participate_in(participation)
               #
               # this observation is in this contest in time and space
@@ -103,7 +104,7 @@ class Observation < ApplicationRecord
   #  Method of updating observations to regions, participations, and contests,
   #  in the case where we need to be continously fetching data for all regions.
   #
-  def update_to_regions_and_contests(data_source_id: nil)
+  def update_to_regions_and_contests(data_source_id: nil, participant_id: nil)
     geokit_point = Geokit::LatLng.new lat, lng
     data_source_id = data_source_id.present? ? data_source_id : data_source.id
 
@@ -144,7 +145,7 @@ class Observation < ApplicationRecord
     # end
 
     ## Add observation to regions and contests
-    self.add_to_regions_and_contests geokit_point, data_source_id
+    self.add_to_regions_and_contests geokit_point, data_source_id, participant_id
 
   end
 
