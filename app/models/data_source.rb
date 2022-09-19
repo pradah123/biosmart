@@ -7,6 +7,7 @@ require_relative '../../lib/source/gbif.rb'
 require_relative '../../lib/source/naturespot.rb'
 require_relative '../../lib/source/citsci.rb'
 
+
 class DataSource < ApplicationRecord
   has_and_belongs_to_many :participations
   has_many :observations
@@ -121,26 +122,26 @@ class DataSource < ApplicationRecord
   end
 
 
-  def fetch_observations region, starts_at, ends_at, extra_params=nil
+  def fetch_observations region, starts_at, ends_at, extra_params=nil, participant_id=nil
     subregions = Subregion.where(region_id: region.id, data_source_id: id)
     subregions.each do |sr|
       case name
       when 'inaturalist'
-        fetch_inat sr, starts_at, ends_at, extra_params
+        fetch_inat sr, starts_at, ends_at, extra_params, participant_id
       when 'ebird'
         fetch_ebird sr, starts_at, ends_at
       when 'qgame'
-        fetch_qgame sr, starts_at, ends_at, extra_params
+        fetch_qgame sr, starts_at, ends_at, extra_params, participant_id
       when 'observation.org'
-        fetch_observations_dot_org sr, starts_at, ends_at, extra_params
+        fetch_observations_dot_org sr, starts_at, ends_at, extra_params, participant_id
       when 'mushroom_observer'
-        fetch_mushroom_observer sr, starts_at, ends_at
+        fetch_mushroom_observer sr, starts_at, ends_at, participant_id
       when 'gbif'
         fetch_gbif sr, starts_at, ends_at
       when 'naturespot'
-        fetch_naturespot sr, starts_at, ends_at, extra_params
+        fetch_naturespot sr, starts_at, ends_at, extra_params, participant_id
       when 'citsci'
-        fetch_citsci sr, starts_at, ends_at
+        fetch_citsci sr, starts_at, ends_at, participant_id
       else
         self.send "fetch_#{name}", region # PRW: if you have the explicit case statements, we don't need this
       end
@@ -186,7 +187,7 @@ class DataSource < ApplicationRecord
   end
 
 
-  def fetch_citsci subregion, starts_at, ends_at
+  def fetch_citsci subregion, starts_at, ends_at, participant_id
     Delayed::Worker.logger.info "fetch_citsci(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
       params = get_query_parameters subregion
@@ -197,7 +198,7 @@ class DataSource < ApplicationRecord
           observations = citsci.get_observations() || []
           observations.each{ |o|
             if subregion.region.contains? o[:lat], o[:lng]
-              ObservationsCreateJob.perform_later self, [o]
+              ObservationsCreateJob.perform_later self, [o], participant_id
             end
           }
           break if citsci.done()
@@ -212,7 +213,7 @@ class DataSource < ApplicationRecord
   end
 
 
-  def fetch_naturespot subregion, starts_at, ends_at, extra_params
+  def fetch_naturespot subregion, starts_at, ends_at, extra_params, participant_id
     Delayed::Worker.logger.info "fetch_naturespot(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
       params = get_query_parameters subregion, extra_params
@@ -224,7 +225,7 @@ class DataSource < ApplicationRecord
         observations = naturespot.get_observations() || []
         observations.each{ |o|
           if subregion.region.contains? o[:lat], o[:lng]
-            ObservationsCreateJob.perform_later self, [o]
+            ObservationsCreateJob.perform_later self, [o], participant_id
           end
         }
         break if naturespot.done()
@@ -236,7 +237,7 @@ class DataSource < ApplicationRecord
   end
 
 
-  def fetch_mushroom_observer subregion, starts_at, ends_at
+  def fetch_mushroom_observer subregion, starts_at, ends_at, participant_id
     Delayed::Worker.logger.info "fetch_mushroom_observer(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
       params = get_query_parameters subregion
@@ -246,7 +247,7 @@ class DataSource < ApplicationRecord
           observations = mushroom_observer.get_observations() || []
           observations.each{ |o|
             if subregion.contains? o[:lat], o[:lng]
-              ObservationsCreateJob.perform_later self, [o]
+              ObservationsCreateJob.perform_later self, [o], participant_id
             end
           }
           mushroom_observer.increment_page()
@@ -257,7 +258,7 @@ class DataSource < ApplicationRecord
     end
   end
 
-  def fetch_observations_dot_org subregion, starts_at, ends_at, extra_params
+  def fetch_observations_dot_org subregion, starts_at, ends_at, extra_params, participant_id
     # fetch logic here
     Delayed::Worker.logger.info "fetch_observations_dot_org(#{subregion.id}, #{starts_at}, #{ends_at})"
 
@@ -276,7 +277,7 @@ class DataSource < ApplicationRecord
 
           observations.each{ |o|
             if subregion.region.contains? o[:lat], o[:lng]
-              ObservationsCreateJob.perform_later self, [o]
+              ObservationsCreateJob.perform_later self, [o], participant_id
             end
           }
           break if ob_org.done()
@@ -287,7 +288,7 @@ class DataSource < ApplicationRecord
     end
   end 
 
-  def fetch_inat subregion, starts_at, ends_at, extra_params # PRW: we should change this to fetch_inaturalist to be consistent
+  def fetch_inat subregion, starts_at, ends_at, extra_params, participant_id # PRW: we should change this to fetch_inaturalist to be consistent
     # fetch logic here
     Delayed::Worker.logger.info "fetch_inat(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
@@ -297,14 +298,14 @@ class DataSource < ApplicationRecord
 
       inat = ::Source::Inaturalist.new(**params)
       loop do
-        break if inat.done()
         observations = inat.get_observations() || []
 
         observations.each{ |o|
           if subregion.region.contains? o[:lat], o[:lng]
-            ObservationsCreateJob.perform_later self, [o]
+            ObservationsCreateJob.perform_later self, [o], participant_id
           end
         }
+        break if inat.done()
         inat.increment_page()
       end
     rescue => e
@@ -332,7 +333,7 @@ class DataSource < ApplicationRecord
     end
   end
 
-  def fetch_qgame subregion, starts_at, ends_at, extra_params
+  def fetch_qgame subregion, starts_at, ends_at, extra_params, participant_id
     # fetch logic here
     Delayed::Worker.logger.info "fetch_qgame(#{subregion.id}, #{starts_at}, #{ends_at})"
     begin
@@ -347,7 +348,7 @@ class DataSource < ApplicationRecord
 
         observations.each { |o|
           if subregion.region.contains? o[:lat], o[:lng]
-            ObservationsCreateJob.perform_later self, [o]
+            ObservationsCreateJob.perform_later self, [o], participant_id
           end
         }
         qgame.increment_offset()

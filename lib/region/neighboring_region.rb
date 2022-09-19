@@ -1,9 +1,13 @@
 class NeighboringRegion
   # initialize(Region, Int) -> Void
-  def initialize(base_region, size)
+  def initialize(base_region, current_region = nil, size)
     @base_region = base_region
     @size = size
-    @existing_region = @base_region.neighboring_regions.where(size: @size).first
+    if (current_region&.size.present?)
+      @existing_region = current_region # Requires while updating neighboring region
+    else
+      @existing_region = @base_region.neighboring_regions.where(size: @size).first
+    end
   end
 
   # get_region() -> Region
@@ -14,13 +18,14 @@ class NeighboringRegion
     r.name = name()
     r.base_region_id = @base_region.id
     r.raw_polygon_json = get_polygon_geojson()
-        
+
     return r    
   end
 
   # name() -> String
   def name()
-    return "#{@base_region.name} #{@size}X"    
+    name_postfix = @size.to_s.gsub!(/\.?0+$/, "") || @size
+    return "#{@base_region.name} #{name_postfix}X"
   end
 
   # get_polygon_geojson() -> String
