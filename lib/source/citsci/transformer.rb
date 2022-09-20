@@ -18,9 +18,25 @@ module Source
             observation_url = record[:"@id"]
           end
         end
+        unique_id = "citsci-#{hash[:id]}" if unique_id.blank?
+
         hash.merge({
           unique_id: unique_id,
           observation_url: observation_url
+        })
+      end
+
+      def self.populate_images(hash)
+        records = hash[:records]
+        image_url = []
+
+        records.each do |record|
+          if record[:recordType] == 'image'
+            image_url.push(record.dig(:fileObject, :path))
+          end
+        end
+        hash.merge({
+          image_urls: image_url
         })
       end
 
@@ -61,7 +77,7 @@ module Source
         rename_keys observedAt: :observed_at
         populate_unique_id()
         populate_identifications_count()
-
+        populate_images()
 
         accept_keys [
           :unique_id,
@@ -70,7 +86,8 @@ module Source
           :lng,
           :observed_at,
           :identifications_count,
-          :observation_url
+          :observation_url,
+          :image_urls
         ]
       end
     end    

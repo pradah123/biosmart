@@ -10,7 +10,7 @@ module Source
   class CitSci
     extend Dry::Initializer
 
-    OBS_URL = 'https://api.citsci.org/projects/ID/observations?records.recordType=organism&itemsPerPage=300'.freeze
+    OBS_URL = 'https://api.citsci.org/projects/ID/observations?itemsPerPage=300'.freeze
     SPECIES_DETAIL_URL = 'https://api.citsci.org'.freeze
 
     param :total, default: proc { nil }, reader: :private
@@ -96,10 +96,10 @@ module Source
             end
             if transformed_obs[:observation_url].present?
               transformed_obs = populate_species_names(transformed_obs)
-              transformed_obs.delete(:observation_url)
             else
               transformed_obs[:scientific_name] = transformed_obs[:accepted_name] = transformed_obs[:common_name] = ''
             end
+            transformed_obs.delete(:observation_url)
 
             biosmart_obs.append(transformed_obs)
           else
@@ -108,7 +108,7 @@ module Source
         end
       else
         @total = 0
-        Delayed::Worker.logger.info "Source::GBIF.get_observations: #{response}"
+        Delayed::Worker.logger.info "Source::CitSci.get_observations: #{response}"
       end
       Delayed::Worker.logger.info "Source::CitSci.get_observations biosmart_obs count: #{biosmart_obs.length}"
 
