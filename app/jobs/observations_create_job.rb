@@ -4,7 +4,7 @@ class ObservationsCreateJob < ApplicationJob
   def perform data_source, observations, participant_id = nil
     Delayed::Worker.logger.info "\n\n\n\n"
     Delayed::Worker.logger.info ">>>>>>>>>>ObservationsCreateJob processing #{observations.count} observations from #{data_source.name}"
-    
+    Delayed::Worker.logger.info "ObservationsCreateJob >> participant_id: #{participant_id}"
     nupdates = 0
     nupdates_no_change = 0
     nupdates_failed = 0
@@ -23,6 +23,7 @@ class ObservationsCreateJob < ApplicationJob
         
         if obs.save
           ncreates += 1
+          obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
           image_urls.each do |url|
             ObservationImage.create! observation_id: obs.id, url: url
           end
@@ -53,6 +54,7 @@ class ObservationsCreateJob < ApplicationJob
           nupdates += 1  
           nfields_updated += obs.changed.length
           if obs.save
+            obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
 
             current_image_urls = obs.observation_images.pluck :url
             if current_image_urls-image_urls!=[] 

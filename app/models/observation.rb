@@ -20,7 +20,7 @@ class Observation < ApplicationRecord
   has_many :observation_images
 
   # after_save :update_search_text, :update_address, :add_to_regions_and_contests
-  after_save :update_search_text, :update_to_regions_and_contests
+  after_save :update_search_text
 
   validates :unique_id, presence: true
   validates :lat, presence: true
