@@ -95,5 +95,19 @@ module Api::V1
       get_map_observations Contest.find_by_id params[:id]
     end
 
+    def contest_region
+      raise ApiFail.new("No contest id given") if params[:contest_id].blank?
+      raise ApiFail.new("No region id given") if params[:region_id].blank?
+
+      r = Region.find_by_id params[:region_id]
+      c = Contest.find_by_id params[:contest_id]
+      raise ApiFail.new("Region does not exist") unless r.present?
+      raise ApiFail.new("Contest does not exist") unless c.present?
+
+      p = r.participations&.find_by_contest_id c.id if r.present? && c.present?
+
+      raise ApiFail.new("Region is not a participant in this contest") unless p.present?
+      get_map_observations(p, params[:limit])
+    end
   end
 end 
