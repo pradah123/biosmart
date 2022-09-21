@@ -52,13 +52,17 @@ module Api::V1
       render_success j
     end
 
-    def get_map_observations obj
+    def get_map_observations(obj, limit = nil)
       j = {}
+      offset = 0
       if obj.is_a? Region
         observations = Observation.get_observations_for_region(region_id: obj.id, include_gbif: true)
       else
         observations = obj.observations
       end
+      limit = 5000 unless limit.present?
+      observations = observations.recent.offset(offset).limit(limit)
+
       j['observations'] = obj.nil? ? [] : observations.map { |o|
          { id:  o.id,
            lat: o.lat,
@@ -84,7 +88,7 @@ module Api::V1
     end  
 
     def participation
-      get_map_observations Participation.find_by_id params[:id]
+      get_map_observations((Participation.find_by_id params[:id]), params[:limit])
     end  
 
     def contest
