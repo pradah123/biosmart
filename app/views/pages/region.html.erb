@@ -47,16 +47,27 @@
       </div-->
 
       <% if @region.neighboring_regions.count > 0 %>
+      <% locality = @region.get_neighboring_region(region_type: 'locality') %>
+      <% greater_region = @region.get_neighboring_region(region_type: 'greater_region') %>
+
         <div class="row border border-1 rounded-2 p-2 flex-nowrap flex-shrink-1" style="height:40px; padding:0 !important;">
 
           <div style="display: table; background-color:black;width:100%; ">
-              <div style="display: table-cell;width:30%;"></div>
+              <div style="display: table-cell;width:25%;"></div>
               <div style="display: table-cell; font-weight:bold;width:5%;vertical-align:middle;"><Strike style="color:white;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Strike></div> 
-              <div style="display: table-cell; color:white;font-weight:bold; vertical-align:middle;width:10%;">&nbsp;&nbsp;&nbsp;   Locality</div>
+              <div style="display: table-cell; color:white;font-weight:bold; vertical-align:middle;width:15%;">&nbsp;&nbsp;&nbsp;   Locality
+              <% if locality&.size.present? %>
+              &nbsp;(<%= locality.size %>x)
+              <% end %>
+              </div>
               <div style="display: table-cell;width:5%;"></div>
-              <div style="display: table-cell; color:white;font-weight:bold; vertical-align:middle;width:7%;">- - - - - - -</div>
-              <div style="display: table-cell; color:white;font-weight:bold;vertical-align:middle;width:20%;">&nbsp;&nbsp;&nbsp;Greater Region</div>
-              <div style="display: table-cell;width:23%;"></div>
+              <div style="display: table-cell; color:white;font-weight:bold; vertical-align:middle;width:7%;">- - - - - -</div>
+              <div style="display: table-cell; color:white;font-weight:bold;vertical-align:middle;width:30%;">&nbsp;&nbsp;&nbsp;Greater Region
+              <% if greater_region&.size.present? %>
+              &nbsp;(<%= greater_region.size %>x)
+              <% end %>
+              </div>
+              <div style="display: table-cell;width:13%;"></div>
           </div>
         </div>
       <% end %>
@@ -69,11 +80,11 @@
             var _polygon_json = <%= @region.raw_polygon_json.html_safe %>;
           <% end %>
           var _neighboring_regions_json = [];
-          <% if @region.get_neighboring_region(region_type: 'locality').present? %>
-            _neighboring_regions_json.push(<%= @region.get_neighboring_region(region_type: 'locality').raw_polygon_json.html_safe %>);
+          <% if locality.present? %>
+            _neighboring_regions_json.push(<%= locality.raw_polygon_json.html_safe %>);
           <% end %>
-          <% if @region.get_neighboring_region(region_type: 'greater_region').present? %>
-             _neighboring_regions_json.push(<%= @region.get_neighboring_region(region_type: 'greater_region').raw_polygon_json.html_safe %>);
+          <% if greater_region.present? %>
+             _neighboring_regions_json.push(<%= greater_region.raw_polygon_json.html_safe %>);
           <% end %>
           var _observations_filename = "/observations/region/<%= @region.id %>";
           <% if @region.subregions.count<1000 %>
