@@ -601,7 +601,8 @@ function set_up_regions() {
       //p['population'] = $('.region-modal-'+id+' .population_region').val();
       p['logo_image_url'] = $('.region-modal-'+id+' .logo_url_region').val();
       p['header_image_url'] = $('.region-modal-'+id+' .header_url_region').val();
-      
+      p['region_url'] = $('.region-modal-'+id+' .region_url_region').val().trim();
+
       p['logo_image'] = $('img.logo-frame-'+id).attr('src');
       p['logo_image'] = _images['logo']==undefined ? p['logo_image'] : _images['logo'];
       
