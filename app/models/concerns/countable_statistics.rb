@@ -26,6 +26,7 @@ module CountableStatistics
         update_column :people_count, self.get_people_count(include_gbif: true)
         update_column :species_count, self.get_species_count(include_gbif: true)
         update_column :identifications_count, self.get_identifications_count(include_gbif: true)
+        update_column :bioscore, self.get_bio_score(include_gbif: true)
       else 
         update_column :observations_count, self.observations.count
         update_column :identifications_count, self.observations.pluck(:identifications_count).sum
@@ -204,6 +205,89 @@ module CountableStatistics
         total_count = get_people_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
       end
       return total_count != 0 ? sprintf('%.2f', yearly_count * 100 /total_count.to_f) : sprintf('%.2f', 0)
+    end
+  end
+
+  def get_total_vs_neighboring_regions_bio_score
+    total_vs_locality_obs_score            = get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f / 100
+    total_vs_locality_species_score        = get_regions_score(region_type: 'locality', score_type: 'species_score').to_f / 100
+    total_vs_locality_activity_score       = get_regions_score(region_type: 'locality', score_type: 'people_score').to_f / 100
+    total_vs_greater_region_obs_score      = get_regions_score(region_type: 'greater_region', score_type: 'observations_score').to_f / 100
+    total_vs_greater_region_species_score  = get_regions_score(region_type: 'greater_region', score_type: 'species_score').to_f / 100
+    total_vs_greater_region_activity_score = get_regions_score(region_type: 'greater_region', score_type: 'people_score').to_f / 100
+
+    locality_obs_constant     = Constant.find_by_name('locality_observations_constant')&.value || 1
+    locality_species_constant = Constant.find_by_name('locality_species_constant')&.value || 1
+    locality_people_constant  = Constant.find_by_name('locality_people_constant')&.value || 1
+
+    gr_obs_constant     = Constant.find_by_name('greater_region_observations_constant')&.value || 1
+    gr_species_constant = Constant.find_by_name('greater_region_species_constant')&.value || 1
+    gr_people_constant  = Constant.find_by_name('greater_region_people_constant')&.value || 1
+
+    total_vs_neighboring_regions_score = (total_vs_locality_obs_score * locality_obs_constant) + (total_vs_locality_species_score * locality_species_constant) +
+                                         (total_vs_locality_activity_score * locality_people_constant) + (total_vs_greater_region_obs_score * gr_obs_constant) +
+                                         (total_vs_greater_region_species_score * gr_species_constant) + (total_vs_greater_region_activity_score * gr_people_constant)
+    return total_vs_neighboring_regions_score
+  end
+
+
+  def get_yearly_bio_score
+    yearly_vs_total_obs_score         = get_yearly_score(score_type: 'observations_score', num_years: 1).to_f / 100
+    yearly_vs_total_species_score     = get_yearly_score(score_type: 'species_score', num_years: 1).to_f / 100
+    yearly_vs_total_activity_score    = get_yearly_score(score_type: 'people_score', num_years: 1).to_f / 100
+    bi_yearly_vs_total_obs_score      = get_yearly_score(score_type: 'observations_score', num_years: 2).to_f / 100
+    bi_yearly_vs_total_species_score  = get_yearly_score(score_type: 'species_score', num_years: 2).to_f / 100
+    bi_yearly_vs_total_activity_score = get_yearly_score(score_type: 'people_score', num_years: 2).to_f / 100
+
+    curr_year_obs_constant     = Constant.find_by_name('current_year_observations_constant')&.value || 1
+    curr_year_species_constant = Constant.find_by_name('current_year_species_constant')&.value || 1
+    curr_year_people_constant  = Constant.find_by_name('current_year_people_constant')&.value || 1
+
+    obs_trend      = (yearly_vs_total_obs_score - (bi_yearly_vs_total_obs_score/2))/ (bi_yearly_vs_total_obs_score/2)
+    species_trend  = (yearly_vs_total_species_score - (bi_yearly_vs_total_species_score/2))/ (bi_yearly_vs_total_species_score/2)
+    activity_trend = (yearly_vs_total_activity_score - (bi_yearly_vs_total_activity_score/2))/ (bi_yearly_vs_total_activity_score/2)
+
+    obs_trend_constant      = Constant.find_by_name('observations_trend_constant')&.value || 1
+    species_trend_constant  = Constant.find_by_name('species_trend_constant')&.value || 1
+    activity_trend_constant = Constant.find_by_name('activity_trend_constant')&.value || 1
+
+    yearly_bio_score = (yearly_vs_total_obs_score * curr_year_obs_constant)          + (yearly_vs_total_species_score * curr_year_species_constant) +
+                       (yearly_vs_total_activity_score * curr_year_people_constant)  + (bi_yearly_vs_total_obs_score * obs_trend_constant) +
+                       (bi_yearly_vs_total_species_score * species_trend_constant)   + (bi_yearly_vs_total_activity_score * activity_trend_constant) +
+                       (obs_trend * obs_trend_constant)  + (species_trend * species_trend_constant) +
+                       (activity_trend * activity_trend_constant)
+
+    return yearly_bio_score
+  end
+
+
+  # Calculate bioscore for region using
+  # a. region's total vs neighnoring regions observations, species and activity scores
+  # b. region's total vs yearly and bi yearly observations, species and activity scores and trends
+  # c. region's observations per species and observations per person counts
+  def get_bio_score(include_gbif: false)
+    obs_count = get_observations_count(include_gbif: include_gbif)
+    species_count = get_species_count(include_gbif: include_gbif)
+    people_count = get_people_count(include_gbif: include_gbif)
+
+    if obs_count.positive? && species_count.positive? && people_count.positive?
+      observations_per_species = obs_count / species_count
+      observations_per_person  = obs_count / people_count
+      avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
+
+      active_proportion_constant = Constant.find_by_name('active_proportion_constant')&.value || 1
+      obs_per_species_constant = Constant.find_by_name('observations_per_species_constant')&.value || 1
+      obs_per_person_constant = Constant.find_by_name('observations_per_person_constant')&.value || 1
+      avg_obs_score_constant = Constant.find_by_name('average_observations_score_constant')&.value || 1
+      activity_proportion_score = (population.present? ? ((people_count/self.population) * active_proportion_constant ) : 0 )
+
+      bioscore = get_total_vs_neighboring_regions_bio_score()          + get_yearly_bio_score() +
+                 (observations_per_species * obs_per_species_constant) + (observations_per_person * obs_per_person_constant) +
+                 (avg_obs_score * avg_obs_score_constant) + activity_proportion_score
+
+      return sprintf('%.2f', bioscore).to_f
+    else
+      return 0
     end
   end
 end
