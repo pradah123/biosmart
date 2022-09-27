@@ -243,9 +243,9 @@ module CountableStatistics
     curr_year_species_constant = Constant.find_by_name('current_year_species_constant')&.value || 1
     curr_year_people_constant  = Constant.find_by_name('current_year_people_constant')&.value || 1
 
-    obs_trend      = (yearly_vs_total_obs_score - (bi_yearly_vs_total_obs_score/2))/ (bi_yearly_vs_total_obs_score/2)
-    species_trend  = (yearly_vs_total_species_score - (bi_yearly_vs_total_species_score/2))/ (bi_yearly_vs_total_species_score/2)
-    activity_trend = (yearly_vs_total_activity_score - (bi_yearly_vs_total_activity_score/2))/ (bi_yearly_vs_total_activity_score/2)
+    obs_trend      = (bi_yearly_vs_total_obs_score.positive? ? (yearly_vs_total_obs_score - (bi_yearly_vs_total_obs_score/2))/ (bi_yearly_vs_total_obs_score/2) : 0)
+    species_trend  = (bi_yearly_vs_total_species_score.positive? ? (yearly_vs_total_species_score - (bi_yearly_vs_total_species_score/2))/ (bi_yearly_vs_total_species_score/2) : 0)
+    activity_trend = (bi_yearly_vs_total_activity_score.positive? ? (yearly_vs_total_activity_score - (bi_yearly_vs_total_activity_score/2))/ (bi_yearly_vs_total_activity_score/2) : 0)
 
     obs_trend_constant      = Constant.find_by_name('observations_trend_constant')&.value || 1
     species_trend_constant  = Constant.find_by_name('species_trend_constant')&.value || 1
