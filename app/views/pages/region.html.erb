@@ -14,9 +14,14 @@
   </div>
 <% end %>  
 
-<div class="row justify-content-center mb-5">
-  <div class="col-12 col-lg-10 d-flex justify-content-center proxima section-header h2 fw-bold text-dark text-center mt-5">
+<div class="row justify-content-left mb-5 flex-nowrap flex-shrink-1">
+  <div class="col-1 flex-nowrap flex-shrink-1"></div>
+  <div class="col-8 flex-nowrap flex-shrink-1 justify-content-center proxima section-header h2 fw-bold text-dark text-left mt-5">
     <%= @region.name %>
+  </div>
+  <div class="col-2 p-1 mt-5 ml-1 justify-content-right flex-nowrap flex-shrink-1 border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic">
+      <%= @region.bioscore %>
+    <br/>BioScore
   </div>
 </div>
 
