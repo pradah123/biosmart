@@ -26,7 +26,7 @@ namespace :taxonomy do
       TaxonomyFileProcess.process_file(file_name: args[:file_name],
                                        read_from_last_processed: args[:read_from_last_processed])
     else
-      Rails.logger.info ">>> Invalid file #{file_name}"
+      Rails.logger.info ">>> taxonomy:store::Invalid file #{args[:file_name]}"
     end
   end
 end
