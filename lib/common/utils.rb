@@ -52,4 +52,12 @@ module Utils
     return seconds
   end
 
+  def self.valid_file?(file_name:)
+    return false unless File.file?(file_name)
+
+    line_count = `wc -l #{file_name}`.to_i
+    return false unless line_count > 1 ## We need to ignore header line in count
+    return true
+  end
+
 end
