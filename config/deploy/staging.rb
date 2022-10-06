@@ -36,5 +36,6 @@ set :default_env, { rails_env: "test" }
 set :delayed_job_pools, {
   'observations_test_queue_observations_fetch' => 1,
   'observations_test_queue_observations_create,observations_test_queue_fetch_observation_org_username' => 1,
-  'observations_test_queue_gbif_observations_fetch' => 1
+  'observations_test_queue_gbif_observations_fetch' => 1,
+  'observations_test_queue_taxonomy_update' => 1
 }

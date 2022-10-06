@@ -29,4 +29,9 @@ namespace :taxonomy do
       Rails.logger.info ">>> taxonomy:store::Invalid file #{args[:file_name]}"
     end
   end
+
+  desc 'Update Taxonomy to Observations'
+  task :update, [:update_all] => [:environment] do |task, args|
+    Observation.update_observations_taxonomy(update_all: args[:update_all])
+  end
 end

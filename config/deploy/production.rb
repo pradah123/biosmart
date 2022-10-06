@@ -36,5 +36,6 @@ set :default_env, { rails_env: "production" }
 set :delayed_job_pools, {
   'observations_production_queue_observations_fetch' => 1,
   'observations_production_queue_gbif_observations_fetch' => 1,
+  'observations_production_queue_taxonomy_update' => 1,
   'observations_production_queue_observations_create,observations_production_queue_fetch_observation_org_username' => 3
 }
