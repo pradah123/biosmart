@@ -17,6 +17,7 @@ class Observation < ApplicationRecord
   has_and_belongs_to_many :participations
   has_and_belongs_to_many :contests
   belongs_to :data_source
+  belongs_to :taxonomy
   has_many :observation_images
 
   # after_save :update_search_text, :update_address, :add_to_regions_and_contests
@@ -24,9 +25,9 @@ class Observation < ApplicationRecord
 
   validates :unique_id, presence: true
   validates :lat, presence: true
-  validates :lng, presence: true    
+  validates :lng, presence: true
   validates :observed_at, presence: true
-    
+
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
   @@nobservations_per_page = 18
 
@@ -54,9 +55,9 @@ class Observation < ApplicationRecord
       address = ""#response_json['results']
       update_column :address, address
     rescue => e
-      Rails.logger.error "google gecode api failed for lat,lng = #{lat},#{lng}" 
+      Rails.logger.error "google gecode api failed for lat,lng = #{lat},#{lng}"
     end
-  end  
+  end
 
   ### Method for adding an observation to matching regions, participations and contests
   def add_to_regions_and_contests(geokit_point, data_source_id=nil, participant_id=nil)
@@ -76,7 +77,7 @@ class Observation < ApplicationRecord
               ActiveRecord::Base.connection.execute insert_sql
             rescue => error
               Delayed::Worker.logger.info("ERROR for region_id: #{region.id}, observation_id: #{id}, data_source_id: #{data_source_id} #{error.message}")
-            end  
+            end
           end
 
           participations = (participant_id.present? ? region.participations.where(id: participant_id) : region.participations)
@@ -108,7 +109,7 @@ class Observation < ApplicationRecord
     geokit_point = Geokit::LatLng.new lat, lng
     data_source_id = data_source_id.present? ? data_source_id : data_source.id
 
-    # 
+    #
     # remove any existing relations with regions, participations
     # and contests only if observation exists in the system
     #
@@ -151,19 +152,19 @@ class Observation < ApplicationRecord
 
   def can_participate_in participation
     # from one of the requested data sources
-    return false unless participation.data_sources.include?(data_source) 
+    return false unless participation.data_sources.include?(data_source)
 
     # Check if competition is on going or not
     return false unless participation.is_active?
 
     # observed in the period of the contest
-    return false unless observed_at>=participation.starts_at && observed_at<participation.ends_at 
-          
-    # submitted in the allowed period  
-    return false unless created_at>=participation.starts_at && created_at<participation.last_submission_accepted_at 
+    return false unless observed_at>=participation.starts_at && observed_at<participation.ends_at
+
+    # submitted in the allowed period
+    return false unless created_at>=participation.starts_at && created_at<participation.last_submission_accepted_at
 
     true
-  end  
+  end
 
   ## This will return observations associated with observations_regions for given region_id, data source(gbif or no gbif),  and date range
   def self.get_observations_for_region(region_id: , start_dt: nil, end_dt: nil, include_gbif: false)
@@ -227,7 +228,7 @@ class Observation < ApplicationRecord
 
     if obj.nil?
       observations = q.blank? ? Observation.all : Observation.all.search(q).recent
-    else 
+    else
       if (start_dt.present? && end_dt.present?)
         obs = get_observations_for_region(region_id:    obj.first.id,
                                           start_dt:     start_dt,
@@ -264,8 +265,8 @@ class Observation < ApplicationRecord
     observations.each do |params|
       obs = Observation.find_by_unique_id params[:unique_id]
       image_urls = (params.delete :image_urls) || []
-      
-      if obs.nil? 
+
+      if obs.nil?
         obs = Observation.new params
         if obs.save
           ncreates += 1
@@ -273,7 +274,7 @@ class Observation < ApplicationRecord
             ObservationImage.create! observation_id: obs.id, url: url
           end
         else
-          ncreates_failed += 1          
+          ncreates_failed += 1
           Rails.logger.info "\n\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
           Rails.logger.info "Create failed on observation"
           Rails.logger.info obs.inspect
@@ -286,22 +287,22 @@ class Observation < ApplicationRecord
         if obs.changed.empty?
           nupdates_no_change += 1
         else
-          nupdates += 1  
+          nupdates += 1
           nfields_updated += obs.changed.length
           if obs.save
 
             current_image_urls = obs.observation_images.pluck :url
-            if current_image_urls-image_urls!=[] 
+            if current_image_urls-image_urls!=[]
               # if the images given are not the same as the ones present, delete the old
               # ones and remake them
               obs.observation_images.delete_all
               image_urls.each do |url|
                 ObservationImage.create! observation_id: obs.id, url: url
               end
-            end  
+            end
 
-          else  
-            nupdates_failed +=1 
+          else
+            nupdates_failed +=1
             Rails.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
             Rails.logger.info "Update failed on observation #{obs.id}"
             Rails.logger.info obs.inspect
@@ -331,13 +332,13 @@ class Observation < ApplicationRecord
 
 =begin
     if top_page_cache.length==0
-      @@top_page_cache = 
+      @@top_page_cache =
     end
     if can_add_to_cache(obs)==false
       @@top_page_cache.prepend obs
       @@top_page_cache = @@top_page_cache.shift unless @@top_page_cache.count>@@nobservations_per_page
     end
-=end    
+=end
   end
 
   def self.get_observations obj=nil
@@ -369,7 +370,80 @@ class Observation < ApplicationRecord
   end
 
 
+  # This function checks if taxonomy exists for given scientific_name or not
+  # a. If doesn't exist then
+  #    a.extracts from gbif using api https://api.gbif.org/v1/species?name=<scientific_name>
+  #    b. If doesn't find any record then tries to extract using api https://api.gbif.org/v1/species/match?verbose=true&strict=false&name=<scientific_name> if doesn't find any record by first url.
+  #    c. Stores the taxonomy details
+  # b. If the taxonomy has synonym key then checks whether synonym taxonomy already exists or not.
+  #    If doesn't exist then extracts synonym taxonomy using gbif api https://api.gbif.org/v1/species/<synonym key>
+  # c. Update all observations taxonomy_id with either synonym taxonomy's id if exits or taxonomy's id
+  def self.update_taxonomy(scientific_name:)
+    return unless scientific_name.present?
 
+    # Check if taxonomy already exists for given scientific_name
+    # If doesn't exist then fetch the taxonomy from gbif and store it in taxonomies
+    taxonomy = Taxonomy.where(scientific_name: scientific_name).or(Taxonomy.where(canonical_name: scientific_name)).first
+    if !taxonomy.present? && scientific_name != 'TBD'
+      record = Taxonomy.get_taxonomy_from_gbif(scientific_name: scientific_name)
+      if record.present?
+        transformed_record = Taxonomy.transform_record(record: record)
+        if transformed_record.present?
+          taxonomy = Taxonomy.find_by_taxon_id(transformed_record['taxonID'])
+          taxonomy = Taxonomy.store_taxonomy(params: transformed_record) unless taxonomy.present?
+          Delayed::Worker.logger.info "Inserted taxonomy for scientific_name #{scientific_name} with id #{taxonomy&.id} and taxon_id #{taxonomy&.taxon_id}" if taxonomy.present?
+        end
+      end
+    end
+    # If taxonomy has synonym then check if synonym's taxonomy already exists
+    # If doesn't exist then fetch the taxonomy from gbif and store it in taxonomies
+    if taxonomy&.accepted_name_usage_id.present?
+      synonym_taxonomy = Taxonomy.find_by_taxon_id(taxonomy.accepted_name_usage_id)
+      unless synonym_taxonomy.present?
+        synonym_record = Taxonomy.get_synonym_taxonomy_from_gbif(accepted_name_usage_id: taxonomy.accepted_name_usage_id)
+        if synonym_record.present?
+          transformed_synonym_record = Taxonomy.transform_record(record: synonym_record)
+          if transformed_synonym_record.present?
+            synonym_taxonomy = Taxonomy.find_by_taxon_id(transformed_synonym_record['taxonID'])
+            synonym_taxonomy = Taxonomy.store_taxonomy(params: transformed_synonym_record) unless synonym_taxonomy.present?
+            Delayed::Worker.logger.info "Inserted synonym taxonomy for scientific_name #{scientific_name} with id #{synonym_taxonomy&.id} and taxon_id #{synonym_taxonomy&.taxon_id}" if synonym_taxonomy.present?
+          end
+        end
+      end
+    end
+    # Update observations taxonomy_id with stored synonym taxonomy's id or taxonomy's id
+    taxonomy_id = synonym_taxonomy.present? ? synonym_taxonomy.id : taxonomy&.id
+    taxonomy_updated = Observation.where(taxonomy_id: nil).where(scientific_name: scientific_name).update_all(taxonomy_id: taxonomy_id) if taxonomy_id.present?
+    Delayed::Worker.logger.info "Updated taxonomy for observations with taxonomy id: #{taxonomy_id}, #{taxonomy&.id}" if taxonomy_updated.present?
+  end
+
+
+  # Update taxonomies to observations
+  # This will be used mainly for one shot update at the start for updating taxonomies for existing observations
+  def self.update_observations_taxonomy(update_all:)
+    # If update_all has been passed then update the taxonomy for all the observatiobs using distinct scientific names
+    # else only update those observations which don't have taxonomy linked with them
+    if update_all.present?
+      scientific_names = Observation.group(:scientific_name).order("count(id) desc").pluck(:scientific_name)
+      scientific_names.each do |scientific_name|
+        TaxonomyUpdateJob.perform_later(scientific_name: scientific_name)
+      end
+    else
+      offset = 0
+      limit = 100
+      total_count = Observation.where(taxonomy_id: nil).where.not(scientific_name: nil).count
+      loop do
+        observations = nil
+        observations = Observation.where(taxonomy_id: nil).where.not(scientific_name: nil).offset(offset).limit(limit)
+        observations.each do |obs|
+          TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
+        end
+        offset = limit if offset == 0
+        break if offset > total_count
+        offset += 100
+      end
+    end
+  end
 
 
 
@@ -383,9 +457,9 @@ class Observation < ApplicationRecord
       field :observed_at
       field :lat
       field :lng
-      field :created_at      
+      field :created_at
     end
-    edit do 
+    edit do
       field :data_source
       field :creator_name
       field :unique_id
@@ -408,6 +482,6 @@ class Observation < ApplicationRecord
       field :lng
       field :created_at
     end
-  end 
+  end
 
 end

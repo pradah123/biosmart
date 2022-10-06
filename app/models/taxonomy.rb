@@ -17,14 +17,15 @@ class Taxonomy < ApplicationRecord
         obj.taxonomic_status = params['taxonomicStatus'] || ''
         obj.taxon_rank = params['taxonRank'] || ''
         obj.generic_name = params['genericName'] || ''
-        obj.source = params['source'] || 'manual'
+        obj.source = params['source'] || 'gbif'
         return obj
     end
 
     # Store taxonomy record using given params
     def self.store_taxonomy(params:)
+      return nil unless params['taxonID'].present?
       taxon_id = params['taxonID']
-      taxon_id = taxon_id.match(/(\d+)/).captures[0] 
+      taxon_id = taxon_id.to_s.match(/(\d+)/).captures[0] if taxon_id.present? && taxon_id.to_s =~ /\d+/
       taxonomy = Taxonomy.find_by_taxon_id(taxon_id)
       taxonomy = Taxonomy.new() unless taxonomy.present?
       record   = taxonomy.build_record(params: params)
@@ -60,8 +61,57 @@ class Taxonomy < ApplicationRecord
             Rails.logger.info ">>>>> Taxonomy::update_scientific_name/#{taxonomic_status} :: Updated accepted_name #{accepted_name} for taxon_id-#{taxon_id}, taxon_updated:#{taxon_updated}"
         end   
     end
+
+    # When fetching taxonomy from multiple gbif apis, there are some discrepencies which are resolved in transform_record
+    def self.transform_record(record:)
+      record['taxonID'] = record['key'] if record['key'].present?
+      record['taxonID'] = record['usageKey'] if record['usageKey'].present?
+
+      if record['taxonID'].present? && record['taxonID'].to_s =~ /\d+/
+        record['taxonID'] = record['taxonID'].to_s.match(/(\d+)/).captures[0]
+      else
+        return nil
+      end
+
+      record['taxonomicStatus'] = record['status'] unless record['taxonomicStatus'].present?
+      record['acceptedNameUsageID'] = record['acceptedKey'] || record['acceptedUsageKey'] || ''
+      record['taxonRank'] = record['rank']
+
+      return record
+    end
                   
-    
+    # This function extracts taxonomy details from gbif using it's related apis
+    def self.get_taxonomy_from_gbif(scientific_name:)
+      parsed_url = Addressable::URI.parse("https://api.gbif.org/v1/species?name=#{scientific_name}").display_uri.to_s
+      response = HTTParty.get(parsed_url)
+      Delayed::Worker.logger.info "get_taxonomy_from_gbif::Source::api_url: #{response.request.last_uri.to_s}"
+      record = nil
+      if response.success? && !response.body.nil?
+        result = JSON.parse(response.body)
+        record = result['results'][0] || ''
+        unless record.present?
+          parsed_url = Addressable::URI.parse("https://api.gbif.org/v1/species/match?verbose=true&strict=false&name=#{scientific_name}").display_uri.to_s
+          response = HTTParty.get(parsed_url)
+          Delayed::Worker.logger.info "get_taxonomy_from_gbif::Source::api_url: #{response.request.last_uri.to_s}"
+          if response.success? && !response.body.nil?
+            record = JSON.parse(response.body)
+          end
+        end
+      end
+      return record
+    end
+
+    # This function extracts synonym taxonomy details from gbif using it's related apis
+    def self.get_synonym_taxonomy_from_gbif(accepted_name_usage_id:)
+      response = HTTParty.get("https://api.gbif.org/v1/species/#{accepted_name_usage_id}")
+      Delayed::Worker.logger.info "get_synonym_taxonomy_from_gbif::Source::api_url: #{response.request.last_uri.to_s}"
+      record = nil
+      if response.success? && !response.body.nil?
+        record = JSON.parse(response.body)
+      end
+      return record
+    end
+
 
     rails_admin do
         list do
