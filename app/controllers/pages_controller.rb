@@ -1,7 +1,5 @@
 class PagesController < ApplicationController
 
- 
-
   def top
   end
 
@@ -37,9 +35,6 @@ class PagesController < ApplicationController
     @contest = Contest.find_by_slug params[:slug]
     render :top if @contest.nil?
   end
-
-
-
 
   def regions
     if @user.nil?
@@ -81,7 +76,7 @@ class PagesController < ApplicationController
 
   def get_more
     result = Observation.get_search_results params[:region_id], params[:contest_id], cookies[:q],
-                                            params[:nstart].to_i, params[:nend].to_i
+                                            params[:nstart].to_i, params[:nend].to_i, cookies[:category]
     render partial: 'pages/observation_block', locals: { 
       observations: result[:observations],
       nobservations: result[:nobservations],
