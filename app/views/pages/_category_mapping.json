@@ -1,0 +1,97 @@
+[
+  {
+    "name":"All Categories",
+    "ranking":"All Categories",
+    "value":"All Categories"
+  },
+  {
+    "name":"Birds",
+    "ranking":"class_name",
+    "value":"aves"
+  },
+  {
+    "name":"Arachnids",
+    "ranking":"class_name",
+    "value":"arachnida"
+  },
+  {
+    "name":"Other Arthropods",
+    "ranking":"phylum",
+    "value":"arthropoda"
+  },
+  {
+    "name":"Other Insects",
+    "ranking":"class_name",
+    "value":"insecta"
+  },
+  {
+    "name":"Other Invertebrates",
+    "ranking":"kingdom",
+    "value":"animalia"
+  },
+  {
+    "name":"Crustaceans",
+    "ranking":"class_name",
+    "value":"malacostraca"
+  },
+  {
+    "name":"Mammals",
+    "ranking":"class_name",
+    "value":"mammalia"
+  },
+  {
+    "name":"Amphibians",
+    "ranking":"class_name",
+    "value":"amphibia"
+  },
+  {
+    "name":"Reptiles",
+    "ranking":"class_name",
+    "value":"reptilia"
+  },
+  {
+    "name":"Insects - Butterflies and Moths",
+    "ranking":"class_name",
+    "value":"insecta"
+  },
+  {
+    "name":"Fungi and Friends",
+    "ranking":"kingdom",
+    "value":"fungi"
+  },
+  {
+    "name":"Plants that do not flower",
+    "ranking":"kingdom",
+    "value":"plantae"
+  },
+  {
+    "name":"Plants that flower",
+    "ranking":"kingdom",
+    "value":"plantae"
+  },
+  {
+    "name":"Fish",
+    "ranking":"class_name",
+    "value":"actinopterygii"
+  },
+  {
+    "name":"Insects - Beetles",
+    "ranking":"class_name",
+    "value":"insecta"
+  },
+  {
+    "name":"Insects - Ants, Bees and Wasps",
+    "ranking":"class_name",
+    "value":"insecta"
+  },
+  {
+    "name":"Insects - Flies",
+    "ranking":"class_name",
+    "value":"insecta"
+  },
+  {
+    "name":"Other Life",
+    "ranking":"kingdom",
+    "value":"animalia"
+  }
+]

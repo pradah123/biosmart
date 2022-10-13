@@ -1,3 +1,4 @@
+require_relative '../../lib/common/utils.rb'
 class Observation < ApplicationRecord
   scope :recent, -> { order observed_at: :desc }
   scope :has_images, -> { where 'observation_images_count > ?', 0 }
@@ -200,7 +201,58 @@ class Observation < ApplicationRecord
     return insert_sql
   end
 
-  def self.get_search_results region_id, contest_id, q, nstart, nend
+
+  # This will return observations fetched as per given filters
+  def self.filter_observations(category:, q:, obj:, start_dt: , end_dt:)
+    observations = nil
+    if category.present?
+      (rank_name, rank_value) = Utils.get_category_rank_name_and_value(category_name: category)
+    end
+    # For home page
+    if obj.nil?
+      if category.present? && q.present?
+        observations = Observation.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(q)
+      elsif category.present?
+        observations = Observation.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+      elsif q.present?
+        observations = Observation.all.search(q)
+      else
+        observations = Observation.all
+      end
+    else
+      # For region page
+      if (start_dt.present? && end_dt.present?)
+        observations = get_observations_for_region(region_id:    obj.first.id,
+                                          start_dt:     start_dt,
+                                          end_dt:       end_dt,
+                                          include_gbif: true)
+        if observations.present?
+          if category.present? && q.present?
+            observations = observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(q)
+          elsif category.present?
+            observations = observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+          elsif q.present?
+            observations = observations.search(q)
+          end
+        end
+      else
+        # For contest or participation page
+        if category.present? && q.present?
+          observations = obj.first.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(q)
+        elsif category.present?
+          observations = obj.first.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+        elsif q.present?
+          observations = obj.first.observations.search(q)
+        else
+          observations = obj.first.observations
+        end
+      end
+    end
+
+    return observations
+  end
+
+  def self.get_search_results region_id, contest_id, q, nstart, nend, category
     #
     # returns observations in a region and/or contest which match
     # a keyword search for q and with limit as per given nstart to nend params
@@ -225,22 +277,10 @@ class Observation < ApplicationRecord
     end
 
     q = q.blank? ? '' : q.strip.downcase
-
-    if obj.nil?
-      observations = q.blank? ? Observation.all : Observation.all.search(q).recent
-    else
-      if (start_dt.present? && end_dt.present?)
-        obs = get_observations_for_region(region_id:    obj.first.id,
-                                          start_dt:     start_dt,
-                                          end_dt:       end_dt,
-                                          include_gbif: true)
-        observations = q.blank? ? obs : obs.search(q)
-      else
-        observations = q.blank? ? obj.first.observations : obj.first.observations.search(q)
-      end
-    end
+    category = '' if category == 'All Categories'
+    observations = filter_observations(category: category, q: q, obj: obj, start_dt: start_dt, end_dt: end_dt)
     nobservations_all = observations.count
-    nobservations_with_images = observations.has_images.has_scientific_name.recent.count
+    nobservations_with_images = observations.has_images.has_scientific_name.count
     nobservations_excluded = nobservations_all - nobservations_with_images
 
     observations = observations.has_images.has_scientific_name.recent.offset(offset).limit(limit)

@@ -1,3 +1,5 @@
+require "json"
+
 class ApplicationController < ActionController::Base
   before_action :set_meta_tags, :get_user
 
@@ -12,6 +14,8 @@ class ApplicationController < ActionController::Base
     @active_tab = nil
     @banner_messages = BannerMessage.all.where online: true
     @nobservations = 18
+    file = File.open "#{Rails.root}/app/views/pages/_category_mapping.json"
+    @category_mapping = JSON.load file
   end
 
   def get_user

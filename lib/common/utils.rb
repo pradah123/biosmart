@@ -60,4 +60,18 @@ module Utils
     return true
   end
 
+
+  # Fetch matching category ranking e.g. kingdom, class, phylum and it's value e.g. animalia, aves etc.
+  # for given user friendly category name e.g. from app/views/pages/_category_mapping.json
+  def self.get_category_rank_name_and_value(category_name:)
+    file = File.open "#{Rails.root}/app/views/pages/_category_mapping.json"
+    category_mapping = JSON.load file
+
+    category_mapping.each do |category|
+      if category['name'] == category_name
+        return category['ranking'], category['value']
+      end
+    end
+  end
+
 end
