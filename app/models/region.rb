@@ -497,6 +497,27 @@ class Region < ApplicationRecord
     return nr
   end
 
+  def get_region_scores
+    region_scores = Hash.new([])
+
+    region_scores[:total_vs_greater_region_observations_score] = get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f
+    region_scores[:total_vs_locality_observations_score]       = get_regions_score(region_type: 'greater_region', score_type: 'observations_score').to_f
+    region_scores[:this_year_vs_total_observations_score]      = get_yearly_score(score_type: 'observations_score', num_years: 1).to_f
+    region_scores[:last_2years_vs_total_observations_score]    = get_yearly_score(score_type: 'observations_score', num_years: 2).to_f
+
+    region_scores[:total_vs_greater_region_species_score] = get_regions_score(region_type: 'locality', score_type: 'species_score').to_f
+    region_scores[:total_vs_locality_species_score]       = get_regions_score(region_type: 'greater_region', score_type: 'species_score').to_f
+    region_scores[:this_year_vs_total_species_score]      = get_yearly_score(score_type: 'species_score', num_years: 1).to_f
+    region_scores[:last_2years_vs_total_species_score]    = get_yearly_score(score_type: 'species_score', num_years: 2).to_f
+
+    region_scores[:total_vs_greater_region_activity_score] = get_regions_score(region_type: 'locality', score_type: 'people_score').to_f
+    region_scores[:total_vs_locality_activity_score]       = get_regions_score(region_type: 'greater_region', score_type: 'people_score').to_f
+    region_scores[:this_year_vs_total_activity_score]      = get_yearly_score(score_type: 'people_score', num_years: 1).to_f
+    region_scores[:last_2years_vs_total_activity_score]    = get_yearly_score(score_type: 'people_score', num_years: 2).to_f
+
+    return region_scores
+  end
+
   rails_admin do
     list do
       field :id
