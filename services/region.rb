@@ -16,14 +16,14 @@ module Service
         extend AppSchema::Pagination
 
         optional(:contest_id).filled(:integer, gt?: 0)
-        optional(:sort_by).filled(:string, included_in?: [:id, :bioscore])
-        optional(:sort_order).filled(:string, included_in?: [:asc, :desc])
+        optional(:sort_by).filled(:string, included_in?: ['id', 'bioscore'])
+        optional(:sort_order).filled(:string, included_in?: ['asc', 'desc'])
       end
       
       class Params < AppStruct::Pagination
-        attribute? :contest_id, Types::Coercible::Integer
-        attribute? :sort_by, Types::Coercible::String.default(:id)
-        attribute? :sort_order, Types::Coercible::String.default(:asc)
+        attribute? :contest_id, Types::Params::Integer
+        attribute? :sort_by, Types::Params::String.default('id')
+        attribute? :sort_order, Types::Params::String.default('asc')
       end
 
       def execute(params)

@@ -1,5 +1,19 @@
+require './services/region'
+
 module Api::V1
   class RegionController < ApiController
+
+    def search
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Region::Fetch.call(search_params) do |result|
+        result.success do |regions|
+          @regions = regions
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
 
     def polygons_old
       data = {}
