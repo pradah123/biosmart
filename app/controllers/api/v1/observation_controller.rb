@@ -1,5 +1,19 @@
+require './services/observation'
+
 module Api::V1
   class ObservationController < ApiController
+
+    def search
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Observation::Fetch.call(search_params) do |result|
+        result.success do |observations|
+          @observations = observations
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
 
     def bulk_create
       fail_message = nil
