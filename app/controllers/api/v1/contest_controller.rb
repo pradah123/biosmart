@@ -1,3 +1,5 @@
+require './services/region'
+
 module Api::V1
   class ContestController < ApiController
 
@@ -53,6 +55,18 @@ module Api::V1
       end
 
       render_success participations
+    end
+
+    def regions
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Region::Fetch.call(search_params) do |result|
+        result.success do |regions|
+          @regions = regions
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
     end
   end
 end 
