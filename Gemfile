@@ -38,11 +38,16 @@ gem 'geokit'
 gem 'rack-attack'
 gem 'rack-cors'
 gem 'httparty'
+
 gem 'dry-transformer'
 gem 'dry-struct'
 gem 'dry-initializer'
 gem 'dry-types'
 gem 'dry-schema'
+gem 'dry-monads'
+gem 'dry-validation'
+gem 'dry-matcher'
+
 gem 'dotenv-rails'
 gem 'timezone_finder'
 

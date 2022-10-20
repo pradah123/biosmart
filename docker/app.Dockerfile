@@ -24,4 +24,5 @@ RUN chown -R app:app $INSTALL_PATH/tmp/sockets
 
 EXPOSE 8080
 
-CMD ["puma", "config.ru", "-C", "config/puma.rb"]
+# CMD ["puma", "config.ru", "-C", "config/puma.rb"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
