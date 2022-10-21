@@ -28,7 +28,7 @@ Rails.application.routes.draw do
       put '/contest', to: 'contest#update'
       delete '/contest', to: 'contest#destroy'      
       get 'contest/data/', to: 'contest#data'
-      get '/contest/:contest_id/regions', to: 'region#search'
+      get '/contest/:contest_id/regions', to: 'participation#search'
       get '/contest/:contest_id/regions/:region_id/observations', to: 'observation#search'
 
       post '/participation', to: 'participation#create'
