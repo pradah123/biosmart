@@ -40,6 +40,7 @@ Rails.application.routes.draw do
       put '/region/:id', to: 'region#update'
       patch '/region/:id', to: 'region#update'      
       delete '/region/:id', to: 'region#destroy'
+      get '/regions', to: 'region#search'
 
       get '/region/polygons', to: 'region#polygons'
       get '/region/data/:region_id/:contest_id', to: 'region#data'

@@ -24,6 +24,12 @@ module Service
         attribute? :contest_id, Types::Params::Integer
         attribute? :sort_by, Types::Params::String.default('id')
         attribute? :sort_order, Types::Params::String.default('asc')
+
+        def sort_key
+          # Bioscore is not populated in participation model
+          # If sort by bioscore, use corresponding region's bioscore
+          sort_by == 'bioscore' ? "regions.bioscore" : sort_by
+        end
       end
 
       def execute(params)
@@ -41,8 +47,7 @@ module Service
         Success(participations.includes(:region)
                               .offset(search_params.offset)
                               .limit(search_params.limit)
-                              .order(search_params.sort_by => search_params.sort_order)
-                              .all)
+                              .order(search_params.sort_key => search_params.sort_order))
       end
     end
   end
