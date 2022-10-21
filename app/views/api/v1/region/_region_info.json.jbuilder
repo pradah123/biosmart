@@ -9,5 +9,6 @@ json.call(region,
           :header_image, 
           :header_image_url,
           :raw_polygon_json,
-          :region_url
+          :region_url,
+          :bioscore
         )

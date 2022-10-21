@@ -2,7 +2,6 @@
 
 json.partial! partial: 'api/v1/region/region_info', region: participation.region
 json.call(participation,
-          :bioscore,
           :species_count,
           :observations_count,
           :people_count,
