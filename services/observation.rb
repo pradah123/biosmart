@@ -66,21 +66,21 @@ module Service
 
       def get_region_observations_relation(region_id)
         Rails.logger.debug "get_region_observations_relation(#{region_id})"
-        region = Region.find_by_id(region_id)
+        region = ::Region.find_by_id(region_id)
         return Failure("Invalid region id (#{region_id}).") if region.blank?
         Success(region.observations)
       end
 
       def get_contest_observations_relation(contest_id)
         Rails.logger.debug "get_contest_observations_relation(#{contest_id})"
-        contest = Contest.find_by_id(contest_id)
+        contest = ::Contest.find_by_id(contest_id)
         return Failure("Invalid contest id (#{contest_id}).") if contest.blank?
         Success(contest.observations)
       end
 
       def get_participation_observations_relation(contest_id, region_id)
         Rails.logger.debug "get_participation_observations_relation(#{contest_id}, #{region_id})"
-        participation = Participation.where(contest_id: contest_id,
+        participation = ::Participation.where(contest_id: contest_id,
                                             region_id: region_id)
                                       .first
         if participation.blank?
