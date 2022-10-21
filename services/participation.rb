@@ -34,7 +34,7 @@ module Service
       private
 
       def fetch_participations(search_params)
-        participations = ::Participation
+        participations = ::Participation.all
         if search_params.contest_id.present?
           participations = participations.where(contest_id: search_params.contest_id)
         end
