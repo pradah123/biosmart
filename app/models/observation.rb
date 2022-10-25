@@ -252,7 +252,7 @@ class Observation < ApplicationRecord
     return observations
   end
 
-  def self.get_search_results region_id, contest_id, q, nstart, nend, category
+  def self.get_search_results region_id, contest_id, q, nstart, nend, category = 'All Categories'
     #
     # returns observations in a region and/or contest which match
     # a keyword search for q and with limit as per given nstart to nend params
