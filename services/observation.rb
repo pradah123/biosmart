@@ -40,14 +40,13 @@ module Service
       private
 
       def fetch_observations(search_params)
-        observations = ::Observation
+        Rails.logger.debug "fetch_observations(#{search_params.inspect})"
+        observations = ::Observation.default_scoped
         if search_params.contest_id.present? && search_params.region_id.present?
-          Rails.logger.debug "===== Before get_participation_observations_relation ====="
           observations = yield get_participation_observations_relation(
             search_params.contest_id, 
             search_params.region_id
           )
-          Rails.logger.debug "===== After get_participation_observations_relation ====="
         elsif search_params.contest_id.present?
           observations = yield get_contest_observations_relation(
             search_params.contest_id
@@ -60,8 +59,7 @@ module Service
         Success(observations.includes(:observation_images)
                             .offset(search_params.offset)
                             .limit(search_params.limit)
-                            .order(search_params.sort_by => search_params.sort_order)
-                            .all)
+                            .order(search_params.sort_by => search_params.sort_order))
       end
 
       def get_region_observations_relation(region_id)
