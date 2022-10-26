@@ -34,16 +34,15 @@ module Service
       private
 
       def fetch_regions(search_params)
-        regions = ::Region.not_deleted
+        regions = ::Region.default_scoped
         if search_params.contest_id.present?
           contest = Contest.find_by_id(search_params.contest_id)
           return Failure('Invalid contest provided.') if contest.blank?
-          regions = contest.regions.not_deleted
+          regions = contest.regions
         end
         Success(regions.offset(search_params.offset)
                .limit(search_params.limit)
-               .order(search_params.sort_by => search_params.sort_order)
-               .all)
+               .order(search_params.sort_by => search_params.sort_order))
       end
     end
   end
