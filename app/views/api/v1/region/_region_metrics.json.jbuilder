@@ -9,4 +9,5 @@ json.call(region,
           :mental_health_score,
           :identifications_count
         )
+json.merge! region.get_region_scores
           
