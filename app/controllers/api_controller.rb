@@ -1,9 +1,11 @@
 class ApiController < ActionController::API
   include ActionController::Cookies
 
+  before_action { request.format = :json }
+
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from ActionController::RoutingError, with: :route_not_found
-  rescue_from ActionController::ActionControllerError, with: :controller_error
+  # rescue_from ActionController::ActionControllerError, with: :controller_error
   #rescue_from Rack::Timeout::RequestTimeoutException, with: :timeout_exception
   rescue_from JWT::DecodeError, with: :jwt_error
 
@@ -27,8 +29,7 @@ class ApiController < ActionController::API
     render json: { status: 'error', message: 'unable to decode jwt token' }
   end    
 
-
-
+  
   class ApiFail < StandardError
     attr_reader :fail_message
     def initialize fail_message
