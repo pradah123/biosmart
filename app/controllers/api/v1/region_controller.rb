@@ -20,7 +20,6 @@ module Api::V1
       Service::Region::Show.call(show_params) do |result|
         result.success do |region|
           @region = region
-          @include_scores = show_params[:include_scores]
         end
         result.failure do |message|
           raise ApiFail.new(message)
