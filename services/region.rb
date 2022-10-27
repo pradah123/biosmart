@@ -45,5 +45,31 @@ module Service
                .order(search_params.sort_by => search_params.sort_order))
       end
     end
+
+    class Show
+      include Service::Application
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        required(:region_id).filled(:integer, gt?: 0)
+      end
+      
+      class Params < AppStruct::Pagination
+        attribute? :region_id, Types::Params::Integer
+      end
+
+      def execute(params)
+        show_params = Params.new(params)
+        fetch_region(show_params.region_id)
+      end
+
+      private
+
+      def fetch_region(region_id)
+        region = ::Region.find_by_id(region_id)
+        return Failure('Invalid region id provided.') if region.blank?
+        Success(region)
+      end
+    end
   end
 end
