@@ -15,6 +15,19 @@ module Api::V1
       end
     end
 
+    def show
+      show_params = params.to_unsafe_h.symbolize_keys
+      Service::Region::Show.call(show_params) do |result|
+        result.success do |region|
+          @region = region
+          @include_scores = show_params[:include_scores]
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
     def polygons_old
       data = {}
 
