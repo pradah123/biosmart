@@ -7,6 +7,9 @@ require 'dry/monads/do'
 require_relative './application'
 require_relative '../structs/pagination'
 require_relative '../schemas/pagination'
+require_relative './participation'
+require_relative './region'
+require_relative './contest'
 
 module Service
   module Observation
@@ -77,17 +80,113 @@ module Service
       end
 
       def get_participation_observations_relation(contest_id, region_id)
-        Rails.logger.debug "get_participation_observations_relation(#{contest_id}, #{region_id})"
-        participation = ::Participation.where(contest_id: contest_id,
-                                            region_id: region_id)
-                                      .first
+        participation = ::Participation.where(contest_id: contest_id, region_id: region_id).first
         if participation.blank?
           return Failure(
-            "Invalid contest id (#{contest_id}) & region id (#{region_id})."
+            "Invalid contest id (#{contest_id}) and region id (#{region_id})."
           )
         end
         return Success(participation.observations)
       end
+    end
+
+    class FetchSpecies
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        extend AppSchema::Pagination
+
+        optional(:contest_id).filled(:integer, gt?: 0)
+        optional(:region_id).filled(:integer, gt?: 0)
+        optional(:n).filled(:integer, gt?: 0)
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :contest_id, Types::Params::Integer
+        attribute? :region_id, Types::Params::Integer
+        attribute? :n, Types::Params::Integer
+      end
+
+      def execute(params)
+        transformed_params = Params.new(params)
+        fetch_top_species(transformed_params, params)
+      end
+
+      private
+
+      def fetch_top_species(transformed_params, params)
+        n = transformed_params.n.present? ? transformed_params.n : 25
+
+        if transformed_params.contest_id.present? && transformed_params.region_id.present?
+          result = Service::Participation::Base.call(transformed_params).to_result
+        elsif transformed_params.contest_id.present?
+          result = Service::Contest::Base.call(params).to_result
+        elsif transformed_params.region_id.present?
+          result = Service::Region::Show.call(params).to_result
+        else
+          return Failure(
+            "Invalid contest id (#{transformed_params.contest_id}) or region id (#{transformed_params.region_id})."
+          )
+        end
+        if result&.success?
+          return Success(result.success.get_top_species(n))
+        end
+        if result&.failure?
+          return Failure(result.failure)
+        end
+      end
+    end
+
+    class FetchPeople
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        extend AppSchema::Pagination
+
+        optional(:contest_id).filled(:integer, gt?: 0)
+        optional(:region_id).filled(:integer, gt?: 0)
+        optional(:n).filled(:integer, gt?: 0)
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :contest_id, Types::Params::Integer
+        attribute? :region_id, Types::Params::Integer
+        attribute? :n, Types::Params::Integer
+      end
+
+      def execute(params)
+        transformed_params = Params.new(params)
+        fetch_top_people(transformed_params, params)
+      end
+
+      private
+
+      def fetch_top_people(transformed_params, params)
+        n = transformed_params.n.present? ? transformed_params.n : 25
+
+        if transformed_params.contest_id.present? && transformed_params.region_id.present?
+          result = Service::Participation::Base.call(transformed_params).to_result
+        elsif transformed_params.contest_id.present?
+          result = Service::Contest::Base.call(params).to_result
+        elsif transformed_params.region_id.present?
+          result = Service::Region::Show.call(params).to_result
+        else
+          return Failure(
+            "Invalid contest id (#{transformed_params.contest_id}) or region id (#{transformed_params.region_id})."
+          )
+        end
+        if result&.success?
+          return Success(result.success.get_top_people(n))
+        end
+        if result&.failure?
+          return Failure(result.failure)
+        end
+      end
+
     end
   end
 end

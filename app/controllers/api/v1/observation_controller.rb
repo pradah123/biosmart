@@ -15,6 +15,30 @@ module Api::V1
       end
     end
 
+    def top_species
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Observation::FetchSpecies.call(search_params) do |result|
+        result.success do |top_species|
+          render json: { top_species: top_species }
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
+    def top_people
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Observation::FetchPeople.call(search_params) do |result|
+        result.success do |top_people|
+          render json: { top_people: top_people }
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
     def bulk_create
       fail_message = nil
       fail_message = { status: 'fail', message: 'no data_source_name given' } if params[:data_source_name].nil?

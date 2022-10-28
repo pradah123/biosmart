@@ -7,6 +7,26 @@ require_relative '../schemas/pagination'
 
 module Service
   module Participation
+    class Base
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      def execute(params)
+        get_participation(params.contest_id, params.region_id)
+      end
+
+      private
+
+      def get_participation(contest_id, region_id)
+        participation = ::Participation.where(contest_id: contest_id,
+                                              region_id: region_id).first
+        if participation.blank?
+          return Failure("Invalid contest id (#{contest_id}) or region id (#{region_id}).")
+        end
+        Success(participation)
+      end
+    end
+
     # Class to encapsulate fetching participations request
     class Fetch
       include Service::Application
