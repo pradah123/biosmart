@@ -19,7 +19,24 @@ module Api::V1
       show_params = params.to_unsafe_h.symbolize_keys
       Service::Region::Show.call(show_params) do |result|
         result.success do |region|
-          @region = region
+          region_hash = RegionSerializer.new(region).serializable_hash[:data][:attributes]
+          region_scores = region.get_region_scores
+          region_hash.merge!(region_scores)
+          render json: region_hash
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
+    def undiscovered_species
+      search_params = params.to_unsafe_h.symbolize_keys
+      top_n = search_params[:n]&.to_i || 10
+      Service::Region::Show.call(search_params) do |result|
+        result.success do |region|
+          undiscovered_species = region.get_undiscovered_species(top_n: top_n)
+          render json: { undiscovered_species: undiscovered_species }
         end
         result.failure do |message|
           raise ApiFail.new(message)

@@ -518,6 +518,13 @@ class Region < ApplicationRecord
     return region_scores
   end
 
+  # This method returns list of 'top_n' species of greater region which are not found in base region
+  def get_undiscovered_species(top_n:)
+    nr = get_neighboring_region(region_type: 'greater_region')
+    nr_top_species = nr.get_top_species(top_n).map{|row| row[0]}
+    unfound_species = nr_top_species - observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+  end
+
   rails_admin do
     list do
       field :id
