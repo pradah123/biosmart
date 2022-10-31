@@ -72,6 +72,7 @@ module Utils
         return category['ranking'], category['value']
       end
     end
+    return ''
   end
 
 end

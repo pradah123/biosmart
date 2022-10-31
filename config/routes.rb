@@ -32,6 +32,7 @@ Rails.application.routes.draw do
       get '/contest/:contest_id/regions/:region_id/observations', to: 'observation#search'
       get '/contest/:contest_id/top_species', to: 'observation#top_species'
       get '/contest/:contest_id/top_people', to: 'observation#top_people'
+      get '/contest/:contest_id/observations', to: 'observation#search'
 
       post '/participation', to: 'participation#create'
       put '/participation', to: 'participation#update'
@@ -48,6 +49,8 @@ Rails.application.routes.draw do
       get '/region/:region_id/undiscovered_species', to: 'region#undiscovered_species'
       get '/region/:region_id/top_species', to: 'observation#top_species'
       get '/region/:region_id/top_people', to: 'observation#top_people'
+      get '/region/:region_id/observations', to: 'observation#search'
+
 
       get '/region/polygons', to: 'region#polygons'
       get '/region/data/:region_id/:contest_id', to: 'region#data'

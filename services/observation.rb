@@ -26,6 +26,8 @@ module Service
         optional(:region_id).filled(:integer, gt?: 0)
         optional(:sort_by).filled(:string, included_in?: ['observed_at'])
         optional(:sort_order).filled(:string, included_in?: ['asc', 'desc'])
+        optional(:category).filled(:string)
+        optional(:search_text).filled(:string)
       end
       
       class Params < AppStruct::Pagination
@@ -33,6 +35,8 @@ module Service
         attribute? :region_id, Types::Params::Integer
         attribute? :sort_by, Types::Params::String.default('observed_at')
         attribute? :sort_order, Types::Params::String.default('desc')
+        attribute? :category, Types::Params::String
+        attribute? :search_text, Types::Params::String
       end
 
       def execute(params)
@@ -47,16 +51,18 @@ module Service
         observations = ::Observation.default_scoped
         if search_params.contest_id.present? && search_params.region_id.present?
           observations = yield get_participation_observations_relation(
-            search_params.contest_id, 
-            search_params.region_id
+            search_params.contest_id,
+            search_params.region_id,
+            search_params.category,
+            search_params.search_text
           )
         elsif search_params.contest_id.present?
           observations = yield get_contest_observations_relation(
-            search_params.contest_id
+            search_params.contest_id, search_params.category, search_params.search_text
           )
         elsif search_params.region_id.present?
           observations = yield get_region_observations_relation(
-            search_params.region_id
+            search_params.region_id, search_params.category, search_params.search_text
           )
         end
         Success(observations.includes(:observation_images)
@@ -65,30 +71,61 @@ module Service
                             .order(search_params.sort_by => search_params.sort_order))
       end
 
-      def get_region_observations_relation(region_id)
+      def get_region_observations_relation(region_id, category, search_text)
         Rails.logger.debug "get_region_observations_relation(#{region_id})"
-        region = ::Region.find_by_id(region_id)
-        return Failure("Invalid region id (#{region_id}).") if region.blank?
-        Success(region.observations)
+        region = ::Region.where id: region_id
+        return Failure("Invalid region id (#{region_id}).") if region.first.blank?
+
+        (start_dt, end_dt) = region.first.get_date_range_for_report()
+
+        observations = ::Observation.filter_observations(category: category, q: search_text, obj: region, start_dt: start_dt, end_dt:end_dt)
+
+        Success(observations)
       end
 
-      def get_contest_observations_relation(contest_id)
+      def get_contest_observations_relation(contest_id, category, search_text)
         Rails.logger.debug "get_contest_observations_relation(#{contest_id})"
         contest = ::Contest.find_by_id(contest_id)
         return Failure("Invalid contest id (#{contest_id}).") if contest.blank?
-        Success(contest.observations)
+        observations = yield filter_observations(contest, category, search_text)
+        Success(observations)
       end
 
-      def get_participation_observations_relation(contest_id, region_id)
+      def get_participation_observations_relation(contest_id, region_id, category, search_text)
         participation = ::Participation.where(contest_id: contest_id, region_id: region_id).first
         if participation.blank?
           return Failure(
             "Invalid contest id (#{contest_id}) and region id (#{region_id})."
           )
         end
-        return Success(participation.observations)
+        observations = yield filter_observations(participation, category, search_text)
+
+        return Success(observations)
+      end
+
+      def filter_observations(obj, category, search_text)
+        if category.present?
+          (rank_name, rank_value) = Utils.get_category_rank_name_and_value(category_name: category)
+          Rails.logger.info "rank_name: #{rank_name}, rank_value: #{rank_value}"
+          if rank_name.blank? || rank_value.blank?
+            return Failure(
+              "Invalid category '#{category}'."
+            )
+          end
+        end
+        if category.present? && search_text.present?
+          observations = obj.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(search_text)
+        elsif category.present?
+          observations = obj.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+        elsif search_text.present?
+          observations = obj.observations.search(search_text)
+        else
+          observations = obj.observations
+        end
+        Success(observations)
       end
     end
+
 
     class FetchSpecies
       include Service::Application

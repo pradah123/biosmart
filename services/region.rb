@@ -36,7 +36,7 @@ module Service
       def fetch_regions(search_params)
         regions = ::Region.default_scoped
         if search_params.contest_id.present?
-          contest = Contest.find_by_id(search_params.contest_id)
+          contest = ::Contest.find_by_id(search_params.contest_id)
           return Failure('Invalid contest provided.') if contest.blank?
           regions = contest.regions
         end
