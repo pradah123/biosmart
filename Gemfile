@@ -51,6 +51,8 @@ gem 'dry-matcher'
 gem 'dotenv-rails'
 gem 'timezone_finder'
 
+gem 'scout_apm'
+
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails'
