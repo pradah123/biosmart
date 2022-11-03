@@ -270,9 +270,9 @@ module CountableStatistics
     species_count = get_species_count(include_gbif: include_gbif)
     people_count = get_people_count(include_gbif: include_gbif)
 
-    if obs_count.positive? && species_count.positive? && people_count.positive?
-      observations_per_species = obs_count / species_count
-      observations_per_person  = obs_count / people_count
+    if obs_count.positive?
+      observations_per_species = species_count.positive? ? obs_count / species_count : 0
+      observations_per_person  = people_count.positive? ? obs_count / people_count : 0
       avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
 
       active_proportion_constant = Constant.find_by_name('active_proportion_constant')&.value || 1
