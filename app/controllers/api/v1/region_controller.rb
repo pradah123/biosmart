@@ -32,10 +32,17 @@ module Api::V1
 
     def undiscovered_species
       search_params = params.to_unsafe_h.symbolize_keys
-      top_n = search_params[:n]&.to_i || 10
+      offset = search_params[:offset]&.to_i || 0
+      limit = search_params[:limit]&.to_i || 10
+
       Service::Region::Show.call(search_params) do |result|
         result.success do |region|
-          undiscovered_species = region.get_undiscovered_species(top_n: top_n)
+          undiscovered_species = region.get_undiscovered_species()
+          if undiscovered_species.length >= offset
+            undiscovered_species = undiscovered_species[offset, limit]
+          else
+            undiscovered_species = []
+          end
           render json: { undiscovered_species: undiscovered_species }
         end
         result.failure do |message|
