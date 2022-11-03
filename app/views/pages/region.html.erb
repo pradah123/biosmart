@@ -22,6 +22,10 @@
   <div class="col-2 p-1 mt-5 ml-1 justify-content-right flex-nowrap flex-shrink-1 border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic">
       <%= @region.bioscore %>
     <br/>BioScore
+    <% if @user.admin? %>
+      <% url = request.base_url + "/region/" + @region.slug + "/bioscore" %>
+      <a href="<%= url %>" target="_blank" title="View BioScore Calculations" class="text-decoration-none">(i)</a>
+    <% end %>
   </div>
 </div>
 
