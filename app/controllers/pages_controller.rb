@@ -72,6 +72,11 @@ class PagesController < ApplicationController
   end
 
 
+  def region_bioscore
+    @region = Region.all.online.find_by_slug params[:slug]
+    render :top if @region.nil?
+    render layout: "basic_template"
+  end
 
 
   def get_more

@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   get '/contest/:slug', to: 'pages#contest'
   get '/:region_slug/:contest_slug', to: 'pages#region_contest'
   get '/:slug', to: 'pages#region'
+  get '/region/:slug/bioscore', to: 'pages#region_bioscore'
 
   namespace :api do
     namespace :v1 do
