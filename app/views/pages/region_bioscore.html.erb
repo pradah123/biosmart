@@ -26,7 +26,7 @@
       avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
       avg_obs_score = 0 if !observations.to_i.positive?
       bio_value = obs.average(:bioscore) if observations.to_i.positive?
-      bio_value = bio_value.zero? ? avg_obs_score : bio_value
+      bio_value = !bio_value.present? || bio_value.zero? ? avg_obs_score : bio_value
       avg_obs_score_constant = Constant.find_by_name('average_observations_score_constant')&.value || 1
 
       total_vs_locality_obs_score            = @region.get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f / 100
