@@ -2,6 +2,8 @@ class ObservationsCreateJob < ApplicationJob
   queue_as :queue_observations_create
 
   def perform data_source, observations, participant_id = nil
+    ScoutApm::Transaction.ignore!
+    
     Delayed::Worker.logger.info "\n\n\n\n"
     Delayed::Worker.logger.info ">>>>>>>>>>ObservationsCreateJob processing #{observations.count} observations from #{data_source.name}"
     Delayed::Worker.logger.info "ObservationsCreateJob >> participant_id: #{participant_id}"
