@@ -60,6 +60,11 @@
     "value":"fungi"
   },
   {
+    "name":"Other Plants",
+    "ranking":"kingdom",
+    "value":"plantae"
+  },
+  {
     "name":"Plants that do not flower",
     "ranking":"kingdom",
     "value":"plantae"

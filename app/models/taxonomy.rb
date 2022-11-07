@@ -18,6 +18,10 @@ class Taxonomy < ApplicationRecord
         obj.taxon_rank = params['taxonRank'] || ''
         obj.generic_name = params['genericName'] || ''
         obj.source = params['source'] || 'gbif'
+        # obj.order = params['order'] || ''
+        # obj.family = params['family'] || ''
+        # obj.genus = params['genus'] || ''
+
         return obj
     end
 
@@ -112,6 +116,32 @@ class Taxonomy < ApplicationRecord
       return record
     end
 
+    def get_category_name
+      file = File.open "#{Rails.root}/app/views/pages/_category_mapping.json"
+      category_mapping = JSON.load file
+
+      category_names = []
+      category_mapping.each do |category|
+        if category['ranking'] == 'class_name' && category['value'].downcase == class_name.downcase
+          category_names.push(category['name'])
+        end
+      end
+      unless category_names.present?
+        category_mapping.each do |category|
+          if category['ranking'] == 'phylum' && category['value'].downcase == phylum.downcase
+            category_names.push(category['name'])
+          end
+        end
+      end
+      unless category_names.present?
+        category_mapping.each do |category|
+          if category['ranking'] == 'kingdom' && category['value'].downcase == kingdom.downcase
+            category_names.push(category['name'])
+          end
+        end
+      end
+      return category_names
+    end
 
     rails_admin do
         list do

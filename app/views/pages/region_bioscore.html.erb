@@ -13,6 +13,8 @@
     </div>
     <%  
       obs_per_species_constant = Constant.find_by_name('observations_per_species_constant')&.value || 1
+      obs = Observation.get_observations_for_region(region_id: @region.id, include_gbif: true)
+
       observations = @region.get_observations_count(include_gbif: true)
       species = @region.get_species_count(include_gbif: true)
 
@@ -23,6 +25,8 @@
 
       avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
       avg_obs_score = 0 if !observations.to_i.positive?
+      bio_value = obs.average(:bioscore) if observations.to_i.positive?
+      bio_value = bio_value.zero? ? avg_obs_score : bio_value
       avg_obs_score_constant = Constant.find_by_name('average_observations_score_constant')&.value || 1
 
       total_vs_locality_obs_score            = @region.get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f / 100
@@ -89,13 +93,13 @@
         </div>
         <div class="row justify-content-left text-left border border-1 rounded-1 p-2 flex-nowrap flex-shrink-1">
           <div class="col-8 text-left flex-nowrap flex-shrink-1">
-            (Average Observations Score defined in Constant or 20) * observations_per_person_constant
+            (Average of Observations bioscore or Average observations score defined in Constant or 20) * observations_per_person_constant
             </br>* This will be considered 0 if Observations are 0
           </div>
           <div class="col-2 text-left flex-nowrap flex-shrink-1">
-            <%= sprintf('%.2f', avg_obs_score) %> * <%= avg_obs_score_constant %>
+            <%= sprintf('%.2f', bio_value) %> * <%= avg_obs_score_constant %>
           </div><div class="col-1 text-left flex-nowrap flex-shrink-1"> 
-            <strong><%= sprintf('%.2f', avg_obs_score * avg_obs_score_constant.to_f) %></strong>
+            <strong><%= sprintf('%.2f', bio_value * avg_obs_score_constant.to_f) %></strong>
           </div>
           <div class="col-1 text-center flex-nowrap flex-shrink-1"> <strong>+</strong></div>
         </div>
