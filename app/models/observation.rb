@@ -283,7 +283,12 @@ class Observation < ApplicationRecord
     nobservations_with_images = observations.has_images.has_scientific_name.count
     nobservations_excluded = nobservations_all - nobservations_with_images
 
-    observations = observations.has_images.has_scientific_name.recent.offset(offset).limit(limit)
+    observations = observations.includes(:observation_images)
+                               .has_images
+                               .has_scientific_name
+                               .recent
+                               .offset(offset)
+                               .limit(limit)
 
     { observations: observations, nobservations: nobservations_all, nobservations_excluded: nobservations_excluded }
   end
