@@ -15,6 +15,7 @@ module Source
       optional(:accepted_name).maybe(:string)
       optional(:creator_name).maybe(:string)
       optional(:creator_id).maybe(:string)
+      optional(:bioscore).maybe(:float)
     end
   end
 end

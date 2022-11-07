@@ -60,6 +60,7 @@ module Source
           images&.map { |image| image[:original] } || []
         end
         rename_keys images: :image_urls
+        rename_keys bioScore: :bioscore
         accept_keys [
           :unique_id,
           :observed_at,
@@ -71,7 +72,8 @@ module Source
           :creator_name,
           :image_urls,
           :accepted_name,
-          :identifications_count
+          :identifications_count,
+          :bioscore
         ]                
       end
     end

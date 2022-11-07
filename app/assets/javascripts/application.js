@@ -289,7 +289,7 @@ function show_image(view_action, no_of_images) {
 }
 
 // Create div elements for displaying images on information window of map
-function get_image_content(no_of_images, urls) {
+function get_image_content(no_of_images, images) {
   var image_content = '';
 
   if (no_of_images > 0) {
@@ -308,7 +308,7 @@ function get_image_content(no_of_images, urls) {
 
       image_content += '<div id="image' + (i + 1) + '" style="' + display +'">' +
                       '<img class="thumbnail" style="cursor:pointer;" src="' +
-                      urls[i] +
+                      images[i].url +
                     '" onclick="window.open(this.src, ' + "'_blank'"+');"></div>' ;
     }
     image_content += '</div>';
@@ -329,7 +329,7 @@ function get_info_window_for_observation(info_window, id) {
     observation = data['data']['observation'];
   });
 
-  var no_of_images = observation.image_urls.length;
+  var no_of_images = observation.images.length;
   _current_image = 1;
 
   var common_name = '';
@@ -340,7 +340,7 @@ function get_info_window_for_observation(info_window, id) {
   else {
     common_name = (observation.common_name ? '<span class="info_text">' + observation.common_name + '</span>' : '');
   }
-  var image_content = get_image_content(no_of_images, observation.image_urls);
+  var image_content = get_image_content(no_of_images, observation.images);
   const content_string = '<div id="obs_content" style="display:inline-block;">' +
                             '<div id="obs_body" style="float:left; padding:10px;">' +
                               '<h5>' + observation.scientific_name + '</h5>' +

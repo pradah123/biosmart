@@ -26,6 +26,14 @@ module Source
           key => DateTime.parse(dttm).new_offset(0).strftime('%Y-%m-%d %H:%M')
         })
       end
+
+      def self.add_bioscore(hash)
+        avg_bio_score = Constant.find_by_name('average_observations_score')&.value || 20
+        bioscore = hash[:quality_grade].present? && hash[:quality_grade] == 'research' ? 100 : avg_bio_score
+        hash.merge({
+          bioscore: bioscore
+        })
+      end
     end
 
     class Transformer < Dry::Transformer::Pipe
@@ -59,6 +67,7 @@ module Source
         # transform :obs_dttm
         add_obs_dttm(:observed_at)
         populate_identifications_count()
+        add_bioscore()
         accept_keys [
           :unique_id,
           :scientific_name,
@@ -70,7 +79,8 @@ module Source
           :lat,
           :lng,
           :observed_at,
-          :identifications_count
+          :identifications_count,
+          :bioscore
         ]                
       end
     end    

@@ -281,9 +281,13 @@ module CountableStatistics
       avg_obs_score_constant = Constant.find_by_name('average_observations_score_constant')&.value || 1
       activity_proportion_score = (population.present? ? ((people_count/self.population) * active_proportion_constant ) : 0 )
 
+      observations = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+      bio_value = observations.average(:bioscore)
+      bio_value = bio_value.zero? ? avg_obs_score : bio_value
+
       bioscore = get_total_vs_neighboring_regions_bio_score()          + get_yearly_bio_score() +
                  (observations_per_species * obs_per_species_constant) + (observations_per_person * obs_per_person_constant) +
-                 (avg_obs_score * avg_obs_score_constant) + activity_proportion_score
+                 (bio_value * avg_obs_score_constant) + activity_proportion_score
 
       return sprintf('%.2f', bioscore).to_f
     else
