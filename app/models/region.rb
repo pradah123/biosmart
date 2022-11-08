@@ -497,23 +497,72 @@ class Region < ApplicationRecord
     return nr
   end
 
+  def get_bio_value
+    avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
+
+    observations = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
+    bio_value =  observations.average(:bioscore)
+    bio_value = avg_obs_score if !bio_value.present? || bio_value.zero?
+    return bio_value
+  end
+
   def get_region_scores
     region_scores = Hash.new([])
-
-    region_scores[:total_vs_greater_region_observations_score] = get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f
-    region_scores[:total_vs_locality_observations_score]       = get_regions_score(region_type: 'greater_region', score_type: 'observations_score').to_f
+    region_scores[:total_vs_greater_region_observations_score] = get_regions_score(region_type: 'greater_region', score_type: 'observations_score').to_f
+    region_scores[:total_vs_locality_observations_score]       = get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f
     region_scores[:this_year_vs_total_observations_score]      = get_yearly_score(score_type: 'observations_score', num_years: 1).to_f
     region_scores[:last_2years_vs_total_observations_score]    = get_yearly_score(score_type: 'observations_score', num_years: 2).to_f
 
-    region_scores[:total_vs_greater_region_species_score] = get_regions_score(region_type: 'locality', score_type: 'species_score').to_f
-    region_scores[:total_vs_locality_species_score]       = get_regions_score(region_type: 'greater_region', score_type: 'species_score').to_f
+    region_scores[:total_vs_greater_region_species_score] = get_regions_score(region_type: 'greater_region', score_type: 'species_score').to_f
+    region_scores[:total_vs_locality_species_score]       = get_regions_score(region_type: 'locality', score_type: 'species_score').to_f
     region_scores[:this_year_vs_total_species_score]      = get_yearly_score(score_type: 'species_score', num_years: 1).to_f
     region_scores[:last_2years_vs_total_species_score]    = get_yearly_score(score_type: 'species_score', num_years: 2).to_f
 
-    region_scores[:total_vs_greater_region_activity_score] = get_regions_score(region_type: 'locality', score_type: 'people_score').to_f
-    region_scores[:total_vs_locality_activity_score]       = get_regions_score(region_type: 'greater_region', score_type: 'people_score').to_f
+    region_scores[:total_vs_greater_region_activity_score] = get_regions_score(region_type: 'greater_region', score_type: 'people_score').to_f
+    region_scores[:total_vs_locality_activity_score]       = get_regions_score(region_type: 'locality', score_type: 'people_score').to_f
     region_scores[:this_year_vs_total_activity_score]      = get_yearly_score(score_type: 'people_score', num_years: 1).to_f
     region_scores[:last_2years_vs_total_activity_score]    = get_yearly_score(score_type: 'people_score', num_years: 2).to_f
+
+    constants = Constant.get_all_constants
+    obs_count     = get_observations_count(include_gbif: true)
+    species_count = get_species_count(include_gbif: true)
+    people_count  = get_people_count(include_gbif: true)
+    observations_per_species = species_count.positive? ? obs_count / species_count : 0
+    observations_per_person  = people_count.positive? ? obs_count / people_count : 0
+
+    region_scores[:bio_value] = obs_count.positive? ? self.get_bio_value.round(2) * constants[:average_observations_score_constant] : 0
+
+    region_scores[:species_diversity_score] = (observations_per_species * constants[:observations_per_species_constant] +
+                                              ((region_scores[:total_vs_locality_species_score] ) * constants[:locality_species_constant] +
+                                              (region_scores[:total_vs_greater_region_species_score]) * constants[:greater_region_species_constant] +
+                                              (region_scores[:this_year_vs_total_species_score]) * constants[:current_year_species_constant] +
+                                              (region_scores[:last_2years_vs_total_species_score] ) * constants[:species_trend_constant]) / 100).round(2)
+    bi_yearly_vs_total_species_score = region_scores[:last_2years_vs_total_species_score] / 100
+    yearly_vs_total_species_score    = region_scores[:this_year_vs_total_species_score] / 100
+    region_scores[:species_trend]    = (bi_yearly_vs_total_species_score.positive? ?
+                                       ((yearly_vs_total_species_score - (bi_yearly_vs_total_species_score/2))/ (bi_yearly_vs_total_species_score/2)).round(2)
+                                       : 0) * constants[:species_trend_constant]
+
+    region_scores[:monitoring_score] = (((region_scores[:total_vs_locality_observations_score] ) * constants[:locality_observations_constant] +
+                                       (region_scores[:total_vs_greater_region_observations_score]) * constants[:greater_region_observations_constant] +
+                                       (region_scores[:this_year_vs_total_observations_score]) * constants[:current_year_observations_constant] +
+                                       (region_scores[:last_2years_vs_total_observations_score] ) * constants[:observations_trend_constant]) / 100).round(2)
+    bi_yearly_vs_total_obs_score     = region_scores[:last_2years_vs_total_observations_score] / 100
+    yearly_vs_total_obs_score        = region_scores[:this_year_vs_total_observations_score] / 100
+    region_scores[:monitoring_trend] = (bi_yearly_vs_total_obs_score.positive? ?
+                                       ((yearly_vs_total_obs_score - (bi_yearly_vs_total_obs_score/2))/ (bi_yearly_vs_total_obs_score/2) ).round(2)
+                                       : 0) * constants[:observations_trend_constant]
+
+    region_scores[:community_score]   = (observations_per_person * constants[:observations_per_person_constant] +
+                                        ((region_scores[:total_vs_locality_activity_score] ) * constants[:locality_people_constant] +
+                                        (region_scores[:total_vs_greater_region_activity_score]) * constants[:greater_region_people_constant] +
+                                        (region_scores[:this_year_vs_total_activity_score]) * constants[:current_year_people_constant] +
+                                        (region_scores[:last_2years_vs_total_activity_score] ) * constants[:activity_trend_constant]) / 100).round(2)
+    bi_yearly_vs_total_activity_score = region_scores[:last_2years_vs_total_activity_score] / 100
+    yearly_vs_total_activity_score    = region_scores[:this_year_vs_total_activity_score] / 100
+    region_scores[:community_trend]   = (bi_yearly_vs_total_activity_score.positive? ?
+                                        ((yearly_vs_total_activity_score - (bi_yearly_vs_total_activity_score/2))/ (bi_yearly_vs_total_activity_score/2)).round(2)
+                                        : 0) * constants[:activity_trend_constant]
 
     return region_scores
   end
