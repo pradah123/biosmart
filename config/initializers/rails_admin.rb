@@ -30,6 +30,7 @@ RailsAdmin.config do |config|
     ActiveStorage::Attachment
     ActiveStorage::Blob
     ActiveStorage::VariantRecord
+    GbifObservationsMatview
   )
 
   config.navigation_static_label = ''
