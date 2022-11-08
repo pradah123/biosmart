@@ -27,6 +27,6 @@ class GbifObservationsMatview < ActiveRecord::Base
   end
 
   def self.refresh
-    ActiveRecord::Base.connection.execute('REFRESH MATERIALIZED VIEW gbif_observations')
+    ActiveRecord::Base.connection.execute('REFRESH MATERIALIZED VIEW gbif_observations_matview')
   end
 end
