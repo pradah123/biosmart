@@ -58,7 +58,7 @@ module CountableStatistics
 
     def get_score constant, constant_a, constant_b
       if self.is_a? Region 
-        observations = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+        observations = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
         people_count = get_people_count(include_gbif: true)
       else 
         observations = self.observations
@@ -71,9 +71,9 @@ module CountableStatistics
     # Compute observations count for given region, optionally for given date range
     def get_observations_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt)
       else
-        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
       end
 
       return obs.count
@@ -82,9 +82,9 @@ module CountableStatistics
     # Compute species count for given region, optionally for given date range
     def get_species_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt)
       else
-        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
       end
 
       return obs.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
@@ -93,9 +93,9 @@ module CountableStatistics
     # Compute people count for given region, optionally for given date range
     def get_people_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt)
       else
-        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
       end
 
       return obs.select(:creator_name).where.not(creator_name: nil).distinct.count
@@ -104,9 +104,9 @@ module CountableStatistics
     # Compute identifications count for given region, optionally for given date range
     def get_identifications_count(start_dt: nil, end_dt: nil, include_gbif: false)
       if start_dt.present? && end_dt.present?
-        obs = Observation.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id, start_dt: start_dt, end_dt: end_dt)
       else
-        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: include_gbif)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
       end
 
       return obs.sum(:identifications_count)
@@ -119,7 +119,7 @@ module CountableStatistics
 
     def get_top_species n=nil
       if self.is_a? Region
-        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
         get_ranking obs.pluck(:scientific_name), n
       else 
         get_ranking self.observations.pluck(:scientific_name), n
@@ -128,7 +128,7 @@ module CountableStatistics
 
     def get_top_people n=nil
       if self.is_a? Region
-        obs = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+        obs = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
         get_ranking obs.pluck(:creator_name), n
       else 
         get_ranking self.observations.pluck(:creator_name), n
@@ -150,7 +150,7 @@ module CountableStatistics
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: 3)
 
       region_id = nr.present? ? nr.id : self.id
-      obs = Observation.get_observations_for_region(region_id: region_id, include_gbif: true)
+      obs = GbifObservationsMatview.get_observations_for_region(region_id: region_id)
       start_dt =  obs&.order("observed_at")&.first&.observed_at || start_dt
       end_dt   =  obs&.order("observed_at")&.last&.observed_at || end_dt
 
@@ -281,7 +281,7 @@ module CountableStatistics
       avg_obs_score_constant = Constant.find_by_name('average_observations_score_constant')&.value || 1
       activity_proportion_score = (population.present? ? ((people_count/self.population) * active_proportion_constant ) : 0 )
 
-      observations = Observation.get_observations_for_region(region_id: self.id, include_gbif: true)
+      observations = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
       bio_value = observations.average(:bioscore)
       bio_value = !bio_value.present? || bio_value.zero? ? avg_obs_score : bio_value
 

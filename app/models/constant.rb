@@ -4,4 +4,8 @@ class Constant < ApplicationRecord
 	# can be managed by operations staff via this model in 
 	# rails admin.
 	#s 
+
+  def self.get_all_constants
+    return Constant.all.pluck(:name, :value).map { |name, value| { "#{name}": value } }.reduce Hash.new, :merge
+  end
 end
