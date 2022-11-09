@@ -580,6 +580,34 @@ class Region < ApplicationRecord
     unfound_species = nr_top_species - observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
   end
 
+  def self.calculate_percentiles(regions:, key: )
+    n = regions.length
+    regions.each_with_index do |r, i|
+      percentile = (100 * i /(n - 1)).round(2)
+      regions[n-i-1][key.to_sym] = percentile
+    end
+    return regions
+  end
+
+  def self.get_scores(regions:)
+    mod_regions = []
+    regions.each do |r|
+      region_scores = Hash.new([])
+      region_scores[:id] = r.id
+      scores = r.get_region_scores
+      region_scores.merge!(scores)
+      region_scores[:bioscore] = r.bioscore
+      mod_regions.push(region_scores)
+    end
+    mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:bioscore] }.reverse!, key: 'bioscore_percentile')
+    mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:species_diversity_score] }.reverse!, key: 'species_diversity_percentile')
+    mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:monitoring_score] }.reverse!, key: 'monitoring_percentile')
+    mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:community_score] }.reverse!, key: 'community_percentile')
+
+    return mod_regions
+  end
+
+
   rails_admin do
     list do
       field :id

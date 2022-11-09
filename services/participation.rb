@@ -62,12 +62,37 @@ module Service
       def fetch_participations(search_params)
         participations = ::Participation.default_scoped
         if search_params.contest_id.present?
-          participations = participations.where(contest_id: search_params.contest_id)
+          all_participations = participations.where(contest_id: search_params.contest_id)
         end
-        Success(participations.includes(:region)
-                              .offset(search_params.offset)
-                              .limit(search_params.limit)
-                              .order(search_params.sort_key => search_params.sort_order))
+        participations = all_participations.includes(:region)
+                                           .offset(search_params.offset)
+                                           .limit(search_params.limit)
+                                           .order(search_params.sort_key => search_params.sort_order)
+        participations_arr = []
+
+        # Merge Participation and Region data
+        participations.each do |p|
+          region_hash = Hash.new([])
+          p_hash = Hash.new([])
+
+          region_hash = ::RegionSerializer.new(p.region).serializable_hash[:data][:attributes]
+          p_hash = ::ParticipationSerializer.new(p).serializable_hash[:data][:attributes]
+          region_hash.merge!(p_hash)
+          participations_arr.push(region_hash)
+        end
+
+        regions = []
+        all_participations = ::Contest.find_by_id(search_params[:contest_id])&.participations
+        all_participations.each do |p|
+          regions.push(p.region)
+        end
+        scores = Region.get_scores(regions: regions)
+        participations_arr.each do |p|
+          p_scores_hash = scores.detect{ |s| s[:id] == p[:id].to_i }
+          p.merge!(p_scores_hash)
+        end
+
+        Success(participations_arr)
       end
     end
   end
