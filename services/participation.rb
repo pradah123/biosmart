@@ -81,12 +81,14 @@ module Service
           participations_arr.push(region_hash)
         end
 
+        # Need to calculate percentiles for species_diversity, monitoring and community scores and
+        # merge them with regions' other data
         regions = []
         all_participations = ::Contest.find_by_id(search_params[:contest_id])&.participations
         all_participations.each do |p|
           regions.push(p.region)
         end
-        scores = Region.get_scores(regions: regions)
+        scores = ::Region.merge_intermediate_scores_and_percentiles(regions: regions)
         participations_arr.each do |p|
           p_scores_hash = scores.detect{ |s| s[:id] == p[:id].to_i }
           p.merge!(p_scores_hash)

@@ -497,6 +497,19 @@ class Region < ApplicationRecord
     return nr
   end
 
+  # This method returns all the species of greater region(ranked by count in descending order)
+  # which are not found in the base region
+  def get_undiscovered_species()
+    unfound_species = []
+    nr = get_neighboring_region(region_type: 'greater_region')
+    return unfound_species if !nr.present?
+
+    nr_top_species = nr.get_top_species().map{|row| row[0]}
+    return unfound_species if nr_top_species.length <= 0
+
+    unfound_species = nr_top_species - observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+  end
+
   def get_bio_value
     avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
 
@@ -507,6 +520,15 @@ class Region < ApplicationRecord
   end
 
   def get_region_scores
+    region_scores = Hash.new([])
+    region_scores       = get_region_base_scores
+    intermediate_scores = get_intermediate_scores
+    region_scores.merge!(intermediate_scores)
+
+    return region_scores
+  end
+
+  def get_region_base_scores
     region_scores = Hash.new([])
     region_scores[:total_vs_greater_region_observations_score] = get_regions_score(region_type: 'greater_region', score_type: 'observations_score').to_f
     region_scores[:total_vs_locality_observations_score]       = get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f
@@ -523,12 +545,36 @@ class Region < ApplicationRecord
     region_scores[:this_year_vs_total_activity_score]      = get_yearly_score(score_type: 'people_score', num_years: 1).to_f
     region_scores[:last_2years_vs_total_activity_score]    = get_yearly_score(score_type: 'people_score', num_years: 2).to_f
 
+    return region_scores
+  end
+
+  def get_intermediate_scores
+    region_scores = Hash.new([])
+    region_scores[:bioscore] = bioscore
+    region_scores[:bio_value] = bio_value
+
+    region_scores[:species_diversity_score] = species_diversity_score
+    region_scores[:monitoring_score] = monitoring_score
+    region_scores[:community_score] = community_score
+
+    region_scores[:species_trend] = species_trend
+    region_scores[:monitoring_trend] = monitoring_trend
+    region_scores[:community_trend] = community_trend
+
+    return region_scores
+  end
+
+  def calculate_scores_to_store
+    region_scores = Hash.new([])
+
+    region_scores = get_region_base_scores
+
     constants = Constant.get_all_constants
     obs_count     = get_observations_count(include_gbif: true)
     species_count = get_species_count(include_gbif: true)
     people_count  = get_people_count(include_gbif: true)
-    observations_per_species = species_count.positive? ? obs_count / species_count : 0
-    observations_per_person  = people_count.positive? ? obs_count / people_count : 0
+    observations_per_species = species_count.positive? ? (obs_count.to_f / species_count.to_f) : 0
+    observations_per_person  = people_count.positive? ? (obs_count.to_f / people_count.to_f) : 0
 
     region_scores[:bio_value] = obs_count.positive? ? self.get_bio_value.round(2) * constants[:average_observations_score_constant] : 0
 
@@ -564,39 +610,33 @@ class Region < ApplicationRecord
                                         ((yearly_vs_total_activity_score - (bi_yearly_vs_total_activity_score/2))/ (bi_yearly_vs_total_activity_score/2)).round(2)
                                         : 0) * constants[:activity_trend_constant]
 
+    region_scores[:bioscore] =  region_scores[:bio_value] + region_scores[:species_diversity_score] +
+                                region_scores[:species_trend] + region_scores[:monitoring_score] +
+                                region_scores[:monitoring_trend] + region_scores[:community_score] +
+                                region_scores[:community_trend]
+
     return region_scores
   end
 
-  # This method returns all the species of greater region(ranked by count in descending order)
-  # which are not found in the base region
-  def get_undiscovered_species()
-    unfound_species = []
-    nr = get_neighboring_region(region_type: 'greater_region')
-    return unfound_species if !nr.present?
-
-    nr_top_species = nr.get_top_species().map{|row| row[0]}
-    return unfound_species if nr_top_species.length <= 0
-
-    unfound_species = nr_top_species - observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
-  end
 
   def self.calculate_percentiles(regions:, key: )
     n = regions.length
+
     regions.each_with_index do |r, i|
-      percentile = (100 * i /(n - 1)).round(2)
+      percentile = (100 * i / (n - 1).to_f).round(2)
       regions[n-i-1][key.to_sym] = percentile
     end
     return regions
   end
 
-  def self.get_scores(regions:)
+  def self.merge_intermediate_scores_and_percentiles(regions:)
     mod_regions = []
+
     regions.each do |r|
       region_scores = Hash.new([])
       region_scores[:id] = r.id
-      scores = r.get_region_scores
-      region_scores.merge!(scores)
-      region_scores[:bioscore] = r.bioscore
+      intermediate_scores = r.get_intermediate_scores
+      region_scores.merge!(intermediate_scores)
       mod_regions.push(region_scores)
     end
     mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:bioscore] }.reverse!, key: 'bioscore_percentile')
