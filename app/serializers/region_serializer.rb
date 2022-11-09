@@ -1,10 +1,11 @@
 class RegionSerializer
   include JSONAPI::Serializer
-  attributes :id, :name, :description, :header_image_url, :logo_image_url,
-    :region_url, :lat, :lng, :observations_count, :identifications_count, :people_count,
-    :species_count, :physical_health_score, :mental_health_score, :bioscore
+  attributes :id, :name, :description, :logo_image_url, :logo_image, :header_image_url,
+             :header_image, :raw_polygon_json, :region_url, :bioscore, :lat, :lng,
+             :observations_count, :species_count, :people_count, :identifications_count,
+             :physical_health_score, :mental_health_score
 
-  attribute :polygon do |object|
-    object.get_polygon_json
-  end
+  # attribute :polygon do |object|
+  #   object.get_polygon_json
+  # end
 end

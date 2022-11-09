@@ -6,7 +6,7 @@ module Api::V1
       search_params = params.to_unsafe_h.symbolize_keys
       Service::Participation::Fetch.call(search_params) do |result|
         result.success do |participations|
-          @participations = participations
+          render json: participations
         end
         result.failure do |message|
           raise ApiFail.new(message)
