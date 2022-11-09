@@ -610,10 +610,10 @@ class Region < ApplicationRecord
                                         ((yearly_vs_total_activity_score - (bi_yearly_vs_total_activity_score/2))/ (bi_yearly_vs_total_activity_score/2)).round(2)
                                         : 0) * constants[:activity_trend_constant]
 
-    region_scores[:bioscore] =  region_scores[:bio_value] + region_scores[:species_diversity_score] +
+    region_scores[:bioscore] =  (region_scores[:bio_value] + region_scores[:species_diversity_score] +
                                 region_scores[:species_trend] + region_scores[:monitoring_score] +
                                 region_scores[:monitoring_trend] + region_scores[:community_score] +
-                                region_scores[:community_trend]
+                                region_scores[:community_trend]).round(2)
 
     return region_scores
   end
