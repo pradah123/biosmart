@@ -498,16 +498,21 @@ class Region < ApplicationRecord
   end
 
   # This method returns all the species of greater region(ranked by count in descending order)
-  # which are not found in the base region
-  def get_undiscovered_species()
-    unfound_species = []
+  # which are not found in the base region with scientific_name, common_name and images
+  def get_undiscovered_species(offset:, limit:)
+    undiscovered_species = []
     nr = get_neighboring_region(region_type: 'greater_region')
-    return unfound_species if !nr.present?
+    return undiscovered_species if !nr.present?
 
     nr_top_species = nr.get_top_species().map{|row| row[0]}
-    return unfound_species if nr_top_species.length <= 0
+    return undiscovered_species if nr_top_species.length <= 0
 
-    unfound_species = nr_top_species - observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+    undiscovered_species = nr_top_species - observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+    undiscovered_species = undiscovered_species[offset, limit] if undiscovered_species.length >= offset
+
+    undiscovered_species = nr.get_species_details(species: undiscovered_species) if undiscovered_species.length.positive?
+
+    return undiscovered_species
   end
 
   def get_bio_value
