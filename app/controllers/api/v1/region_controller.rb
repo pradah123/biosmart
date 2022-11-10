@@ -37,12 +37,7 @@ module Api::V1
 
       Service::Region::Show.call(search_params) do |result|
         result.success do |region|
-          undiscovered_species = region.get_undiscovered_species()
-          if undiscovered_species.length >= offset
-            undiscovered_species = undiscovered_species[offset, limit]
-          else
-            undiscovered_species = []
-          end
+          undiscovered_species = region.get_undiscovered_species(offset: offset, limit: limit)
           render json: { undiscovered_species: undiscovered_species }
         end
         result.failure do |message|

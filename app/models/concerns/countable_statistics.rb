@@ -217,6 +217,24 @@ module CountableStatistics
     end
   end
 
+  # For given list of species get common name and image
+  def get_species_details(species: )
+    species_with_common_name = observations.where(scientific_name: species).select(:scientific_name, :common_name).distinct
+    observations_with_images = observations.where(scientific_name: species).has_images
+
+    # Get common name for each  specie
+    species.map! do |s|
+      species_hash          = species_with_common_name.as_json.detect{ |c| s == c["scientific_name"] }
+      obs                   = observations_with_images.detect{ |o| s == o.scientific_name }
+      species_hash          = species_hash.except!("id")
+      species_hash["image"] = obs.present? ? obs.observation_images.pluck(:url).first : ''
+
+      s = species_hash
+    end
+
+    return species
+  end
+
 end
 
 
