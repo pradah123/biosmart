@@ -219,7 +219,7 @@ module CountableStatistics
 
   # For given list of species get common name and image
   def get_species_details(species: )
-    observations_with_images = observations.where(scientific_name: species).has_images
+    observations_with_images = observations.where(scientific_name: species).has_images.includes(:observation_images)
     #species_with_common_name = observations_with_images.select(:scientific_name, :common_name).distinct
 
     species.map! do |s|
