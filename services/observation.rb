@@ -148,13 +148,13 @@ module Service
 
         optional(:contest_id).filled(:integer, gt?: 0)
         optional(:region_id).filled(:integer, gt?: 0)
-        optional(:n).filled(:integer, gt?: 0)
+        optional(:with_images).filled(:string, included_in?: ['true', 'false'])
       end
 
       class Params < AppStruct::Pagination
         attribute? :contest_id, Types::Params::Integer
         attribute? :region_id, Types::Params::Integer
-        attribute? :n, Types::Params::Integer
+        attribute? :with_images, Types::Params::String
       end
 
       def execute(params)
@@ -165,8 +165,6 @@ module Service
       private
 
       def fetch_top_species(transformed_params, params)
-        n = transformed_params.n.present? ? transformed_params.n : 25
-
         if transformed_params.contest_id.present? && transformed_params.region_id.present?
           result = Service::Participation::Base.call(transformed_params).to_result
         elsif transformed_params.contest_id.present?
@@ -179,7 +177,21 @@ module Service
           )
         end
         if result&.success?
-          return Success(result.success.get_top_species(n))
+          top_species = []
+          if transformed_params.with_images == 'true'
+            top_species = ::ParticipationSpeciesMatview.get_top_species_with_images(
+              participation_id: result.success.id,
+              offset: transformed_params.offset,
+              limit: transformed_params.limit
+            )
+          else
+            top_species = ::ParticipationSpeciesMatview.get_top_species(
+              participation_id: result.success.id,
+              offset: transformed_params.offset,
+              limit: transformed_params.limit
+            )
+          end
+          return Success(top_species)
         end
         if result&.failure?
           return Failure(result.failure)
