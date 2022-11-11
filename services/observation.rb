@@ -26,6 +26,7 @@ module Service
         optional(:region_id).filled(:integer, gt?: 0)
         optional(:sort_by).filled(:string, included_in?: ['observed_at'])
         optional(:sort_order).filled(:string, included_in?: ['asc', 'desc'])
+        optional(:datasource_order).filled(:array)
         optional(:category).filled(:string)
         optional(:search_text).filled(:string)
       end
@@ -35,6 +36,7 @@ module Service
         attribute? :region_id, Types::Params::Integer
         attribute? :sort_by, Types::Params::String.default('observed_at')
         attribute? :sort_order, Types::Params::String.default('desc')
+        attribute? :datasource_order, Types::Params::Array
         attribute? :category, Types::Params::String
         attribute? :search_text, Types::Params::String
       end
@@ -65,10 +67,19 @@ module Service
             search_params.region_id, search_params.category, search_params.search_text
           )
         end
-        Success(observations.includes(:observation_images)
-                            .offset(search_params.offset)
-                            .limit(search_params.limit)
-                            .order(search_params.sort_by => search_params.sort_order))
+        observations = observations.includes(:observation_images)
+                                   .includes(:data_source)
+                                   .includes(:taxonomy)
+                                   .offset(search_params.offset)
+                                   .limit(search_params.limit)
+                                   .order(search_params.sort_by => search_params.sort_order)
+        if search_params.datasource_order.present?
+          # https://guides.rubyonrails.org/active_record_querying.html#unscope
+          observations = observations.unscope(:order)
+          # https://edgeapi.rubyonrails.org/classes/ActiveRecord/QueryMethods.html#method-i-in_order_of
+          observations = observations.sort_by_data_source(search_params.datasource_order)
+        end
+        Success(observations)
       end
 
       def get_region_observations_relation(region_id, category, search_text)
