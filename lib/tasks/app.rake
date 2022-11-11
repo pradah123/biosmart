@@ -39,6 +39,6 @@ end
 namespace :participation_species_matview do
   desc 'Update participation_species_matview'
   task refresh: :environment do
-    GbifObservationsMatview.refresh
+    ParticipationSpeciesMatview.refresh
   end
 end
