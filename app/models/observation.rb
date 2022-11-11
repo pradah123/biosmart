@@ -9,6 +9,14 @@ class Observation < ApplicationRecord
   scope :has_creator_id, -> { where.not creator_id: nil }
   scope :without_creator_name, -> { where creator_name: nil }
   scope :search, -> (q) { where 'search_text LIKE ?', "%#{q.downcase}%" }
+  scope :sort_by_data_source, -> (priority) {
+    ret = "CASE"
+    priority.each_with_index do |p, i|
+      ret << " WHEN data_source_id = '#{p}' THEN #{i}"
+    end
+    ret << " ELSE #{priority.count} END"
+    order(Arel.sql(ret))
+  }
 
   #
   # an observation may belong to multiple regions, participations, or contests
@@ -31,9 +39,6 @@ class Observation < ApplicationRecord
 
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
   @@nobservations_per_page = 18
-
-
-
 
   def update_search_text
     update_column :search_text, "#{scientific_name} #{common_name} #{accepted_name} #{creator_name}".downcase
