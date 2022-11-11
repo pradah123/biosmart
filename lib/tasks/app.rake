@@ -35,3 +35,10 @@ namespace :taxonomy do
     Observation.update_observations_taxonomy(update_all: args[:update_all])
   end
 end
+
+namespace :participation_species_matview do
+  desc 'Update participation_species_matview'
+  task refresh: :environment do
+    GbifObservationsMatview.refresh
+  end
+end
