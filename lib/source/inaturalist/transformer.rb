@@ -29,7 +29,8 @@ module Source
 
       def self.add_bioscore(hash)
         avg_bio_score = Constant.find_by_name('average_observations_score')&.value || 20
-        bioscore = hash[:quality_grade].present? && hash[:quality_grade] == 'research' ? 100 : avg_bio_score
+        bioscore_for_research_grade = Constant.find_by_name('inat_bioscore_for_research_grade')&.value || 50
+        bioscore = hash[:quality_grade].present? && hash[:quality_grade] == 'research' ? bioscore_for_research_grade : avg_bio_score
         hash.merge({
           bioscore: bioscore
         })
