@@ -581,12 +581,14 @@ class Region < ApplicationRecord
     obs_count     = get_observations_count(include_gbif: true)
     species_count = get_species_count(include_gbif: true)
     people_count  = get_people_count(include_gbif: true)
-    observations_per_species = species_count.positive? ? (obs_count.to_f / species_count.to_f) : 0
+    # observations_per_species = species_count.positive? ? (obs_count.to_f / species_count.to_f) : 0
+    species_per_observations = obs_count.positive? ? (species_count.to_f / obs_count.to_f) : 0
+
     observations_per_person  = people_count.positive? ? (obs_count.to_f / people_count.to_f) : 0
 
     region_scores[:bio_value] = obs_count.positive? ? self.get_bio_value.round(2) * constants[:average_observations_score_constant] : 0
 
-    region_scores[:species_diversity_score] = (observations_per_species * constants[:observations_per_species_constant] +
+    region_scores[:species_diversity_score] = species_count + (species_per_observations * constants[:species_per_observation_constant] +
                                               ((region_scores[:total_vs_locality_species_score] ) * constants[:locality_species_constant] +
                                               (region_scores[:total_vs_greater_region_species_score]) * constants[:greater_region_species_constant] +
                                               (region_scores[:this_year_vs_total_species_score]) * constants[:current_year_species_constant] +
@@ -597,7 +599,7 @@ class Region < ApplicationRecord
                                        ((yearly_vs_total_species_score - (bi_yearly_vs_total_species_score/2))/ (bi_yearly_vs_total_species_score/2)).round(2)
                                        : 0) * constants[:species_trend_constant]
 
-    region_scores[:monitoring_score] = (((region_scores[:total_vs_locality_observations_score] ) * constants[:locality_observations_constant] +
+    region_scores[:monitoring_score] = obs_count + (((region_scores[:total_vs_locality_observations_score] ) * constants[:locality_observations_constant] +
                                        (region_scores[:total_vs_greater_region_observations_score]) * constants[:greater_region_observations_constant] +
                                        (region_scores[:this_year_vs_total_observations_score]) * constants[:current_year_observations_constant] +
                                        (region_scores[:last_2years_vs_total_observations_score] ) * constants[:observations_trend_constant]) / 100).round(2)
@@ -607,7 +609,7 @@ class Region < ApplicationRecord
                                        ((yearly_vs_total_obs_score - (bi_yearly_vs_total_obs_score/2))/ (bi_yearly_vs_total_obs_score/2) ).round(2)
                                        : 0) * constants[:observations_trend_constant]
 
-    region_scores[:community_score]   = (observations_per_person * constants[:observations_per_person_constant] +
+    region_scores[:community_score]   = people_count + (observations_per_person * constants[:observations_per_person_constant] +
                                         ((region_scores[:total_vs_locality_activity_score] ) * constants[:locality_people_constant] +
                                         (region_scores[:total_vs_greater_region_activity_score]) * constants[:greater_region_people_constant] +
                                         (region_scores[:this_year_vs_total_activity_score]) * constants[:current_year_people_constant] +
@@ -651,6 +653,7 @@ class Region < ApplicationRecord
     mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:species_diversity_score] }.reverse!, key: 'species_diversity_percentile')
     mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:monitoring_score] }.reverse!, key: 'monitoring_percentile')
     mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:community_score] }.reverse!, key: 'community_percentile')
+    mod_regions = Region.calculate_percentiles(regions: mod_regions.sort_by! { |hsh| hsh[:bio_value] }.reverse!, key: 'biovalue_percentile')
 
     return mod_regions
   end
