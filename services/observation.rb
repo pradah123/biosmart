@@ -29,6 +29,8 @@ module Service
         optional(:datasource_order).filled(:array)
         optional(:category).filled(:string)
         optional(:search_text).filled(:string)
+        optional(:with_images).filled(:string, included_in?: ['true', 'false'])
+
       end
       
       class Params < AppStruct::Pagination
@@ -39,6 +41,8 @@ module Service
         attribute? :datasource_order, Types::Params::Array
         attribute? :category, Types::Params::String
         attribute? :search_text, Types::Params::String
+        attribute? :with_images, Types::Params::String.default('false')
+
       end
 
       def execute(params)
@@ -67,12 +71,23 @@ module Service
             search_params.region_id, search_params.category, search_params.search_text
           )
         end
-        observations = observations.includes(:observation_images)
-                                   .includes(:data_source)
-                                   .includes(:taxonomy)
-                                   .offset(search_params.offset)
-                                   .limit(search_params.limit)
-                                   .order(search_params.sort_by => search_params.sort_order)
+
+        if search_params.with_images == 'true'
+          observations = observations.includes(:observation_images)
+                                    .includes(:data_source)
+                                    .includes(:taxonomy)
+                                    .has_images
+                                    .offset(search_params.offset)
+                                    .limit(search_params.limit)
+                                    .order(search_params.sort_by => search_params.sort_order)
+        else
+          observations = observations.includes(:observation_images)
+                                    .includes(:data_source)
+                                    .includes(:taxonomy)
+                                    .offset(search_params.offset)
+                                    .limit(search_params.limit)
+                                    .order(search_params.sort_by => search_params.sort_order)
+        end
         if search_params.datasource_order.present?
           # https://guides.rubyonrails.org/active_record_querying.html#unscope
           observations = observations.unscope(:order)
