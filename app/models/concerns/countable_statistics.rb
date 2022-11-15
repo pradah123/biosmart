@@ -230,6 +230,7 @@ module CountableStatistics
       species_hash[:image] = obs.observation_images.pluck(:url).first
       species_hash[:scientific_name] = obs.scientific_name
       species_hash[:common_name] = obs.common_name
+      species_hash[:creator_name] = obs.creator_name
       s = species_hash
     end
 

@@ -43,6 +43,19 @@ module Api::V1
       end
     end
 
+    def undiscovered_species
+      search_params = params.to_unsafe_h.symbolize_keys
+
+      Service::Observation::FetchUndiscoveredSpecies.call(search_params) do |result|
+        result.success do |undiscovered_species|
+          render json: { undiscovered_species: undiscovered_species }
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
     def bulk_create
       fail_message = nil
       fail_message = { status: 'fail', message: 'no data_source_name given' } if params[:data_source_name].nil?

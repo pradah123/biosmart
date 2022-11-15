@@ -40,6 +40,7 @@ Rails.application.routes.draw do
       delete '/participation', to: 'participation#destroy'    
       get '/participation/:contest_id/:region_id/top_species', to: 'observation#top_species'
       get '/participation/:contest_id/:region_id/top_people', to: 'observation#top_people'
+      get '/participation/:contest_id/:region_id/undiscovered_species', to: 'observation#undiscovered_species'
 
       post '/region', to: 'region#create'
       get '/region/:region_id', to: 'region#show'
@@ -47,7 +48,7 @@ Rails.application.routes.draw do
       patch '/region/:id', to: 'region#update'      
       delete '/region/:id', to: 'region#destroy'
       get '/regions', to: 'region#search'
-      get '/region/:region_id/undiscovered_species', to: 'region#undiscovered_species'
+      get '/region/:region_id/undiscovered_species', to: 'observation#undiscovered_species'
       get '/region/:region_id/top_species', to: 'observation#top_species'
       get '/region/:region_id/top_people', to: 'observation#top_people'
       get '/region/:region_id/observations', to: 'observation#search'
