@@ -17,6 +17,7 @@ class ParticipationSpeciesMatview < ActiveRecord::Base
     if offset.present? && limit.present?
       top_species = ::ParticipationSpeciesMatview.where(participation_id: participation_id)
                                                  .has_images
+                                                 .has_scientific_name
                                                  .select(:scientific_name, :common_name, :species_count, :image)
                                                  .offset(offset)
                                                  .limit(limit)
@@ -24,6 +25,7 @@ class ParticipationSpeciesMatview < ActiveRecord::Base
     else
       top_species = ::ParticipationSpeciesMatview.where(participation_id: participation_id)
                                                  .has_images
+                                                 .has_scientific_name
                                                  .select(:scientific_name, :common_name, :species_count, :image)
                                                  .order('species_count' => 'desc')
     end
@@ -33,12 +35,14 @@ class ParticipationSpeciesMatview < ActiveRecord::Base
   def self.get_top_species(participation_id:, offset:, limit:)
     if offset.present? && limit.present?
       top_species = ::ParticipationSpeciesMatview.where(participation_id: participation_id)
+                                                 .has_scientific_name
                                                  .select(:scientific_name, :common_name, :species_count)
                                                  .offset(offset)
                                                  .limit(limit)
                                                  .order('species_count' => 'desc')
     else
       top_species = ::ParticipationSpeciesMatview.where(participation_id: participation_id)
+                                                 .has_scientific_name
                                                  .select(:scientific_name, :common_name, :species_count)
                                                  .order('species_count' => 'desc')
     end
