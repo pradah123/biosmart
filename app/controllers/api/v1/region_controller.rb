@@ -30,22 +30,6 @@ module Api::V1
       end
     end
 
-    def undiscovered_species
-      search_params = params.to_unsafe_h.symbolize_keys
-      offset = search_params[:offset]&.to_i || 0
-      limit = search_params[:limit]&.to_i || 10
-
-      Service::Region::Show.call(search_params) do |result|
-        result.success do |region|
-          undiscovered_species = region.get_undiscovered_species(offset: offset, limit: limit)
-          render json: { undiscovered_species: undiscovered_species }
-        end
-        result.failure do |message|
-          raise ApiFail.new(message)
-        end
-      end
-    end
-
     def polygons_old
       data = {}
 

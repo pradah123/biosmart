@@ -182,10 +182,6 @@ module Service
       def fetch_top_species(transformed_params, params)
         if transformed_params.contest_id.present? && transformed_params.region_id.present?
           result = Service::Participation::Base.call(transformed_params).to_result
-        elsif transformed_params.contest_id.present?
-          result = Service::Contest::Base.call(params).to_result
-        elsif transformed_params.region_id.present?
-          result = Service::Region::Show.call(params).to_result
         else
           return Failure(
             "Invalid contest id (#{transformed_params.contest_id}) or region id (#{transformed_params.region_id})."
@@ -262,6 +258,60 @@ module Service
         end
       end
 
+    end
+
+    class FetchUndiscoveredSpecies
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        extend AppSchema::Pagination
+
+        optional(:contest_id).filled(:integer, gt?: 0)
+        optional(:region_id).filled(:integer, gt?: 0)
+        optional(:with_images).filled(:string, included_in?: ['true', 'false'])
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :contest_id, Types::Params::Integer
+        attribute? :region_id, Types::Params::Integer
+        attribute? :with_images, Types::Params::String
+      end
+
+      def execute(params)
+        search_params = Params.new(params)
+        fetch_undiscovered_species(search_params, params)
+      end
+
+      private
+
+      def fetch_undiscovered_species(search_params, params)
+        if search_params.contest_id.present? && search_params.region_id.present?
+          result = Service::Participation::Base.call(search_params).to_result
+          if result&.success?
+            undiscovered_species = result.success.region.get_undiscovered_species(offset: search_params.offset, limit: search_params.limit, participant: result.success)
+          else
+            return Failure(
+              "Invalid contest id (#{search_params.contest_id}) or region id (#{search_params.region_id})."
+            )
+          end
+        elsif search_params.region_id.present?
+          result = Service::Region::Show.call(params).to_result
+          if result&.success?
+            undiscovered_species = result.success.get_undiscovered_species(offset: search_params.offset, limit: search_params.limit)
+          else
+            return Failure(
+              "Invalid region id (#{search_params.region_id})."
+            )
+          end
+        else
+          return Failure(
+            "Invalid contest id (#{search_params.contest_id}) or region id (#{search_params.region_id})."
+          )
+        end
+        Success(undiscovered_species)
+      end
     end
   end
 end
