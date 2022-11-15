@@ -45,8 +45,6 @@ module Api::V1
 
     def undiscovered_species
       search_params = params.to_unsafe_h.symbolize_keys
-      offset = search_params[:offset]&.to_i || 0
-      limit = search_params[:limit]&.to_i || 10
 
       Service::Observation::FetchUndiscoveredSpecies.call(search_params) do |result|
         result.success do |undiscovered_species|
