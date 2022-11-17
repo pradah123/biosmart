@@ -30,7 +30,6 @@ module Service
         optional(:category).filled(:string)
         optional(:search_text).filled(:string)
         optional(:with_images).filled(:string, included_in?: ['true', 'false'])
-
       end
       
       class Params < AppStruct::Pagination
@@ -164,12 +163,14 @@ module Service
         optional(:contest_id).filled(:integer, gt?: 0)
         optional(:region_id).filled(:integer, gt?: 0)
         optional(:with_images).filled(:string, included_in?: ['true', 'false'])
+        optional(:category).filled(:string)
       end
 
       class Params < AppStruct::Pagination
         attribute? :contest_id, Types::Params::Integer
         attribute? :region_id, Types::Params::Integer
         attribute? :with_images, Types::Params::String
+        attribute? :category, Types::Params::String
       end
 
       def execute(params)
@@ -187,19 +188,31 @@ module Service
             "Invalid contest id (#{transformed_params.contest_id}) or region id (#{transformed_params.region_id})."
           )
         end
+        if transformed_params.category.present?
+          (rank_name, rank_value) = Utils.get_category_rank_name_and_value(category_name: transformed_params.category)
+          if rank_name.blank? || rank_value.blank?
+            return Failure(
+              "Invalid category '#{transformed_params.category}'."
+            )
+          end
+        end
         if result&.success?
           top_species = []
           if transformed_params.with_images == 'true'
             top_species = ::ParticipationSpeciesMatview.get_top_species_with_images(
               participation_id: result.success.id,
               offset: transformed_params.offset,
-              limit: transformed_params.limit
+              limit: transformed_params.limit,
+              rank_name: rank_name,
+              rank_value: rank_value
             )
           else
             top_species = ::ParticipationSpeciesMatview.get_top_species(
               participation_id: result.success.id,
               offset: transformed_params.offset,
-              limit: transformed_params.limit
+              limit: transformed_params.limit,
+              rank_name: rank_name,
+              rank_value: rank_value
             )
           end
           return Success(top_species)
