@@ -38,4 +38,28 @@ module TaxonomyFileProcess
       end
 
     end
+
+    def self.taxonomy_vernacular_file_process(file_name:)
+      total_processed_records = 0
+      Rails.logger.info ">>> Started TaxonomyFileProcess::process_file for file #{file_name}"
+      begin
+        data_source_id = DataSource.find_by_name('gbif')
+        CSV.foreach(file_name, headers: true, col_sep: "\t", skip_blanks: true, encoding: "bom|utf-8", quote_char: nil) do |row|
+          next if row['language'] != 'en' || !row['taxonID'].present? || !row['vernacularName'].present?
+          Rails.logger.info ">>> TaxonomyFileProcess::taxonomy_vernacular_file_process:: For taxonID: #{row['taxonID']}, vernacularName: #{row['vernacularName']}"
+          taxonomy_updated = Observation.joins(:taxonomy)
+                                        .where("taxonomies.taxon_id = ?", row['taxonID'].to_s)
+                                        .where(data_source_id: data_source_id)
+                                        .where.not(taxonomy_id: nil)
+                                        .update_all(common_name: row['vernacularName'])
+          if taxonomy_updated.positive?
+            Rails.logger.info "Updated GBIF observations'common_name with #{row['vernacularName']}"
+            total_processed_records += 1
+          end
+        end
+        Rails.logger.info ">>> TaxonomyFileProcess::taxonomy_vernacular_file_process::Total records processed : #{total_processed_records}"
+      rescue => e
+        Rails.logger.info ">>> TaxonomyFileProcess::taxonomy_vernacular_file_process:: Failed to process the file becuase of an error #{e.full_message}"
+      end
+    end
 end
