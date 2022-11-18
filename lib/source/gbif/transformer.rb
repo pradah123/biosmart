@@ -56,7 +56,7 @@ module Source
         populate_unique_id()
         rename_keys scientificName: :scientific_name
         copy_keys scientific_name: :accepted_name
-        rename_keys genericName: :common_name
+        rename_keys vernacularName: :common_name
         populate_creator_name()
         populate_images()
         rename_keys decimalLongitude: :lng
