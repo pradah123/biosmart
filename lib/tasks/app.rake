@@ -42,3 +42,10 @@ namespace :participation_species_matview do
     ParticipationSpeciesMatview.refresh
   end
 end
+
+namespace :participation_observer_species_matview do
+  desc 'Update participation_observer_species_matview'
+  task refresh: :environment do
+    ParticipationObserverSpeciesMatview.refresh
+  end
+end
