@@ -11,16 +11,16 @@ class Taxonomy < ApplicationRecord
         obj.canonical_name = params['canonicalName'] || ''
         obj.accepted_name = params['accepted'] || params['canonicalName'] || params['scientificName'] || ''
         obj.accepted_name_usage_id = params['acceptedNameUsageID'] || ''
-        obj.kingdom = params['kingdom'] || ''
-        obj.phylum = params['phylum'] || ''
-        obj.class_name = params['class'] || ''
+        obj.kingdom = params['kingdom']&.downcase || ''
+        obj.phylum = params['phylum']&.downcase || ''
+        obj.class_name = params['class']&.downcase || ''
         obj.taxonomic_status = params['taxonomicStatus'] || ''
         obj.taxon_rank = params['taxonRank'] || ''
         obj.generic_name = params['genericName'] || ''
         obj.source = params['source'] || 'gbif'
-        # obj.order = params['order'] || ''
-        # obj.family = params['family'] || ''
-        # obj.genus = params['genus'] || ''
+        obj.order = params['order']&.downcase || ''
+        obj.family = params['family']&.downcase || ''
+        obj.genus = params['genus']&.downcase || ''
 
         return obj
     end
