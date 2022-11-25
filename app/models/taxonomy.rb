@@ -121,26 +121,23 @@ class Taxonomy < ApplicationRecord
       category_mapping = JSON.load file
 
       category_names = []
+      category_name = ''
+
       category_mapping.each do |category|
-        if category['ranking'] == 'class_name' && category['value'].downcase == class_name.downcase
-          category_names.push(category['name'])
+        if category['kingdom'].present? && kingdom.present? && category['kingdom'].include?(kingdom)
+          category_name = category['name']
+        end
+        if category['phylum'].present? && phylum.present? && category['phylum'].include?(phylum)
+          category_name = category['name']
+        end
+        if category['class_name'].present? && class_name.present? && category['class_name'].include?(class_name)
+          category_name = category['name']
+        end
+        if category['order'].present? && order.present? && category['order'].include?(order)
+          category_name = category['name']
         end
       end
-      unless category_names.present?
-        category_mapping.each do |category|
-          if category['ranking'] == 'phylum' && category['value'].downcase == phylum.downcase
-            category_names.push(category['name'])
-          end
-        end
-      end
-      unless category_names.present?
-        category_mapping.each do |category|
-          if category['ranking'] == 'kingdom' && category['value'].downcase == kingdom.downcase
-            category_names.push(category['name'])
-          end
-        end
-      end
-      return category_names
+      return category_name
     end
 
     rails_admin do

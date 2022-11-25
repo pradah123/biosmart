@@ -35,7 +35,7 @@ class ObservationSerializer
           !Utils.get_category_rank_name_and_value(category_name: object.scientific_name).blank?
         object.scientific_name
       else
-        object.taxonomy&.get_category_name&.first
+        object.taxonomy&.get_category_name
       end
     end
 

@@ -69,7 +69,23 @@ module Utils
 
     category_mapping.each do |category|
       if category['name'] == category_name
-        return category['ranking'], category['value']
+        query = ''
+        if category['phylum'].present?
+          query += "phylum IN (#{category['phylum'].split(/,/).inspect[1...-1].gsub('"', "'")})"
+        end
+        if category['class_name'].present?
+          query += " OR " unless query.blank?
+          query += "class_name IN (#{category['class_name'].split(/,/).inspect[1...-1].gsub('"', "'")})"
+        end
+        if category['order'].present?
+          query += " OR " unless query.blank?
+          query += '"order" IN (' + category['order'].split(/,/).inspect[1...-1].gsub('"', "'") +')'
+        end
+        if category['kingdom'].present?
+          query += " OR " unless query.blank?
+          query += "kingdom IN (#{category['kingdom'].split(/,/).inspect[1...-1].gsub('"', "'")})"
+        end
+        return query
       end
     end
     return ''

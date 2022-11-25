@@ -211,14 +211,14 @@ class Observation < ApplicationRecord
   def self.filter_observations(category:, q:, obj:, start_dt: , end_dt:)
     observations = nil
     if category.present?
-      (rank_name, rank_value) = Utils.get_category_rank_name_and_value(category_name: category)
+      category_query = Utils.get_category_rank_name_and_value(category_name: category)
     end
     # For home page
     if obj.nil?
       if category.present? && q.present?
-        observations = Observation.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(q)
+        observations = Observation.joins(:taxonomy).where(category_query).search(q)
       elsif category.present?
-        observations = Observation.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+        observations = Observation.joins(:taxonomy).where(category_query)
       elsif q.present?
         observations = Observation.all.search(q)
       else
@@ -233,9 +233,9 @@ class Observation < ApplicationRecord
                                           include_gbif: true)
         if observations.present?
           if category.present? && q.present?
-            observations = observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(q)
+            observations = observations.joins(:taxonomy).where(category_query).search(q)
           elsif category.present?
-            observations = observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+            observations = observations.joins(:taxonomy).where(category_query)
           elsif q.present?
             observations = observations.search(q)
           end
@@ -243,9 +243,9 @@ class Observation < ApplicationRecord
       else
         # For contest or participation page
         if category.present? && q.present?
-          observations = obj.first.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(q)
+          observations = obj.first.observations.joins(:taxonomy).where(category_query).search(q)
         elsif category.present?
-          observations = obj.first.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+          observations = obj.first.observations.joins(:taxonomy).where(category_query)
         elsif q.present?
           observations = obj.first.observations.search(q)
         else
