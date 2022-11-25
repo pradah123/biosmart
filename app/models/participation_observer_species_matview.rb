@@ -8,8 +8,8 @@ class ParticipationObserverSpeciesMatview < ActiveRecord::Base
 
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
 
-  scope :filter_by_rank_name_value, -> (rank_name, rank_value) {
-     where "#{rank_name.to_sym} = '#{rank_value}'" if rank_name.present? && rank_value.present?
+  scope :filter_by_category, -> (category) {
+    where(category) if category.present?
   }
   scope :filter_by_offset_limit, -> (n_start, n_end) {
     offset(n_start).limit(n_end) if n_start.present? && n_end.present?
@@ -22,9 +22,9 @@ class ParticipationObserverSpeciesMatview < ActiveRecord::Base
     true
   end
 
-  def self.get_top_species_with_images(participation_id:, offset: nil, limit: nil, rank_name: nil, rank_value: nil, observer: nil)
+  def self.get_top_species_with_images(participation_id:, offset: nil, limit: nil, observer: nil, category: nil)
     top_species = ParticipationObserverSpeciesMatview.where(participation_id: participation_id)
-                                                     .filter_by_rank_name_value(rank_name, rank_value)
+                                                     .filter_by_category(category)
                                                      .filter_by_creator_name(observer)
                                                      .has_scientific_name
                                                      .has_images
@@ -34,9 +34,9 @@ class ParticipationObserverSpeciesMatview < ActiveRecord::Base
     return top_species.as_json
   end
 
-  def self.get_top_species(participation_id:, offset: nil, limit: nil, rank_name: nil, rank_value: nil, observer: nil)
+  def self.get_top_species(participation_id:, offset: nil, limit: nil, observer: nil, category: nil)
     top_species = ParticipationObserverSpeciesMatview.where(participation_id: participation_id)
-                                                     .filter_by_rank_name_value(rank_name, rank_value)
+                                                     .filter_by_category(category)
                                                      .filter_by_creator_name(observer)
                                                      .has_scientific_name
                                                      .select(:scientific_name, :creator_name, :common_name, :species_count)

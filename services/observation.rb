@@ -130,18 +130,18 @@ module Service
 
       def filter_observations(obj, category, search_text)
         if category.present?
-          (rank_name, rank_value) = Utils.get_category_rank_name_and_value(category_name: category)
-          Rails.logger.info "rank_name: #{rank_name}, rank_value: #{rank_value}"
-          if rank_name.blank? || rank_value.blank?
+          category_query = Utils.get_category_rank_name_and_value(category_name: category)
+          Rails.logger.info "category_query: #{category_query}"
+          if category_query.blank?
             return Failure(
               "Invalid category '#{category}'."
             )
           end
         end
         if category.present? && search_text.present?
-          observations = obj.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase).search(search_text)
+          observations = obj.observations.joins(:taxonomy).where(category_query).search(search_text)
         elsif category.present?
-          observations = obj.observations.joins(:taxonomy).where("lower(taxonomies.#{rank_name}) = ?", rank_value.downcase)
+          observations = obj.observations.joins(:taxonomy).where(category_query)
         elsif search_text.present?
           observations = obj.observations.search(search_text)
         else
@@ -191,8 +191,8 @@ module Service
           )
         end
         if transformed_params.category.present?
-          (rank_name, rank_value) = Utils.get_category_rank_name_and_value(category_name: transformed_params.category)
-          if rank_name.blank? || rank_value.blank?
+          category_query = Utils.get_category_rank_name_and_value(category_name: transformed_params.category)
+          if category_query.blank?
             return Failure(
               "Invalid category '#{transformed_params.category}'."
             )
@@ -204,9 +204,8 @@ module Service
             participation_id: result.success.id,
             offset: transformed_params.offset,
             limit: transformed_params.limit,
-            rank_name: rank_name,
-            rank_value: rank_value,
-            observer: transformed_params.observer
+            observer: transformed_params.observer,
+            category: category_query
           }
           if transformed_params.with_images == 'true'
             if transformed_params.observer.present?

@@ -1,102 +1,79 @@
 [
   {
-    "name":"All Categories",
-    "ranking":"All Categories",
-    "value":"All Categories"
+    "name":"All Categories"
   },
   {
     "name":"Birds",
-    "ranking":"class_name",
-    "value":"aves"
+    "class_name":"aves"
   },
   {
     "name":"Arachnids",
-    "ranking":"class_name",
-    "value":"arachnida"
+    "class_name":"arachnida"
   },
   {
     "name":"Other Arthropods",
-    "ranking":"phylum",
-    "value":"arthropoda"
+    "class_name" : "collembola,chilopoda,diplopoda,branchiopoda,ostracoda"
   },
   {
     "name":"Other Insects",
-    "ranking":"class_name",
-    "value":"insecta"
+    "order":"blattodea,embiidina,embioptera,zygentoma,thysanoptera,archaeognatha,microcoryphia,notoptera,plecoptera,siphonaptera,psocodea,ephemeroptera,mecoptera,megaloptera,neuroptera,trichoptera,raphidioptera,strepsiptera,zoraptera,protorthoptera,cnemidolestodea,grylloblattodea,mantophasmatodea,miomoptera,megasecoptera,palaeodictyoptera,protorthoptera,diaphanopterodea,glosselytrodea,caloneurodea,eoblattida,odonata,hemiptera,phasmida,orthoptera"
   },
   {
     "name":"Other Invertebrates",
-    "ranking":"kingdom",
-    "value":"animalia"
+    "phylum":"mollusca,annelida,platyhelminthes,porifera,rotifera,nematoda,cnidaria,bryozoa,nemertea,acanthocephala,brachiopoda"
   },
   {
     "name":"Crustaceans",
-    "ranking":"class_name",
-    "value":"malacostraca"
+    "class_name":"malacostraca"
   },
   {
     "name":"Mammals",
-    "ranking":"class_name",
-    "value":"mammalia"
+    "class_name":"mammalia"
   },
   {
     "name":"Amphibians",
-    "ranking":"class_name",
-    "value":"amphibia"
+    "class_name":"amphibia"
   },
   {
     "name":"Reptiles",
-    "ranking":"class_name",
-    "value":"reptilia"
+    "class_name":"reptilia"
   },
   {
     "name":"Insects - Butterflies and Moths",
-    "ranking":"class_name",
-    "value":"insecta"
+    "order":"lepidoptera"
   },
   {
     "name":"Fungi and Friends",
-    "ranking":"kingdom",
-    "value":"fungi"
-  },
-  {
-    "name":"Other Plants",
-    "ranking":"kingdom",
-    "value":"plantae"
+    "kingdom":"fungi"
   },
   {
     "name":"Plants that do not flower",
-    "ranking":"kingdom",
-    "value":"plantae"
+    "class_name":"polypodiopsida,pinopsida,cycadopsida,lycopodiopsida",
+    "phylum":"bryophyta,marchantiophyta,charophyta,glaucophyta,anthocerotophyta"
   },
   {
     "name":"Plants that flower",
-    "ranking":"kingdom",
-    "value":"plantae"
+    "class_name":"magnoliopsida,liliopsida"
   },
   {
     "name":"Fish",
-    "ranking":"class_name",
-    "value":"actinopterygii"
+    "class_name":"actinopterygii"
   },
   {
     "name":"Insects - Beetles",
-    "ranking":"class_name",
-    "value":"insecta"
+    "order":"coleoptera"
   },
   {
     "name":"Insects - Ants, Bees and Wasps",
-    "ranking":"class_name",
-    "value":"insecta"
+    "order":"hymenoptera"
   },
   {
     "name":"Insects - Flies",
-    "ranking":"class_name",
-    "value":"insecta"
+    "order":"diptera"
   },
   {
     "name":"Other Life",
-    "ranking":"kingdom",
-    "value":"animalia"
+    "kingdom":"bacteria,chromista,protozoa,viruses,archaea",
+    "phylum":	"rhodophyta,chlorophyta"
   }
 ]
