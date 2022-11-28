@@ -12,7 +12,7 @@ class Observation < ApplicationRecord
   scope :sort_by_data_source, -> (priority) {
     ret = "CASE"
     priority.each_with_index do |p, i|
-      ret << " WHEN data_source_id = '#{p}' THEN #{i}"
+      ret << " WHEN observations.data_source_id = '#{p}' THEN #{i}"
     end
     ret << " ELSE #{priority.count} END"
     order(Arel.sql(ret))
