@@ -13,9 +13,9 @@ namespace :statistics do
   desc 'Schedule Reset Statistics'
   task reset: :environment do
     ## Reset statistics
-    Region.all.each        { |r| r.reset_statistics }
-    Participation.all.each { |p| p.reset_statistics }
-    Contest.all.each       { |c| c.reset_statistics }
+    Region.all.each { |r| r.reset_statistics }
+    Participation.base_region_participations.each { |p| p.reset_statistics }
+    Contest.all.each { |c| c.reset_statistics }
   end
 end
 
@@ -47,5 +47,15 @@ namespace :participation_observer_species_matview do
   desc 'Update participation_observer_species_matview'
   task refresh: :environment do
     ParticipationObserverSpeciesMatview.refresh
+  end
+end
+
+namespace :neighboring_region_participations do
+  desc 'Create participations for neighboring regions'
+  task create: :environment do
+    participations = Participation.where(status: 'accepted')
+    participations.each do |p|
+      p.update_neighboring_region_participation
+    end
   end
 end

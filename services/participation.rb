@@ -60,7 +60,7 @@ module Service
       private
 
       def fetch_participations(search_params)
-        participations = ::Participation.default_scoped
+        participations = ::Participation.default_scoped.base_region_participations
         if search_params.contest_id.present?
           all_participations = participations.where(contest_id: search_params.contest_id)
         end
@@ -84,7 +84,7 @@ module Service
         # Need to calculate percentiles for species_diversity, monitoring and community scores and
         # merge them with regions' other data
         regions = []
-        all_participations = ::Contest.find_by_id(search_params[:contest_id])&.participations
+        all_participations = ::Contest.find_by_id(search_params[:contest_id])&.participations.base_region_participations
         all_participations.each do |p|
           regions.push(p.region)
         end

@@ -6,7 +6,7 @@ class ParticipationObserverSpeciesMatview < ActiveRecord::Base
   scope :ignore_species_code, -> { where('accepted_name != lower(accepted_name)') }
   scope :has_images, -> { where.not image: nil }
 
-  @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
+  @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens', 'TBD']
 
   scope :filter_by_category, -> (category) {
     where(category) if category.present?
