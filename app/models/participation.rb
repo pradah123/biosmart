@@ -1,3 +1,5 @@
+require_relative '../../lib/participation/neighboring_region_participation.rb'
+
 class Participation < ApplicationRecord
   include CountableStatistics
 
@@ -8,14 +10,19 @@ class Participation < ApplicationRecord
 
   scope :in_competition, -> { where status: Participation.statuses[:accepted] }
   scope :ordered_by_observations_count, -> { order observations_count: :desc }
+  scope :base_region_participations, -> { where base_participation_id: nil }
+  scope :neighboring_region_participations, -> { where.not(base_participation_id: nil) }
 
   belongs_to :user, optional: true
   belongs_to :region
   belongs_to :contest
   has_and_belongs_to_many :data_sources
   has_and_belongs_to_many :observations
-  
+  has_many :neighboring_region_participations, class_name: 'Participation', foreign_key: 'base_participation_id', dependent: :delete_all
+
   after_save :set_start_and_end_times
+
+  after_save :update_neighboring_region_participation
 
   enum status: [:submitted, :accepted, :refused, :removed_by_admin, :removed_by_region] 
 
@@ -80,10 +87,24 @@ class Participation < ApplicationRecord
   end
 
 
+  # Add or update neighboring regions' participations
+  def update_neighboring_region_participation
+    return if base_participation_id.present?
 
+    neighboring_regions = region.neighboring_regions
+
+    # Create or update locality
+    neighboring_regions.each do |nr|
+      existing_nr_participation = nr.participations&.where(base_participation_id: id).first
+      nr_participation = NeighboringRegionParticipation.new(self, nr.id, existing_nr_participation)
+      nr_participation = nr_participation.get_participation()
+      nr_participation.save
+    end
+  end
 
   rails_admin do
     list do
+      scopes [:base_region_participations, :neighboring_region_participations]
       field :id
       field :region          
       field :contest
@@ -106,7 +127,7 @@ class Participation < ApplicationRecord
     end
     show do
       field :id
-      field :region          
+      field :region
       field :contest
       field :status
       field :data_sources

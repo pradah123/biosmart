@@ -59,7 +59,7 @@ class PagesController < ApplicationController
     if @user.nil?
       render :top 
     else
-      @participations = @user.admin? ? Participation.all : @user.participations
+      @participations = @user.admin? ? Participation.base_region_participations : @user.participations.base_region_participations
     end  
   end
 

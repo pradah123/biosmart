@@ -36,7 +36,7 @@ module Api::V1
 
       participations = []
       if obj.regions.count > 0
-        obj.participations.ordered_by_observations_count.each do |participant|
+        obj.participations.base_region_participations.ordered_by_observations_count.each do |participant|
           region = participant.region
           polygon_geojson = region.get_polygon_json
           if polygon_geojson.nil?

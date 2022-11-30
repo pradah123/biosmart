@@ -6,7 +6,8 @@ class ObservationsFetchJob < ApplicationJob
     Delayed::Worker.logger.info ">>>>>>>>>> ObservationsFetchJob fetching observations"
     
     Contest.in_progress.each do |contest|
-      contest.participations.in_competition.each do |participant|
+      contest.participations.base_region_participations.in_competition.each do |participant|
+        Delayed::Worker.logger.info ">>>>>>>>>>ObservationsFetchJob for participation - #{participant.id}, region - #{participant.region.name}"
         if participant.is_active?
           participant.data_sources.each do |data_source|
             extra_params = contest.get_extra_params(data_source_id: data_source.id) || {}

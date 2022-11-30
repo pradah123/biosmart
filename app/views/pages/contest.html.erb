@@ -29,8 +29,8 @@
         var _region_polygons = [];<%#= JSON.generate(@contest.get_region_polygons).html_safe %>; 
         var _participants = <%= JSON.generate(
           @contest.regions.map { |r| 
-            { lat: r.lat, lng: r.lng , url: r.get_path, name: r.name}
-          }.select{ |ll| 
+            { lat: r.lat, lng: r.lng , url: r.get_path, name: r.name} unless r.base_region_id.present?
+          }.compact.select{ |ll|
             ll[:lat].present? && ll[:lng].present?
           }
         ).html_safe %>;
@@ -51,7 +51,7 @@
           </div>  
           <div class="row">
             <div class="col mt-5">
-              <% @contest.participations.ordered_by_observations_count.each.with_index(1) do |p,i| %>
+              <% @contest.participations.base_region_participations.ordered_by_observations_count.each.with_index(1) do |p,i| %>
                 <%= render partial: 'region', locals: { r: p.region, i: i, observations_object: p, show_more_link: false } %>
               <% end %>
             </div>    
