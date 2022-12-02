@@ -169,12 +169,12 @@ module CountableStatistics
 
 
     # Compute regions scores by comparing the counts with that of neighboring regions
-    def get_regions_score(region_type: nil, score_type: , num_years: nil)
+    def get_regions_score(region_type: nil, score_type: , num_years: nil, report_start_dt:nil, report_end_dt:nil)
       if region_type.present?
         nr = get_neighboring_region(region_type: region_type)
 
         if nr.present?
-          (report_start_dt, report_end_dt) = get_date_range_for_report()
+          (report_start_dt, report_end_dt) = get_date_range_for_report() if !report_start_dt.present? && !report_end_dt.present?
           case score_type
           when 'observations_score'
             nr_obs_count = nr.get_observations_count(start_dt: report_start_dt, end_dt: report_end_dt, include_gbif: true)
@@ -195,8 +195,8 @@ module CountableStatistics
 
 
     # Compute yearly scores by comparing yearly counts for given no. of years vs total count
-    def get_yearly_score(score_type: , num_years:)
-      (report_start_dt, report_end_dt) = get_date_range_for_report()
+    def get_yearly_score(score_type: , num_years:, report_start_dt:nil, report_end_dt:nil)
+      (report_start_dt, report_end_dt) = get_date_range_for_report() if !report_start_dt.present? && !report_end_dt.present?
 
       end_dt = report_end_dt
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: num_years)
