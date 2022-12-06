@@ -175,6 +175,7 @@ class Contest < ApplicationRecord
       field :status
       field :title
       field :slug
+      field :fetch_neighboring_region_data
       field :description
       field :starts_at
       field :ends_at
