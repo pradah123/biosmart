@@ -73,7 +73,8 @@ module CountableStatistics
         observations = self.observations
         people_count = self.people_count
       end 
-      total_hours = Constant.find_by_name('average_hours_per_observation').value * observations.count
+      total_hours = people_count.positive? ?
+                    (Constant.find_by_name('average_hours_per_observation').value * observations.count) / (people_count * 24) : 0
       ( (total_hours < 5 ? constant_a : constant_b) * constant * people_count ).round
     end
 
