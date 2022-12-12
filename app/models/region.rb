@@ -506,12 +506,9 @@ class Region < ApplicationRecord
     return undiscovered_species if !nr.present?
 
     if participant.present?
-      # nr_top_species = nr.participations.where(base_participation_id: participant.id)&.first.get_top_species().map{|row| row[0]}
-      nr_top_species = nr.observations
-                         .distinct
-                         .where("observed_at BETWEEN ? and ?", participant.starts_at, participant.ends_at)
-                         .where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+      nr_top_species = nr.get_top_species(start_dt: participant.starts_at, end_dt: participant.ends_at).map{|row| row[0]}
       return undiscovered_species if nr_top_species.length <= 0
+
       species = participant.region
                            .observations
                            .distinct
@@ -715,7 +712,7 @@ class Region < ApplicationRecord
     data_source_with_date_range = Hash.new([])
     starts_at = 99999999999
     DataSource.all.each do |ds|
-      latest_observation = region.observations.where(data_source_id: ds.id).order("observed_at").last
+      latest_observation = region.observations.where("observations_regions.data_source_id = #{ds.id}").order("observed_at").last
       if latest_observation&.observed_at.present?
         starts_at = latest_observation.observed_at
       else
@@ -747,7 +744,7 @@ class Region < ApplicationRecord
       next unless p.is_active?
       ds = p.data_sources.map {|ds| ds }
       ds.each do |d|
-        latest_observation = p.region.observations.where(data_source_id: d.id).order("observed_at").last
+        latest_observation = p.region.observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
         obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
         if latest_observation&.observed_at.present?
           starts_at = latest_observation.observed_at.to_time.to_i 

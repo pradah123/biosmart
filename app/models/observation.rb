@@ -75,7 +75,6 @@ class Observation < ApplicationRecord
           obs = find_observation(region_id: region.id,
                                  observation_id: self.id,
                                  data_source_id: data_source_id)
-
           if obs.blank?
             begin
               insert_sql = get_observations_regions_insert_statement(region_id: region.id,
@@ -93,7 +92,8 @@ class Observation < ApplicationRecord
               # this observation is in this contest in time and space
               # add references for this observation to contest, participation only if
               # doesn't exist already
-              if !participation.contest.observations.exists?(self.id)
+              if !participation.contest.observations.exists?(self.id) &&
+                 !region.base_region_id.present? # Need to make sure we don't store neighboring region observation in contest
                 participation.contest.observations << self
               end
               if !participation.observations.exists?(self.id)
@@ -208,7 +208,7 @@ class Observation < ApplicationRecord
 
 
   # This will return observations fetched as per given filters
-  def self.filter_observations(category:, q:, obj:, start_dt: , end_dt:)
+  def self.filter_observations(category:, q:, obj:, start_dt: nil, end_dt: nil)
     observations = nil
     if category.present?
       category_query = Utils.get_category_rank_name_and_value(category_name: category)
@@ -226,11 +226,12 @@ class Observation < ApplicationRecord
       end
     else
       # For region page
-      if (start_dt.present? && end_dt.present?)
-        observations = get_observations_for_region(region_id:    obj.first.id,
-                                          start_dt:     start_dt,
-                                          end_dt:       end_dt,
-                                          include_gbif: true)
+      if obj.first.is_a? Region
+        # observations = get_observations_for_region(region_id:    obj.first.id,
+        #                                   start_dt:     start_dt,
+        #                                   end_dt:       end_dt,
+        #                                   include_gbif: true)
+        observations = obs = obj.first.observations.distinct
         if observations.present?
           if category.present? && q.present?
             observations = observations.joins(:taxonomy).where(category_query).search(q)
@@ -241,15 +242,23 @@ class Observation < ApplicationRecord
           end
         end
       else
+        if obj.first.is_a? Participation
+          obs = obj.first.region.observations.where("observed_at BETWEEN ? and ?", obj.first.starts_at, obj.first.ends_at).distinct
+        else
+          region_ids = obj.first.participations.map { |p|
+            p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
+          }.compact
+          obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.first.starts_at, obj.first.ends_at).distinct
+        end
         # For contest or participation page
         if category.present? && q.present?
-          observations = obj.first.observations.joins(:taxonomy).where(category_query).search(q)
+          observations = obs.joins(:taxonomy).where(category_query).search(q)
         elsif category.present?
-          observations = obj.first.observations.joins(:taxonomy).where(category_query)
+          observations = obs.joins(:taxonomy).where(category_query)
         elsif q.present?
-          observations = obj.first.observations.search(q)
+          observations = obs.search(q)
         else
-          observations = obj.first.observations
+          observations = obs
         end
       end
     end

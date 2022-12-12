@@ -10,6 +10,7 @@ class ObservationsFetchJob < ApplicationJob
         Delayed::Worker.logger.info ">>>>>>>>>>ObservationsFetchJob for participation - #{participant.id}, region - #{participant.region.name}"
         if participant.is_active?
           participant.data_sources.each do |data_source|
+            next if data_source.name == 'gbif'
             extra_params = contest.get_extra_params(data_source_id: data_source.id) || {}
             data_source.fetch_observations participant.region, contest.starts_at, contest.ends_at, extra_params, participant.id
           end

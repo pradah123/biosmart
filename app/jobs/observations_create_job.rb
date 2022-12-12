@@ -45,16 +45,8 @@ class ObservationsCreateJob < ApplicationJob
       else
         obs.attributes = params
         if obs.changed.empty?
-          if obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
-            nupdates += 1
-          else
-            nupdates_failed +=1
-            Delayed::Worker.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-            Delayed::Worker.logger.info "Update to regions and contests failed on observation #{obs.id}"
-            Delayed::Worker.logger.info obs.inspect
-            Delayed::Worker.logger.info params.inspect
-            Delayed::Worker.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n\n"
-          end
+          Delayed::Worker.logger.info "Inside obs.changed.empty?"
+          obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
           TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
         else
           nupdates += 1  

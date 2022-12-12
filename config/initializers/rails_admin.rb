@@ -33,6 +33,9 @@ RailsAdmin.config do |config|
     GbifObservationsMatview
     ParticipationSpeciesMatview
     ParticipationObserverSpeciesMatview
+    RegionsObservationsMatview
+    SpeciesGroupedByDayMatview
+    ObserverSpeciesGroupedByDayMatview
   )
 
   config.navigation_static_label = ''

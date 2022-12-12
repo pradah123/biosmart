@@ -159,6 +159,39 @@ class Contest < ApplicationRecord
     end
   end
 
+  def update_contest_scores
+    participations = self.participations
+
+    total_observations_count = total_identifications_count = total_people_count = total_species_count = 0
+
+    participations.each do |participation|
+      observations_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.count
+      identifications_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.pluck(:identifications_count).sum
+      people_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.pluck(:creator_name).compact.uniq.count
+      species_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+
+      participation.update_column :observations_count, observations_count
+      participation.update_column :identifications_count, identifications_count
+      participation.update_column :people_count, people_count
+      participation.update_column :species_count, species_count
+      participation.update_column :physical_health_score, participation.get_physical_health_score()
+      participation.update_column :mental_health_score, participation.get_mental_health_score()
+
+      next if participation.region.base_region_id.present?
+      total_observations_count += observations_count if observations_count.present?
+      total_identifications_count += identifications_count if identifications_count.present?
+      total_people_count += people_count if people_count.present?
+      total_species_count += species_count if species_count.present?
+    end
+    update_column :observations_count, total_observations_count
+    update_column :identifications_count, total_identifications_count
+    update_column :people_count, total_people_count
+    update_column :species_count, total_species_count
+    update_column :physical_health_score, get_physical_health_score()
+    update_column :mental_health_score, get_mental_health_score()
+
+  end
+
 
   rails_admin do
     list do

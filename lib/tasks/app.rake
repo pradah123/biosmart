@@ -13,8 +13,15 @@ namespace :statistics do
   desc 'Schedule Reset Statistics'
   task reset: :environment do
     ## Reset statistics
-    Region.all.each { |r| r.reset_statistics }
-    Participation.base_region_participations.each { |p| p.reset_statistics }
+    Region.all.each do |r|
+      puts "Before #{r.id} #{Time.now}"
+      #{}next if (r.id != 784)
+      r.reset_statistics
+      puts "After #{r.id} #{Time.now}"
+    end
+    # Participation.all.each do |p|
+    #   p.reset_statistics
+    # end
     Contest.all.each { |c| c.reset_statistics }
   end
 end
@@ -50,12 +57,61 @@ namespace :participation_observer_species_matview do
   end
 end
 
-namespace :neighboring_region_participations do
-  desc 'Create participations for neighboring regions'
-  task create: :environment do
-    participations = Participation.where(status: 'accepted')
-    participations.each do |p|
-      p.update_neighboring_region_participation
+namespace :add_data_source_gbif do
+  desc 'Add data_source gbif to all the participations'
+  task participations: :environment do
+    # participations = Participation.where(status: 'accepted')
+    Participation.all.each do |p|
+      data_sources = p.data_sources
+      data_sources.push(DataSource.find_by_name('gbif'))
+      p.data_sources = data_sources
+      p.save
     end
+  end
+end
+
+namespace :remove_data_source_gbif do
+  desc 'Remove data_source gbif from all the participations'
+  task participations: :environment do
+    # participations = Participation.where(status: 'accepted')
+    Participation.all.each do |p|
+      data_sources = p.data_sources
+      data_sources = p.data_sources.map {|ds|
+        ds.name == 'gbif' ? nil : ds
+      }.compact
+      p.data_sources = data_sources
+      p.save
+    end
+  end
+end
+
+
+namespace :subregions do
+  desc 'Create sub regions for all the regions'
+  task create: :environment do
+    Region.all.each do |r|
+      r.compute_subregions
+    end
+  end
+end
+
+namespace :regions_observations_matview do
+  desc 'Update regions_observations_matview'
+  task refresh: :environment do
+    RegionsObservationsMatview.refresh
+  end
+end
+
+namespace :species_grouped_by_day_matview do
+  desc 'Update species_grouped_by_day_matview'
+  task refresh: :environment do
+    SpeciesGroupedByDayMatview.refresh
+  end
+end
+
+namespace :observer_species_grouped_by_day_matview do
+  desc 'Update observer_species_grouped_by_day_matview'
+  task refresh: :environment do
+    ObserverSpeciesGroupedByDayMatview.refresh
   end
 end
