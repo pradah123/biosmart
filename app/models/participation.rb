@@ -22,7 +22,7 @@ class Participation < ApplicationRecord
 
   after_save :set_start_and_end_times
 
-  after_save :update_neighboring_region_participation
+  # after_save :update_neighboring_region_participation
 
   enum status: [:submitted, :accepted, :refused, :removed_by_admin, :removed_by_region] 
 
@@ -113,7 +113,7 @@ class Participation < ApplicationRecord
       field :created_at     
     end
     edit do
-      field :region          
+      field :region
       field :contest
       field :status
       field :data_sources do
