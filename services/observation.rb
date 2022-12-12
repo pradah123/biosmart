@@ -80,8 +80,7 @@ module Service
                                     .limit(search_params.limit)
                                     .order(search_params.sort_by => search_params.sort_order)
         else
-          observations = observations.includes(:observation_images)
-                                    .includes(:data_source)
+          observations = observations.includes(:data_source)
                                     .includes(:taxonomy)
                                     .offset(search_params.offset)
                                     .limit(search_params.limit)
@@ -98,12 +97,12 @@ module Service
 
       def get_region_observations_relation(region_id, category, search_text)
         Rails.logger.debug "get_region_observations_relation(#{region_id})"
-        region = ::Region.where id: region_id
-        return Failure("Invalid region id (#{region_id}).") if region.first.blank?
+        region = ::Region.find_by_id(region_id)
+        return Failure("Invalid region id (#{region_id}).") if region.blank?
 
-        (start_dt, end_dt) = region.first.get_date_range_for_report()
-
-        observations = ::Observation.filter_observations(category: category, q: search_text, obj: region, start_dt: start_dt, end_dt:end_dt)
+        # (start_dt, end_dt) = region.first.get_date_range_for_report()
+        observations = yield filter_observations(region, category, search_text)
+        # observations = ::Observation.filter_observations(category: category, q: search_text, obj: region, start_dt: start_dt, end_dt:end_dt)
 
         Success(observations)
       end
@@ -112,6 +111,7 @@ module Service
         Rails.logger.debug "get_contest_observations_relation(#{contest_id})"
         contest = ::Contest.find_by_id(contest_id)
         return Failure("Invalid contest id (#{contest_id}).") if contest.blank?
+        # observations = yield ::Observation.filter_observations(category: category, q: search_text, obj: contest)
         observations = yield filter_observations(contest, category, search_text)
         Success(observations)
       end
@@ -124,6 +124,7 @@ module Service
           )
         end
         observations = yield filter_observations(participation, category, search_text)
+        # observations = ::Observation.filter_observations(category: category, q: search_text, obj: participation)
 
         return Success(observations)
       end
@@ -138,14 +139,37 @@ module Service
             )
           end
         end
-        if category.present? && search_text.present?
-          observations = obj.observations.joins(:taxonomy).where(category_query).search(search_text)
-        elsif category.present?
-          observations = obj.observations.joins(:taxonomy).where(category_query)
-        elsif search_text.present?
-          observations = obj.observations.search(search_text)
-        else
+        # For region page
+        if obj.is_a? ::Region
           observations = obj.observations
+          if observations.present?
+            if category.present? && search_text.present?
+              observations = observations.joins(:taxonomy).where(category_query).search(search_text)
+            elsif category.present?
+              observations = observations.joins(:taxonomy).where(category_query)
+            elsif search_text.present?
+              observations = observations.search(search_text)
+            end
+          end
+        else
+          if obj.is_a? ::Participation
+            obs = obj.region.observations.where("observed_at BETWEEN ? and ?", obj.starts_at, obj.ends_at)
+          else
+            region_ids = obj.participations.map { |p|
+              p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
+            }.compact
+            obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.starts_at, obj.ends_at)
+          end
+          # For contest or participation page
+          if category.present? && search_text.present?
+            observations = obs.joins(:taxonomy).where(category_query).search(search_text)
+          elsif category.present?
+            observations = obs.joins(:taxonomy).where(category_query)
+          elsif search_text.present?
+            observations = obs.search(search_text)
+          else
+            observations = obs
+          end
         end
         Success(observations)
       end
@@ -201,23 +225,28 @@ module Service
         if result&.success?
           top_species = []
           options = {
-            participation_id: result.success.id,
+            region_id: transformed_params.region_id,
             offset: transformed_params.offset,
             limit: transformed_params.limit,
+            category: category_query,
             observer: transformed_params.observer,
-            category: category_query
+            start_dt: result.success.starts_at,
+            end_dt: result.success.ends_at,
           }
           if transformed_params.with_images == 'true'
             if transformed_params.observer.present?
-              top_species = ::ParticipationObserverSpeciesMatview.get_top_species_with_images(**options)
+              top_species = ::ObserverSpeciesGroupedByDayMatview.get_top_species_with_images(**options)
+              # top_species = ::ParticipationObserverSpeciesMatview.get_top_species_with_images(**options)
             else
-              top_species = ::ParticipationSpeciesMatview.get_top_species_with_images(**options.except!(:observer))
+              top_species = ::SpeciesGroupedByDayMatview.get_top_species_with_images(**options.except!(:observer))
             end
           else
             if transformed_params.observer.present?
-              top_species = ::ParticipationObserverSpeciesMatview.get_top_species(**options)
+              top_species = ::ObserverSpeciesGroupedByDayMatview.get_top_species_with_images(**options)
+
+              # top_species = ::ParticipationObserverSpeciesMatview.get_top_species(**options)
             else
-              top_species = ::ParticipationSpeciesMatview.get_top_species(**options.except!(:observer))
+              top_species = ::SpeciesGroupedByDayMatview.get_top_species(**options.except!(:observer))
             end
           end
           return Success(top_species)
