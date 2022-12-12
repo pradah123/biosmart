@@ -1,4 +1,5 @@
 require_relative '../../lib/region/neighboring_region.rb'
+require 'date'
 
 class Region < ApplicationRecord
   include CountableStatistics
@@ -147,7 +148,7 @@ class Region < ApplicationRecord
     #
 
     polygons.each do |p|
-      if !size.present? && !base_region_id.present?
+      #{}if !size.present? && !base_region_id.present?
         # inaturalist subregion has no limit on the radius
         Subregion.create! data_source_id: DataSource.find_by_name('inaturalist').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
 
@@ -169,7 +170,7 @@ class Region < ApplicationRecord
         # CitSci does not need a polygon- but will use the project_id from the params
         Subregion.create! data_source_id: DataSource.find_by_name('citsci').id, region_id: self.id, raw_polygon_json: '{}'
 
-      end
+      #{}end
       # gbif needs polygon
       Subregion.create! data_source_id: DataSource.find_by_name('gbif').id, region_id: self.id, raw_polygon_json: p.to_json, max_radius_km: nil
 
@@ -504,13 +505,22 @@ class Region < ApplicationRecord
     nr = get_neighboring_region(region_type: 'greater_region')
     return undiscovered_species if !nr.present?
 
-    nr_top_species = nr.get_top_species().map{|row| row[0]}
-    return undiscovered_species if nr_top_species.length <= 0
-
     if participant.present?
-      species = participant.observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+      # nr_top_species = nr.participations.where(base_participation_id: participant.id)&.first.get_top_species().map{|row| row[0]}
+      nr_top_species = nr.observations
+                         .distinct
+                         .where("observed_at BETWEEN ? and ?", participant.starts_at, participant.ends_at)
+                         .where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+      return undiscovered_species if nr_top_species.length <= 0
+      species = participant.region
+                           .observations
+                           .distinct
+                           .where("observed_at BETWEEN ? and ?", participant.starts_at, participant.ends_at)
+                           .where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
     else
-      species = observations.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+      nr_top_species = nr.get_top_species().map{|row| row[0]}
+      return undiscovered_species if nr_top_species.length <= 0
+      species = observations.distinct.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
     end
     undiscovered_species = nr_top_species - species
     undiscovered_species = nr.get_species_details(species: undiscovered_species) if undiscovered_species.length.positive?
@@ -665,6 +675,130 @@ class Region < ApplicationRecord
   end
 
 
+  def self.get_regions_for_data_fetching
+    regions = []
+
+    Region.all.each do |r|
+      next if r.base_region_id.present?
+      nr = r.get_neighboring_region(region_type: 'greater_region')
+
+      if nr.present?
+        fetch_neighboring_region_data = false
+        r.participations.in_competition.each do |p|
+          next unless p.is_active?
+          if p.contest.fetch_neighboring_region_data == false
+            fetch_neighboring_region_data = false
+            break
+          else
+            fetch_neighboring_region_data = p.contest.fetch_neighboring_region_data
+          end
+        end
+        # TBA : Need to add condition to check for region level fetch_neighboring_region_data 
+        # when there are no participations for the region
+
+        if fetch_neighboring_region_data == true
+          regions.push(nr)
+        else
+          regions.push(r)
+        end
+      else
+        regions.push(r)
+      end
+    end
+    return regions
+  end
+
+  def self.get_data_sources_and_date_range_for_region(region:)
+    ends_at = Time.now
+    data_sources = []
+
+    data_source_with_date_range = Hash.new([])
+    starts_at = 99999999999
+    DataSource.all.each do |ds|
+      latest_observation = region.observations.where(data_source_id: ds.id).order("observed_at").last
+      if latest_observation&.observed_at.present?
+        starts_at = latest_observation.observed_at
+      else
+        starts_at = ends_at - Utils.convert_to_seconds(unit: 'year', value: 3)
+      end
+
+      data_source = Hash.new([])
+      data_source[:data_source] = ds
+      data_source[:starts_at]   = starts_at
+      data_source[:ends_at]     = ends_at
+      data_sources.push(data_source)
+
+      ## TBA - Add condition to skip gbif during full fetch
+    end
+    return data_sources
+  end
+
+  def self.get_data_sources_and_date_range_for_participations(region: r)
+    ends_at = Time.now
+    data_sources = []
+
+    data_source_with_date_range = Hash.new([])
+    starts_at = 99999999999
+
+    participations = region.participations.in_competition
+    participations = Region.find_by_id(region.base_region_id).participations.in_competition if ((!participations.count.positive?) && region.base_region_id.present?)
+
+    participations.each do |p|
+      next unless p.is_active?
+      ds = p.data_sources.map {|ds| ds }
+      ds.each do |d|
+        latest_observation = p.region.observations.where(data_source_id: d.id).order("observed_at").last
+        obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
+        if latest_observation&.observed_at.present?
+          starts_at = latest_observation.observed_at.to_time.to_i 
+        else
+          participation_start_dt = p.contest.starts_at.to_time.to_i
+          participation_start_dt = ends_at - Utils.convert_to_seconds(unit: 'year', value: 3) if d.name == 'gbif'
+          starts_at = participation_start_dt if participation_start_dt < starts_at
+        end
+        starts_at = obs_date if obs_date.present? && starts_at > obs_date
+        data_source_with_date_range["#{d.id}"] = { data_source: d,
+                                                   starts_at: starts_at,
+                                                   ends_at: Time.now }
+      end
+      # TBA :: For full fetch we will need to get date range from contest which has latest start date
+      #  and not from observations.updated_at
+      data_sources.push(*ds)
+    end
+    data_sources = data_sources.uniq
+    data_sources.map! do |ds|
+      data_source = Hash.new([])
+      data_source = data_source_with_date_range["#{ds.id}"]
+      starts_at_date = data_source_with_date_range["#{ds.id}"][:starts_at]
+      data_source[:starts_at] = Time.at(starts_at_date).to_datetime
+      ds = data_source
+    end
+
+    return data_sources
+  end
+
+  def self.get_data_sources_and_date_range_for_data_fetch(regions:)
+    r_hash = []
+
+    regions.each do |r|
+      ends_at = Time.now
+      data_sources = []
+      
+      data_source_with_date_range = Hash.new([])
+      observed_at = 99999999999
+
+      data_sources = Region.get_data_sources_and_date_range_for_participations(region: r)
+      Delayed::Worker.logger.info ">>>>>>>>>> region : #{r.name}, self.get_data_sources_and_date_range_for_data_fetch #{data_sources}"
+
+      r_hash.push({
+        region: r,
+        data_sources: data_sources.uniq
+      }) if data_sources.count.positive?
+
+    end
+    return r_hash
+  end
+
   rails_admin do
     list do
       field :id
@@ -682,6 +816,12 @@ class Region < ApplicationRecord
       field :size do
         visible do
           bindings[:object].base_region_id.present?
+        end
+      end
+      field :fetch_neighboring_region_data
+      field :create_neighboring_region_subregions_for_ebird do
+        visible do
+          !bindings[:object].base_region_id.present?
         end
       end
       field :description
