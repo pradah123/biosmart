@@ -520,13 +520,8 @@ class Region < ApplicationRecord
       species = observations.distinct.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
     end
     undiscovered_species = nr_top_species - species
-    undiscovered_species = nr.get_species_details(species: undiscovered_species) if undiscovered_species.length.positive?
+    undiscovered_species = nr.get_species_details(species: undiscovered_species, offset: offset, limit: limit) if undiscovered_species.length.positive?
 
-    if undiscovered_species.length >= offset
-      undiscovered_species = undiscovered_species[offset, limit]
-    else
-      undiscovered_species = []
-    end
     return undiscovered_species
   end
 
