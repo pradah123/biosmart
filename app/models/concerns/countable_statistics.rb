@@ -243,22 +243,29 @@ module CountableStatistics
   end
 
   # For given list of species get common name and image
-  def get_species_details(species: )
+  def get_species_details(species: , offset: , limit: )
     observations_with_images = observations.where(scientific_name: species).has_images.includes(:observation_images)
 
+    total = 0
+    idx = 0
+    final_species = []
     species.map! do |s|
       obs = observations_with_images.detect{ |o| s == o.scientific_name }
 
       next unless obs.present?
+      idx += 1
+      next if idx <= offset
+      total += 1
+      break if total > limit
       species_hash = Hash.new([])
       species_hash[:image] = obs.observation_images.pluck(:url).first
       species_hash[:scientific_name] = obs.scientific_name
       species_hash[:common_name] = obs.common_name
       species_hash[:creator_name] = obs.creator_name
-      s = species_hash
+      final_species.push(species_hash)
     end
 
-    return species.compact
+    return final_species.compact
   end
 end
 
