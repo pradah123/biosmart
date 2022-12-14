@@ -66,8 +66,21 @@ class Observation < ApplicationRecord
   end
 
   ### Method for adding an observation to matching regions, participations and contests
-  def add_to_regions_and_contests(geokit_point, data_source_id=nil, participant_id=nil)
-    Region.all.each do |region|
+  def add_to_regions_and_contests(geokit_point, region_id, data_source_id=nil, participant_id=nil)
+    fetch_for_regions = []
+    r = Region.find_by_id(region_id)
+    # When observations are fetched for neighboring region(greater region),
+    # those shall be linked to the base region and neighboring regions too
+    if r.base_region_id.present?
+      fetch_for_regions.push(Region.find_by_id(r.base_region_id))
+      neighboring_regions = Region.find_by_id(r.base_region_id).neighboring_regions
+      fetch_for_regions.concat(neighboring_regions)
+    else
+      # When observations are fetched for base region, those shall be linked to the base region only and
+      # not to neighboring regions
+      fetch_for_regions.push(r)
+    end
+    fetch_for_regions.each do |region|
       region.get_geokit_polygons.each do |polygon|
 
         if polygon.contains?(geokit_point)
@@ -111,7 +124,7 @@ class Observation < ApplicationRecord
   #  Method of updating observations to regions, participations, and contests,
   #  in the case where we need to be continously fetching data for all regions.
   #
-  def update_to_regions_and_contests(data_source_id: nil, participant_id: nil)
+  def update_to_regions_and_contests(region_id: , data_source_id: nil, participant_id: nil)
     geokit_point = Geokit::LatLng.new lat, lng
     data_source_id = data_source_id.present? ? data_source_id : data_source.id
 
@@ -152,7 +165,7 @@ class Observation < ApplicationRecord
     # end
 
     ## Add observation to regions and contests
-    self.add_to_regions_and_contests geokit_point, data_source_id, participant_id
+    self.add_to_regions_and_contests geokit_point, region_id, data_source_id, participant_id
 
   end
 
