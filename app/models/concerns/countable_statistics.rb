@@ -139,10 +139,14 @@ module CountableStatistics
         end
         get_ranking obs.pluck(:scientific_name), n
       elsif self.is_a? Participation
-        get_ranking self.region
-                        .observations
-                        .where("observed_at BETWEEN ? and ?", self.starts_at, self.ends_at)
-                        .pluck(:scientific_name), n
+        obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.region.id,
+                                                                     start_dt: self.starts_at,
+                                                                     end_dt: self.ends_at)
+        get_ranking obs.pluck(:scientific_name), n
+        # get_ranking self.region
+        #                 .observations
+        #                 .where("observed_at BETWEEN ? and ?", self.starts_at.to_date, self.ends_at.to_date)
+        #                 .pluck(:scientific_name), n
       end
     end  
 
@@ -152,10 +156,14 @@ module CountableStatistics
         obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
         get_ranking obs.pluck(:creator_name), n
       elsif self.is_a? Participation
-        get_ranking self.region
-                        .observations
-                        .where("observed_at BETWEEN ? and ?", self.starts_at, self.ends_at)
-                        .pluck(:creator_name), n
+        obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.region.id,
+                                                                     start_dt: self.starts_at,
+                                                                     end_dt: self.ends_at)
+        get_ranking obs.pluck(:creator_name), n
+        # get_ranking self.region
+        #                 .observations
+        #                 .where("observed_at BETWEEN ? and ?", self.starts_at.to_date, self.ends_at.to_date)
+        #                 .pluck(:creator_name), n
       end
     end  
 
@@ -174,11 +182,11 @@ module CountableStatistics
       start_dt = end_dt - Utils.convert_to_seconds(unit:'year', value: 3)
 
       region_id = nr.present? ? nr.id : self.id
-      # obs = RegionsObservationsMatview.get_observations_for_region(region_id: region_id)
-      # start_dt =  obs&.order("observed_at")&.first&.observed_at || start_dt
-      # end_dt   =  obs&.order("observed_at")&.last&.observed_at || end_dt
-      start_dt =  Region.find_by_id(region_id).observations.distinct.order("observed_at")&.first&.observed_at || start_dt
-      end_dt   =  Region.find_by_id(region_id).observations.distinct.order("observed_at")&.last&.observed_at || end_dt
+      obs = RegionsObservationsMatview.get_observations_for_region(region_id: region_id)
+      start_dt =  obs&.order("observed_at")&.first&.observed_at || start_dt
+      end_dt   =  obs&.order("observed_at")&.last&.observed_at || end_dt
+      # start_dt =  Region.find_by_id(region_id).observations.distinct.order("observed_at")&.first&.observed_at || start_dt
+      # end_dt   =  Region.find_by_id(region_id).observations.distinct.order("observed_at")&.last&.observed_at || end_dt
 
       return format == true ? [start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d")] : [start_dt, end_dt]
 
