@@ -165,10 +165,10 @@ class Contest < ApplicationRecord
     total_observations_count = total_identifications_count = total_people_count = total_species_count = 0
 
     participations.each do |participation|
-      observations_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.count
-      identifications_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.pluck(:identifications_count).sum
-      people_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.pluck(:creator_name).compact.uniq.count
-      species_count = participation.region.observations.where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).distinct.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
+      observations_count = RegionsObservationsMatview.where(region_id: participation.region.id).where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).count
+      identifications_count = RegionsObservationsMatview.where(region_id: participation.region.id).where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).pluck(:identifications_count).sum
+      people_count = RegionsObservationsMatview.where(region_id: participation.region.id).where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).pluck(:creator_name).compact.uniq.count
+      species_count = RegionsObservationsMatview.where(region_id: participation.region.id).where("observed_at BETWEEN ? and ?", participation.starts_at, participation.ends_at).has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
 
       participation.update_column :observations_count, observations_count
       participation.update_column :identifications_count, identifications_count
