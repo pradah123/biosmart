@@ -1,12 +1,12 @@
 class ObservationsCreateJob < ApplicationJob
   queue_as :queue_observations_create
 
-  def perform data_source, observations, participant_id = nil
+  def perform data_source, observations, region_id, participant_id = nil
     ScoutApm::Transaction.ignore!
     
     Delayed::Worker.logger.info "\n\n\n\n"
     Delayed::Worker.logger.info ">>>>>>>>>>ObservationsCreateJob processing #{observations.count} observations from #{data_source.name}"
-    Delayed::Worker.logger.info "ObservationsCreateJob >> participant_id: #{participant_id}"
+    Delayed::Worker.logger.info "ObservationsCreateJob >> region_id: #{region_id}, participant_id: #{participant_id}"
     nupdates = 0
     nupdates_no_change = 0
     nupdates_failed = 0
@@ -28,7 +28,7 @@ class ObservationsCreateJob < ApplicationJob
         
         if obs.save
           ncreates += 1
-          obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
+          obs.update_to_regions_and_contests(region_id: region_id, data_source_id: data_source.id, participant_id: participant_id)
           image_urls.each do |url|
             ObservationImage.create! observation_id: obs.id, url: url
           end
@@ -46,13 +46,13 @@ class ObservationsCreateJob < ApplicationJob
         obs.attributes = params
         if obs.changed.empty?
           Delayed::Worker.logger.info "Inside obs.changed.empty?"
-          obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
+          obs.update_to_regions_and_contests(region_id: region_id, data_source_id: data_source.id, participant_id: participant_id)
           TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
         else
           nupdates += 1  
           nfields_updated += obs.changed.length
           if obs.save
-            obs.update_to_regions_and_contests(data_source_id: data_source.id, participant_id: participant_id)
+            obs.update_to_regions_and_contests(region_id: region_id, data_source_id: data_source.id, participant_id: participant_id)
             TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
             current_image_urls = obs.observation_images.pluck :url
             if current_image_urls-image_urls!=[] 
