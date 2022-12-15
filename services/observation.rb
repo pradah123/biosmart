@@ -92,6 +92,9 @@ module Service
           # https://edgeapi.rubyonrails.org/classes/ActiveRecord/QueryMethods.html#method-i-in_order_of
           observations = observations.sort_by_data_source(search_params.datasource_order)
         end
+        none_observation = ::Observation.where('1 = 0')
+        observations = observations.uniq
+        observations += none_observation
         Success(observations)
       end
 
@@ -242,7 +245,7 @@ module Service
             end
           else
             if transformed_params.observer.present?
-              top_species = ::ObserverSpeciesGroupedByDayMatview.get_top_species_with_images(**options)
+              top_species = ::ObserverSpeciesGroupedByDayMatview.get_top_species(**options)
 
               # top_species = ::ParticipationObserverSpeciesMatview.get_top_species(**options)
             else
