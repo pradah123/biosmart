@@ -137,7 +137,7 @@ class DataSource < ApplicationRecord
       when 'mushroom_observer'
         fetch_mushroom_observer sr, starts_at, ends_at, region.id, participant_id
       when 'gbif'
-        fetch_gbif sr, starts_at, ends_at, region.id, region.id
+        fetch_gbif sr, starts_at, ends_at, region.id
       when 'naturespot'
         fetch_naturespot sr, starts_at, ends_at, extra_params, region.id, participant_id
       when 'citsci'
@@ -153,14 +153,14 @@ class DataSource < ApplicationRecord
     subregions = Subregion.where(region_id: region.id, data_source_id: id)
     total_count = 0
     subregions.each do |sr|
-      total_count = total_count + fetch_gbif(sr, starts_at, ends_at, true)
+      total_count = total_count + fetch_gbif(sr, starts_at, ends_at, region.id, true)
     end
     return total_count
   end
 
 
-  def fetch_gbif subregion, starts_at, ends_at, fetch_count=false, region_id
-    Delayed::Worker.logger.info "fetch_observations_gbif(#{subregion.id}, #{starts_at}, #{ends_at})"
+  def fetch_gbif subregion, starts_at, ends_at, region_id, fetch_count=false
+    Delayed::Worker.logger.info "fetch_observations_gbif(#{subregion.id},#{starts_at}, #{ends_at}, #{region_id}, #{fetch_count})"
 
     begin
       params = get_query_parameters subregion
