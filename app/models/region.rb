@@ -810,7 +810,11 @@ class Region < ApplicationRecord
           bindings[:object].base_region_id.present?
         end
       end
-      field :fetch_neighboring_region_data
+      field :fetch_neighboring_region_data do
+        visible do
+          !bindings[:object].base_region_id.present?
+        end
+      end
       field :create_neighboring_region_subregions_for_ebird do
         visible do
           !bindings[:object].base_region_id.present?
