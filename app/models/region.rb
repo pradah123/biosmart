@@ -739,7 +739,7 @@ class Region < ApplicationRecord
       next unless p.is_active?
       ds = p.data_sources.map {|ds| ds }
       ds.each do |d|
-        latest_observation = p.region.observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
+        latest_observation = Region.find_by_id(r.id).observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
         obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
         if latest_observation&.observed_at.present?
           starts_at = latest_observation.observed_at.to_time.to_i 
