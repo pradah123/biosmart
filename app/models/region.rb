@@ -725,7 +725,7 @@ class Region < ApplicationRecord
     return data_sources
   end
 
-  def self.get_data_sources_and_date_range_for_participations(region: r)
+  def self.get_data_sources_and_date_range_for_participations(region: )
     ends_at = Time.now
     data_sources = []
 
@@ -739,7 +739,7 @@ class Region < ApplicationRecord
       next unless p.is_active?
       ds = p.data_sources.map {|ds| ds }
       ds.each do |d|
-        latest_observation = Region.find_by_id(r.id).observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
+        latest_observation = Region.find_by_id(region.id).observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
         obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
         if latest_observation&.observed_at.present?
           starts_at = latest_observation.observed_at.to_time.to_i 
