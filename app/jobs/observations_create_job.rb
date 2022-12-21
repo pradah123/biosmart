@@ -19,9 +19,12 @@ class ObservationsCreateJob < ApplicationJob
       params[:data_source_id] = data_source.id
       image_urls = (params.delete :image_urls) || []
       avg_bio_score = Constant.find_by_name('average_observations_score')&.value || 20
+      max_bio_score = Constant.find_by_name('max_observations_score')&.value || 300
       if !params[:bioscore].present? || params[:bioscore].zero? ||
-         (params[:bioscore].positive? && params[:bioscore] < 20)
+         (params[:bioscore].positive? && params[:bioscore] < avg_bio_score)
         params[:bioscore] = avg_bio_score
+      elsif params[:bioscore].present? && params[:bioscore] > max_bio_score
+        params[:bioscore] = max_bio_score
       end
       if obs.nil?
         obs = Observation.new params
