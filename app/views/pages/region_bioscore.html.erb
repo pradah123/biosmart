@@ -19,7 +19,8 @@
       observations_constant                = constants[:observations_constant] || 1
       species_per_observation_constant     = constants[:species_per_observation_constant] || 1
       obs_per_person_constant              = constants[:observations_per_person_constant] || 1
-      avg_obs_score                        = constants[:average_observations_score] || 1
+      avg_obs_score                        = constants[:average_observations_score] || 20
+      max_obs_score                        = constants[:max_observations_score] || 300
       avg_obs_score_constant               = constants[:average_observations_score_constant] || 1
       locality_obs_constant                = constants[:locality_observations_constant] || 1
       locality_species_constant            = constants[:locality_species_constant] || 1
@@ -34,7 +35,7 @@
       species_trend_constant               = constants[:species_trend_constant] || 1
       activity_trend_constant              = constants[:activity_trend_constant] || 1
 
-      obs = Observation.get_observations_for_region(region_id: @region.id, include_gbif: true)
+      obs = RegionsObservationsMatview.get_observations_for_region(region_id: @region.id)
       observations = @region.get_observations_count(include_gbif: true)
 
       species         = @region.get_species_count(include_gbif: true)
@@ -44,6 +45,11 @@
 
       avg_obs_score = 0 if !observations.to_i.positive?
       bio_value     = obs.average(:bioscore) if observations.to_i.positive?
+      if !bio_value.present? || bio_value.zero? || (bio_value.present? && bio_value < avg_obs_score)
+        bio_value = avg_obs_score
+      elsif bio_value.present? && bio_value > max_obs_score
+        bio_value = max_obs_score
+      end
       bio_value     = !bio_value.present? || bio_value.zero? ? avg_obs_score : bio_value
 
       total_vs_locality_obs_score            = @region.get_regions_score(region_type: 'locality', score_type: 'observations_score').to_f / 100
@@ -303,7 +309,7 @@
         </div>
         <div class="row justify-content-left text-left border border-1 rounded-1 p-2 flex-nowrap flex-shrink-1">
           <div class="col-8 text-left flex-nowrap flex-shrink-1">
-            (Average of Observations bioscore or Average observations score defined in Constant or 20) * observations_per_person_constant
+            (Average of Observations bioscore or Average observations score defined in Constant or 20) * average_observations_score_constant
             </br>* This will be considered 0 if Observations are 0
           </div>
           <div class="col-2 text-left flex-nowrap flex-shrink-1">

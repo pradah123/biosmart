@@ -527,10 +527,15 @@ class Region < ApplicationRecord
 
   def get_bio_value
     avg_obs_score = Constant.find_by_name('average_observations_score')&.value || 20
+    max_obs_score = Constant.find_by_name('max_observations_score')&.value || 300
 
-    observations = GbifObservationsMatview.get_observations_for_region(region_id: self.id)
+    observations = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
     bio_value =  observations.average(:bioscore)
-    bio_value = avg_obs_score if !bio_value.present? || bio_value.zero?
+    if !bio_value.present? || bio_value.zero? || (bio_value.present? && bio_value < avg_obs_score)
+      bio_value = avg_obs_score
+    elsif bio_value.present? && bio_value > max_obs_score
+      bio_value = max_obs_score
+    end
     return bio_value
   end
 
