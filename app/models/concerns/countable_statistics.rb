@@ -69,9 +69,6 @@ module CountableStatistics
       # end
       observations_count = self.observations_count
       people_count = self.people_count
-      Rails.logger.info "ID: #{self.id}"
-      Rails.logger.info "observations_count : #{observations_count}"
-      Rails.logger.info "people_count : #{people_count}"
       total_hours = people_count.positive? ?
                     (Constant.find_by_name('average_hours_per_observation').value * observations_count) / (people_count * 24) : 0
       ( (total_hours < 5 ? constant_a : constant_b) * constant * people_count ).round
@@ -84,7 +81,6 @@ module CountableStatistics
       else
         obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
       end
-      # return self.observations.distinct.count
       return obs.count
     end
 
@@ -95,8 +91,6 @@ module CountableStatistics
       else
         obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
       end
-      # return self.observations.distinct.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
-
        return obs.distinct.has_accepted_name.ignore_species_code.select(:accepted_name).distinct.count
     end
 
@@ -107,7 +101,6 @@ module CountableStatistics
       else
         obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
       end
-      # region.observations.where("observed_at BETWEEN ? and ?", self.starts_at, self.ends_at).uniq.pluck(:creator_name).compact.uniq.count
       return obs.distinct.select(:creator_name).where.not(creator_name: nil).distinct.count
     end
 
@@ -118,7 +111,6 @@ module CountableStatistics
       else
         obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
       end
-      # return self.observations.uniq.pluck(:identifications_count).sum
       return obs.sum(:identifications_count)
     end
 
@@ -143,12 +135,27 @@ module CountableStatistics
                                                                      start_dt: self.starts_at,
                                                                      end_dt: self.ends_at)
         get_ranking obs.pluck(:scientific_name), n
-        # get_ranking self.region
-        #                 .observations
-        #                 .where("observed_at BETWEEN ? and ?", self.starts_at.to_date, self.ends_at.to_date)
-        #                 .pluck(:scientific_name), n
       end
     end  
+
+    def get_top_taxonomies n=nil, start_dt:nil, end_dt:nil
+      if self.is_a? Region
+        # get_ranking self.observations.uniq.pluck(:scientific_name), n
+        if start_dt.present? && end_dt.present?
+          obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id,
+                                                                       start_dt: start_dt,
+                                                                       end_dt: end_dt)
+        else
+          obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
+        end
+        get_ranking obs.pluck(:taxonomy_id).compact, n
+      elsif self.is_a? Participation
+        obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.region.id,
+                                                                     start_dt: self.starts_at,
+                                                                     end_dt: self.ends_at)
+        get_ranking obs.pluck(:taxonomy_id).compact, n
+      end
+    end
 
     def get_top_people n=nil
       if self.is_a? Region
@@ -160,10 +167,6 @@ module CountableStatistics
                                                                      start_dt: self.starts_at,
                                                                      end_dt: self.ends_at)
         get_ranking obs.pluck(:creator_name), n
-        # get_ranking self.region
-        #                 .observations
-        #                 .where("observed_at BETWEEN ? and ?", self.starts_at.to_date, self.ends_at.to_date)
-        #                 .pluck(:creator_name), n
       end
     end  
 
@@ -185,8 +188,6 @@ module CountableStatistics
       obs = RegionsObservationsMatview.get_observations_for_region(region_id: region_id)
       start_dt =  obs&.order("observed_at")&.first&.observed_at || start_dt
       end_dt   =  obs&.order("observed_at")&.last&.observed_at || end_dt
-      # start_dt =  Region.find_by_id(region_id).observations.distinct.order("observed_at")&.first&.observed_at || start_dt
-      # end_dt   =  Region.find_by_id(region_id).observations.distinct.order("observed_at")&.last&.observed_at || end_dt
 
       return format == true ? [start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d")] : [start_dt, end_dt]
 
@@ -244,13 +245,13 @@ module CountableStatistics
 
   # For given list of species get common name and image
   def get_species_details(species: , offset: , limit: )
-    observations_with_images = observations.where(scientific_name: species).has_images.includes(:observation_images)
+    observations_with_images = observations.where(taxonomy_id: species).has_images.includes(:observation_images)
 
     total = 0
     idx = 0
     final_species = []
     species.map! do |s|
-      obs = observations_with_images.detect{ |o| s == o.scientific_name }
+      obs = observations_with_images.detect{ |o| s == o.taxonomy_id }
 
       next unless obs.present?
       idx += 1

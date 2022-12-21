@@ -506,18 +506,18 @@ class Region < ApplicationRecord
     return undiscovered_species if !nr.present?
 
     if participant.present?
-      nr_top_species = nr.get_top_species(start_dt: participant.starts_at, end_dt: participant.ends_at).map{|row| row[0]}
+      nr_top_species = nr.get_top_taxonomies(start_dt: participant.starts_at, end_dt: participant.ends_at).map{|row| row[0]}
       return undiscovered_species if nr_top_species.length <= 0
 
       species = participant.region
                            .observations
                            .distinct
                            .where("observed_at BETWEEN ? and ?", participant.starts_at, participant.ends_at)
-                           .where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+                           .where(taxonomy_id: nr_top_species).pluck(:taxonomy_id).uniq
     else
-      nr_top_species = nr.get_top_species().map{|row| row[0]}
+      nr_top_species = nr.get_top_taxonomies().map{|row| row[0]}
       return undiscovered_species if nr_top_species.length <= 0
-      species = observations.distinct.where(scientific_name: nr_top_species).pluck(:scientific_name).uniq
+      species = observations.distinct.where(taxonomy_id: nr_top_species).pluck(:taxonomy_id).uniq
     end
     undiscovered_species = nr_top_species - species
     undiscovered_species = nr.get_species_details(species: undiscovered_species, offset: offset, limit: limit) if undiscovered_species.length.positive?
