@@ -111,17 +111,17 @@ module Api::V1
       j = {}
       offset = 0
       if obj.is_a? Region
-        observations = obj.observations.distinct
+        observations = obj.observations.where("observed_at <= ?", Time.now).distinct
         # observations = Observation.get_observations_for_region(region_id: obj.id, include_gbif: true)
       elsif obj.is_a? Participation
-        observations = obj.region.observations.where("observed_at BETWEEN ? and ?", obj.starts_at, obj.ends_at).distinct
-        # observations = obj.observations
+        ends_at = obj.ends_at > Time.now ? Time.now : obj.ends_at
+        observations = obj.region.observations.where("observed_at BETWEEN ? and ?", obj.starts_at, ends_at).distinct
       else
-        # observations = obj.observations
+        ends_at = obj.first.ends_at > Time.now ? Time.now : obj.first.ends_at
         region_ids = obj.first.participations.map { |p|
           p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
         }.compact
-        observations = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.first.starts_at, obj.first.ends_at).distinct
+        observations = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.first.starts_at, ends_at).distinct
       end
       limit = 5000 unless limit.present?
       observations = observations.recent.offset(offset).limit(limit)

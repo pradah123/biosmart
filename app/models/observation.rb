@@ -229,13 +229,13 @@ class Observation < ApplicationRecord
     # For home page
     if obj.nil?
       if category.present? && q.present?
-        observations = Observation.joins(:taxonomy).where(category_query).search(q)
+        observations = Observation.joins(:taxonomy).where("observed_at <= ?", Time.now).where(category_query).search(q)
       elsif category.present?
-        observations = Observation.joins(:taxonomy).where(category_query)
+        observations = Observation.joins(:taxonomy).where("observed_at <= ?", Time.now).where(category_query)
       elsif q.present?
-        observations = Observation.all.search(q)
+        observations = Observation.where("observed_at <= ?", Time.now).search(q)
       else
-        observations = Observation.all
+        observations = Observation.where("observed_at <= ?", Time.now)
       end
     else
       # For region page
@@ -244,7 +244,7 @@ class Observation < ApplicationRecord
         #                                   start_dt:     start_dt,
         #                                   end_dt:       end_dt,
         #                                   include_gbif: true)
-        observations = obs = obj.first.observations.distinct
+        observations = obs = obj.first.observations.where("observed_at <= ?", Time.now).distinct
         if observations.present?
           if category.present? && q.present?
             observations = observations.joins(:taxonomy).where(category_query).search(q)
@@ -255,13 +255,14 @@ class Observation < ApplicationRecord
           end
         end
       else
+        ends_at = obj.first.ends_at > Time.now ? Time.now : obj.first.ends_at
         if obj.first.is_a? Participation
-          obs = obj.first.region.observations.where("observed_at BETWEEN ? and ?", obj.first.starts_at, obj.first.ends_at).distinct
+          obs = obj.first.region.observations.where("observed_at BETWEEN ? and ?", obj.first.starts_at, ends_at).distinct
         else
           region_ids = obj.first.participations.map { |p|
             p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
           }.compact
-          obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.first.starts_at, obj.first.ends_at).distinct
+          obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.first.starts_at, ends_at).distinct
         end
         # For contest or participation page
         if category.present? && q.present?

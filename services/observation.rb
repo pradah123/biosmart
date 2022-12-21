@@ -144,7 +144,7 @@ module Service
         end
         # For region page
         if obj.is_a? ::Region
-          observations = obj.observations
+          observations = obj.observations.where("observed_at <= ?", Time.now)
           if observations.present?
             if category.present? && search_text.present?
               observations = observations.joins(:taxonomy).where(category_query).search(search_text)
@@ -155,13 +155,14 @@ module Service
             end
           end
         else
+          ends_at = obj.ends_at > Time.now ? Time.now : obj.ends_at
           if obj.is_a? ::Participation
-            obs = obj.region.observations.where("observed_at BETWEEN ? and ?", obj.starts_at, obj.ends_at)
+            obs = obj.region.observations.where("observed_at BETWEEN ? and ?", obj.starts_at, ends_at)
           else
             region_ids = obj.participations.map { |p|
               p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
             }.compact
-            obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.starts_at, obj.ends_at)
+            obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.starts_at, ends_at)
           end
           # For contest or participation page
           if category.present? && search_text.present?
