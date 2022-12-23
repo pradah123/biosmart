@@ -16,6 +16,7 @@ var _gallery_carousel = null;
 var _nshow_more = 1
 var _current_image = 1;
 
+
 const icon = {
   url: "https://questagame.s3.ap-southeast-2.amazonaws.com/maps-icon.png", // url
   scaledSize: new google.maps.Size(31, 40), // scaled size
@@ -44,6 +45,7 @@ $(document).ready(function() {
   set_up_contest_page();
   set_up_observations();
   set_up_counters();
+  autocomplete_species();
 });
 
 function reload(atag='') {
@@ -51,6 +53,30 @@ function reload(atag='') {
   window.location = url.href;
   location.reload();
 }
+
+function autocomplete_species() {
+  //var data_src = $('#search_by_species').data("autocomplete-source");
+
+  api_url = _api + '/observations/species/autocomplete';
+
+  $('#search_by_species').autocomplete({
+    // source: $('#search_by_species').data('autocomplete-source'),
+    source: function(request, response) {
+      $.ajax({
+          url: api_url,
+          type: 'get',
+          contentType: "application/json",
+          data: {
+            term: request.term,
+          },
+          success: function(data) {
+             response(JSON.parse(data.data));
+          }
+      });
+    },  
+    minLength: 3
+  });
+} 
 
 function set_up_counters() {
   $('.countdown').each(function() {
