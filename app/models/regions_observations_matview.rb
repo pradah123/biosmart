@@ -28,6 +28,14 @@ class RegionsObservationsMatview < ActiveRecord::Base
     end
   end
 
+  def self.get_species_count(region_id:, search_text:)
+    species_count = RegionsObservationsMatview.where(region_id: region_id)
+                                                .where("lower(scientific_name) like ? or lower(common_name) like ?", "%#{search_text.downcase}%", "%#{search_text.downcase}%")
+                                                .has_scientific_name
+                                                .count(:scientific_name)
+    return species_count.as_json
+  end
+
   def self.refresh
     ActiveRecord::Base.connection.execute('REFRESH MATERIALIZED VIEW CONCURRENTLY regions_observations_matview')
   end

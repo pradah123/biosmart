@@ -1,0 +1,65 @@
+<div class="row justify-content-center mt-2" id="search_species">
+  <div class="col-10">
+    <div class="row my-5">
+      <div class="col">
+      	<div class="row">
+      	  <div class="col h4 text-center proxima section-header mb-3">Search Species</div>
+      	</div>
+        <div class="row justify-content-center mt-5">
+
+          <%= form_tag "/regions/search/species", method: "POST", class: "input-group justify-content-center" do %>
+            <div class="col-5 justify-content-left px-1">
+              <%
+=begin%>
+ <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search By scientific/common name" , class: 'form-control fw-bold', autocomplete: 'on', data: { autocomplete_source: Observation.all.distinct.pluck(:scientific_name).compact.to_json } %> 
+<%
+=end%>
+              <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search By scientific/common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
+
+            </div>
+            <div class="col-2 px-1">
+              <%= submit_tag "Search", class: 'btn btn-warning w-100 fw-bold' %>
+            </div>
+          <% end %> 
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if @searched_regions.present? %>
+    <div class="col-12">
+      <div class="row flex-nowrap flex-shrink-1" id="searched_regions_block">
+        <div class="col-2 flex-nowrap flex-shrink-1 h6" style="padding: 1 0 0 0; ">
+        </div>
+        <div class="col-3 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font" style="padding: 1 0 0 0" ">
+        </div>
+        <div class="col-2 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0 ">
+          Total Sightings
+        </div>
+        <div class="col-1 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+          Property
+        </div>
+        <div class="col-2 fw-bold flex-nowrap h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+          Neighborhood
+        </div>
+        <div class="col-1 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+          Greater Region
+        </div>
+        <div class="col-1 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+          BioScore
+        </div>
+      </div>
+      <% @searched_regions.each do |r| %>
+        <%= render partial: 'region_with_species_count', locals: { r: r , search_text: @search_by_species} %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="row flex-nowrap flex-shrink-1 justify-content-center">
+      <div class="col-10 align-self-center text-center h6 fw-bold">
+        <% if params[:search_by_species] %>
+          '<%= params[:search_by_species] %>' has not been found in any region
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

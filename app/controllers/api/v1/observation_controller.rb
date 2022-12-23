@@ -172,5 +172,21 @@ module Api::V1
       raise ApiFail.new("Region is not a participant in this contest") unless p.present?
       get_map_observations(p, params[:limit])
     end
+
+    def get_species
+      species = []
+      if params[:term].present?
+        search_text = params[:term]
+        species = RegionsObservationsMatview.where("lower(scientific_name) like ?", "%#{search_text.downcase}%")
+                                            .distinct
+                                            .pluck(:scientific_name)
+                                            .compact
+        species += RegionsObservationsMatview.where("lower(common_name) like ?", "%#{search_text.downcase}%")
+                                             .distinct
+                                             .pluck(:common_name)
+                                             .compact
+      end
+      render_success species.uniq.to_json
+    end
   end
 end 

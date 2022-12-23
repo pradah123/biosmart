@@ -16,6 +16,9 @@ Rails.application.routes.draw do
   get '/:region_slug/:contest_slug', to: 'pages#region_contest'
   get '/:slug', to: 'pages#region'
   get '/region/:slug/bioscore', to: 'pages#region_bioscore'
+  get '/regions/search/species', to: 'pages#search_species'
+  post '/regions/search/species', to: 'pages#search_species'
+  get '/regions/search/sightings_count', to: 'pages#sightings_count'
 
   namespace :api do
     namespace :v1 do
@@ -64,6 +67,7 @@ Rails.application.routes.draw do
       get '/observations/participation/:id', to: 'observation#participation'
       get '/observations/contest/:id', to: 'observation#contest'
       get '/observations/:id', to: 'observation#data'
+      get '/observations/species/autocomplete', to: 'observation#get_species'
 
     end
   end
