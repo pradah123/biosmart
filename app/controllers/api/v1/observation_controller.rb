@@ -185,6 +185,13 @@ module Api::V1
                                              .distinct
                                              .pluck(:common_name)
                                              .compact
+      else
+        species = RegionsObservationsMatview.distinct
+                                            .pluck(:scientific_name)
+                                            .compact
+        species += RegionsObservationsMatview.distinct
+                                             .pluck(:common_name)
+                                             .compact
       end
       render_success species.uniq.to_json
     end

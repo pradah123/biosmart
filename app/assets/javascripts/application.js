@@ -55,25 +55,35 @@ function reload(atag='') {
 }
 
 function autocomplete_species() {
-  //var data_src = $('#search_by_species').data("autocomplete-source");
-
+  var data_src;
   api_url = _api + '/observations/species/autocomplete';
 
+  $.ajax({
+    async: false,
+    url: api_url,
+    type: 'get',
+    contentType: "application/json",
+    success: function(data) {
+      data_src = JSON.parse(data.data);
+    }
+  });
+
   $('#search_by_species').autocomplete({
+    source: data_src,
     // source: $('#search_by_species').data('autocomplete-source'),
-    source: function(request, response) {
-      $.ajax({
-          url: api_url,
-          type: 'get',
-          contentType: "application/json",
-          data: {
-            term: request.term,
-          },
-          success: function(data) {
-             response(JSON.parse(data.data));
-          }
-      });
-    },  
+    // source: function(request, response) {
+    //   $.ajax({
+    //       url: api_url,
+    //       type: 'get',
+    //       contentType: "application/json",
+    //       data: {
+    //         term: request.term,
+    //       },
+    //       success: function(data) {
+    //          response(JSON.parse(data.data));
+    //       }
+    //   });
+    // },
     minLength: 3
   });
 } 

@@ -14,7 +14,7 @@
  <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search By scientific/common name" , class: 'form-control fw-bold', autocomplete: 'on', data: { autocomplete_source: Observation.all.distinct.pluck(:scientific_name).compact.to_json } %> 
 <%
 =end%>
-              <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search By scientific/common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
+              <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search by scientific or common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
 
             </div>
             <div class="col-2 px-1">
@@ -28,24 +28,24 @@
 
   <% if @searched_regions.present? %>
     <div class="col-12">
-      <div class="row flex-nowrap flex-shrink-1" id="searched_regions_block">
-        <div class="col-2 flex-nowrap flex-shrink-1 h6" style="padding: 1 0 0 0; ">
+      <div class="row flex-nowrap flex-shrink-1 mb-3" id="searched_regions_block">
+        <div class="header-col col-2 flex-nowrap flex-shrink-1 h6 " style="padding: 1 0 0 0;">
         </div>
-        <div class="col-3 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font" style="padding: 1 0 0 0" ">
+        <div class="header-col col-3 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font" style="padding: 1 0 0 0;">
         </div>
-        <div class="col-2 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0 ">
+        <div class="header-col col-2 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font align-self-center text-center" style="padding: 1 0 0 0;">
           Total Sightings
         </div>
-        <div class="col-1 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+        <div class="header-col col-1 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font align-self-center text-center" style="padding: 1 0 0 0;">
           Property
         </div>
-        <div class="col-2 fw-bold flex-nowrap h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+        <div class="header-col col-2 fw-bold flex-nowrap h6 yellow-font align-self-center text-center" style="padding: 1 0 0 0;">
           Neighborhood
         </div>
-        <div class="col-1 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+        <div class="header-col col-1 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font align-self-center text-center" style="padding: 1 0 0 0;">
           Greater Region
         </div>
-        <div class="col-1 fw-bold flex-nowrap flex-shrink-1 h5 yellow-font align-self-center text-center" style="padding: 1 0 0 0">
+        <div class="header-col col-1 fw-bold flex-nowrap flex-shrink-1 h6 yellow-font align-self-center text-center" style="padding: 1 0 0 0;">
           BioScore
         </div>
       </div>

@@ -1,15 +1,15 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
-<div class="row mt-3" id="searched_region" >
+<div class="row mb-5" id="searched_region" >
 
-  <div class="col-2 flex-nowrap flex-shrink-1" style="padding: 1 0 0 0; ">
+  <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center" style="padding: 1 0 0 0; ">
     <% if r.logo_image_url || r.logo_image %>
       <% if r.region_url %>
         <a href="<%= r.region_url %>" target="_blank">
-          <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="float-start" style="max-height:100px;max-width:100%;">
+          <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="float-start" style="max-height:80%;max-width:80%;">
         </a>
       <% else %>
-        <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="float-start" style="max-height:100px;max-width:100%;">
+        <img src="<%= r.logo_image_url ? r.logo_image_url : r.logo_image %>" class="float-start" style="max-height:80%;max-width:80%;">
       <% end %>
     <% end %>
   </div>
@@ -64,9 +64,13 @@
     }
     function autoOver() {
       this.style.height = this.scrollHeight + "px";
+      this.style.paddingLeft = "calc(var(--bs-gutter-x) * .5)";
+      this.style.display = 'inline';
     }
     function autoOut() {
       this.style.removeProperty('height');
+      this.style.display = "-webkit-box";
+      this.style.paddingLeft = "calc(var(--bs-gutter-x) * .5)";
     }
 
     $(document).ready(function() {
