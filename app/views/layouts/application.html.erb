@@ -55,12 +55,13 @@
           <div class="col-12 col-lg-5 p-0 m-0 logo-header position-relative">
             <a href="/" class="btn float-start py-2 px-3 fw-home proxima text-uppercase text-white" role="button">biosmart.life | portal</a>
           </div>
-          <div class="col-12 col-lg-5 p-0 m-0 logo-header position-relative">
+          <div class="col-12 col-lg-6 p-0 m-0 logo-header position-relative">
             <% if @user %>
               <a href="#" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white" data-bs-toggle="modal" data-bs-target="#profile" id="profile_button" role="button">Profile: <%= @user.organization_name %></a>
               <!--a href="/participants" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <#%= @participations.nil? ? '' : 'text-decoration-underline' %>" role="button">Contest Participation</a-->
               <a href="/regions" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <%= @regions.nil? ? '' : 'text-decoration-underline' %>" role="button">Regions</a>
-        
+              <a href="/regions/search/species" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white role="button">Search</a>
+
               <% if @user.admin? %>
                 <a href="/dashboard/admin" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white" role="button">Dashboard</a>
                 <!--a href="/users" class="btn float-end py-3 h3 proxima text-uppercase fw-header-link text-white <#%= @users.nil? ? '' : 'text-decoration-underline' %>" role="button">Users</a>
