@@ -147,6 +147,7 @@ span.info_text {
   overflow: hidden;
   text-overflow: ellipsis;
   transition: all .5s ease;
+  padding-left: calc(var(--bs-gutter-x) * .5);
 }
 
 // .tooltip-pr:hover {
@@ -172,7 +173,9 @@ span.info_text {
   text-decoration : underline;
   color: #1c7fc1;
 }
-
 .more-content {
   text-decoration : none;
+}
+.header-col {
+  word-break: break-word;
 }
