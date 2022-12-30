@@ -60,7 +60,9 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
     base_region_ids += Region.where(id: region_ids)
                              .where.not(base_region_id: nil)
                              .pluck(:base_region_id)
-    regions = Region.where(id: base_region_ids).where(base_region_id: nil)
+    regions = Region.where(id: base_region_ids)
+                    .where(base_region_id: nil)
+                    .where(status: 'online')
   end
 
 

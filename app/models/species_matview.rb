@@ -24,6 +24,7 @@ class SpeciesMatview < ActiveRecord::Base
                             .order("species_name asc")
                             .pluck(:species_name)
                             .compact
+                            .uniq { |s| s.upcase }
     return species
   end
 
