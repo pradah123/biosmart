@@ -115,3 +115,17 @@ namespace :observer_species_grouped_by_day_matview do
     ObserverSpeciesGroupedByDayMatview.refresh
   end
 end
+
+namespace :species_matview do
+  desc 'Update species_matview'
+  task refresh: :environment do
+    SpeciesMatview.refresh
+  end
+end
+
+namespace :species_by_regions_matview do
+  desc 'Update species_by_regions_matview'
+  task refresh: :environment do
+    SpeciesByRegionsMatview.refresh
+  end
+end
