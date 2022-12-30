@@ -50,7 +50,7 @@
         </div>
       </div>
       <% @searched_regions.each do |r| %>
-        <%= render partial: 'region_with_species_count', locals: { r: r , search_text: @search_by_species} %>
+        <%= render partial: 'region_with_species_count', locals: { r: r , search_text: @search_by_species, taxonomy_ids: @taxonomy_ids} %>
       <% end %>
     </div>
   <% else %>

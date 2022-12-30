@@ -34,6 +34,8 @@ const line_symbol = {
   strokeOpacity: 1,
   scale: 4,
 };
+var make_select_auto_complete = false;
+var empty_list = true;
 
 $(document).ready(function() { 
   set_up_authentication();
@@ -54,6 +56,23 @@ function reload(atag='') {
   location.reload();
 }
 
+function require_valid_text(target) {
+  target = $(target);
+  // Return Focus
+  target.focus();
+  // Add alert class
+  target.addClass("ui-state-alert");
+  $("<div>", {
+    class: "required-alert-text",
+    style: "color: #F00; font-size: 18px; display: inline-block; position: absolute;"
+  }).html("Must select from the list").insertBefore(target).position({
+    my: "bottom",
+    at: "top-15",
+    of: target
+  });
+  $(':submit').attr('disabled', 'disabled');
+}
+
 function autocomplete_species() {
   var data_src;
   api_url = _api + '/observations/species/autocomplete';
@@ -71,18 +90,45 @@ function autocomplete_species() {
   $('#search_by_species').autocomplete({
     // source: data_src,
     // source: $('#search_by_species').data('autocomplete-source'),
+    delay: 500,
     source: function(request, response) {
       $.ajax({
           url: api_url,
           type: 'get',
           contentType: "application/json",
+          jsonpCallback: 'jsonCallback',
           data: {
             term: request.term,
           },
           success: function(data) {
+             resp_data = JSON.parse(data.data);
+             if (resp_data.length <= 0) {
+              empty_list = true;
+             }
+             else {
+              empty_list = false;
+             }
              response(JSON.parse(data.data));
           }
       });
+    },
+    select: function(e, ui) {
+      make_select_auto_complete = true;
+    },
+    close: function(e, ui) {
+      if (make_select_auto_complete) {
+        make_select_auto_complete = false;
+        $(".ui-state-alert").removeClass("ui-state-alert");
+        $(".required-alert-text").remove();
+        $(':submit').removeAttr("disabled");
+      } else {
+        require_valid_text(this);
+      }
+    },
+    response: function(e, ui) {
+      if (empty_list) {
+        require_valid_text(this);
+      }
     },
     minLength: 3
   });
