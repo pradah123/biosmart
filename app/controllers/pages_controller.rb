@@ -82,19 +82,20 @@ class PagesController < ApplicationController
     @searched_regions = []
     search_text = params[:search_by_species]
     if search_text.present?
-      region_ids = []
-      region_ids = Region.joins(:observations)
-                         .where("lower(observations.scientific_name) like ? or lower(observations.common_name) like ?", "%#{search_text.downcase}%", "%#{search_text.downcase}%")
-                         .where(base_region_id: nil)
-                         .distinct
-                         .pluck(:region_id)
-      region_ids += Region.joins(:observations)
-                          .where("lower(observations.scientific_name) like ? or lower(observations.common_name) like ?", "%#{search_text.downcase}%", "%#{search_text.downcase}%")
-                          .where.not(base_region_id: nil)
-                          .distinct
-                          .pluck(:base_region_id)
-      @searched_regions = Region.where(id: region_ids)                      
-      @search_by_species = params[:search_by_species]
+      regions = []
+      regions = SpeciesByRegionsMatview.get_regions_by_species(search_text: search_text)
+      regions_hash = []
+      regions.each do |r|
+        region_id = r.id
+        species_count = SpeciesByRegionsMatview.get_total_sightings_for_region(region_id: region_id, search_text: search_text)
+        regions_hash.push({ region: r, total_sightings: species_count, bioscore: r.bioscore })
+      end
+      sorted_regions = regions_hash.sort_by { |h| [h[:total_sightings], h[:bioscore]] }
+                                   .reverse
+                                   .map { |row| row[:region] }
+
+      @searched_regions = sorted_regions
+      @search_by_species = search_text
     end
   end
 
@@ -104,21 +105,15 @@ class PagesController < ApplicationController
     species_count = '-'
     if region_id.present? && search_text.present?
       if params[:get_property_sightings] == "true"
-        species_count = RegionsObservationsMatview.get_species_count(region_id: region_id, search_text: search_text)
+        species_count = SpeciesByRegionsMatview.get_species_count(region_id: region_id, search_text: search_text)
       elsif params[:get_locality_sightings] == "true"
         locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
-        species_count = RegionsObservationsMatview.get_species_count(region_id: locality.id, search_text: search_text) if locality.present?
+        species_count = SpeciesByRegionsMatview.get_species_count(region_id: locality.id, search_text: search_text) if locality.present?
       elsif params[:get_gr_sightings] == "true"
         greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
-        species_count = RegionsObservationsMatview.get_species_count(region_id: greater_region.id, search_text: search_text) if greater_region.present?
+        species_count = SpeciesByRegionsMatview.get_species_count(region_id: greater_region.id, search_text: search_text) if greater_region.present?
       elsif params[:get_total_sightings] == "true"
-        locality_species_count = greater_region_species_count = 0
-        species_count = RegionsObservationsMatview.get_species_count(region_id: region_id, search_text: search_text)
-        locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
-        locality_species_count = RegionsObservationsMatview.get_species_count(region_id: locality.id, search_text: search_text) if locality.present?
-        greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
-        greater_region_species_count = RegionsObservationsMatview.get_species_count(region_id: greater_region.id, search_text: search_text) if greater_region.present?
-        species_count = species_count + locality_species_count + greater_region_species_count
+        species_count = SpeciesByRegionsMatview.get_total_sightings_for_region(region_id: region_id, search_text: search_text)
       end
     end
 

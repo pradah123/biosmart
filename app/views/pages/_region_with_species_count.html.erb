@@ -76,7 +76,7 @@
     $(document).ready(function() {
       $.ajax({
         url: "/regions/search/sightings_count",
-        data: {get_property_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text %>"},
+        data: {get_property_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text.html_safe %>"},
         cache: false,
         dataType: 'json',
         success: function(data){
@@ -89,7 +89,7 @@
       });
       $.ajax({
         url: "/regions/search/sightings_count",
-        data: {get_locality_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text %>"},
+        data: {get_locality_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text.html_safe %>"},
         cache: false,
         dataType: 'json',
         success: function(data){
@@ -98,7 +98,7 @@
       });
       $.ajax({
         url: "/regions/search/sightings_count",
-        data: {get_gr_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text %>"},
+        data: {get_gr_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text.html_safe %>"},
         cache: false,
         dataType: 'json',
         success: function(data){
@@ -107,7 +107,7 @@
       });
       $.ajax({
         url: "/regions/search/sightings_count",
-        data: {get_total_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text %>"},
+        data: {get_total_sightings: true, region_id: <%= r.id %>, search_text: "<%= search_text.html_safe %>"},
         cache: false,
         dataType: 'json',
         success: function(data){
@@ -117,7 +117,7 @@
     });
    
   </script>
-  <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center fw-bold h5 blue-font" style="padding: 1 0 0 0; " id="<%= r.id %>_total_sightings" >
+  <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center fw-bold h3 blue-font" style="padding: 1 0 0 0; " id="<%= r.id %>_total_sightings" >
   </div>
   <div class="col-1 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0" id="<%= r.id %>_property_sightings" >
   </div>

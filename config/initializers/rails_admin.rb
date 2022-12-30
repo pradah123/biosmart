@@ -36,6 +36,8 @@ RailsAdmin.config do |config|
     RegionsObservationsMatview
     SpeciesGroupedByDayMatview
     ObserverSpeciesGroupedByDayMatview
+    SpeciesMatview
+    SpeciesByRegionsMatview
   )
 
   config.navigation_static_label = ''

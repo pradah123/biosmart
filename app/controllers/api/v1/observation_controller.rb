@@ -177,21 +177,9 @@ module Api::V1
       species = []
       if params[:term].present?
         search_text = params[:term]
-        species = RegionsObservationsMatview.where("lower(scientific_name) like ?", "%#{search_text.downcase}%")
-                                            .distinct
-                                            .pluck(:scientific_name)
-                                            .compact
-        species += RegionsObservationsMatview.where("lower(common_name) like ?", "%#{search_text.downcase}%")
-                                             .distinct
-                                             .pluck(:common_name)
-                                             .compact
+        species = SpeciesMatview.get_species(search_text: search_text)
       else
-        species = RegionsObservationsMatview.distinct
-                                            .pluck(:scientific_name)
-                                            .compact
-        species += RegionsObservationsMatview.distinct
-                                             .pluck(:common_name)
-                                             .compact
+        species = SpeciesMatview.get_species()
       end
       render_success species.uniq.to_json
     end
