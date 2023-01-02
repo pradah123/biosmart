@@ -5,20 +5,20 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
   scope :has_common_name, -> { where "lower(common_name) NOT IN (#{@@filtered_names}) or common_name is null" }
   scope :has_images, -> { where 'observation_images_count > ?', 0 }
 
-  scope :filter_by_scientific_or_common_name, -> (search_text) {
+  scope :filter_by_scientific_or_common_name, lambda { |search_text|
     where("lower(scientific_name) = ? or lower(common_name) = ?", "#{search_text.downcase}", "#{search_text.downcase}") if search_text.present?
   }
-  scope :filter_by_region, -> (region_id) {
-    where(region_id: region_id)  if region_id.present?
+  scope :filter_by_region, lambda { |region_id|
+    where(region_id: region_id) if region_id.present?
   }
-  @@filtered_names = "'arachnids', 'birds', 'other arthropods',
+  @@filtered_names = "'arachnids', 'birds', 'other arthropods', 'other insects',
                      'other invertebrates', 'crustaceans', 'mammals',
                      'amphibians', 'reptiles', 'insects - butterflies and moths',
                      'fungi and friends', 'plants that do not flower', 'plants that flower',
                      'fish', 'insects - beetles', 'insects - ants, bees and wasps',
                      'insects - flies', 'insects - flies'"
-
   # agelaius phoeniceus
+
   def readonly?
     true
   end
@@ -36,11 +36,15 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
   end
 
   def self.get_species_count(region_id:, taxonomy_ids:)
-    species_count = SpeciesByRegionsMatview.where(region_id: region_id)
-                                           .has_scientific_name
-                                           .has_common_name
-                                           .where(taxonomy_id: taxonomy_ids)
-                                           .count(:id)
+    if taxonomy_ids.present?
+      species_count = SpeciesByRegionsMatview.where(region_id: region_id)
+                                            .has_scientific_name
+                                            .has_common_name
+                                            .where(taxonomy_id: taxonomy_ids)
+                                            .count(:id)
+    else
+      species_count = Region.find_by_id(region_id).observations_count
+    end
     return species_count.as_json
   end
 
@@ -72,15 +76,22 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
   end
 
 
-  def self.get_total_sightings_for_region(region_id:, taxonomy_ids:)
-    locality_species_count = greater_region_species_count = 0
-    species_count                = SpeciesByRegionsMatview.get_species_count(region_id: region_id, taxonomy_ids: taxonomy_ids)
+  def self.get_total_sightings_for_region(region_id:, taxonomy_ids: nil)
     locality                     = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
-    locality_species_count       = SpeciesByRegionsMatview.get_species_count(region_id: locality.id, taxonomy_ids: taxonomy_ids) if locality.present?
     greater_region               = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
-    greater_region_species_count = SpeciesByRegionsMatview.get_species_count(region_id: greater_region.id, taxonomy_ids: taxonomy_ids) if greater_region.present?
+    locality_species_count = greater_region_species_count = 0
 
+    if taxonomy_ids.present?
+      species_count                = SpeciesByRegionsMatview.get_species_count(region_id: region_id, taxonomy_ids: taxonomy_ids)
+      locality_species_count       = SpeciesByRegionsMatview.get_species_count(region_id: locality.id, taxonomy_ids: taxonomy_ids) if locality.present?
+      greater_region_species_count = SpeciesByRegionsMatview.get_species_count(region_id: greater_region.id, taxonomy_ids: taxonomy_ids) if greater_region.present?
+    else
+      species_count = Region.find_by_id(region_id).observations_count
+      locality_species_count = locality.observations_count if locality.present?
+      greater_region_species_count = greater_region.observations_count if greater_region.present?
+    end
     species_count = species_count + locality_species_count + greater_region_species_count
+
     return species_count
   end
 

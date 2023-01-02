@@ -3,10 +3,10 @@ class SpeciesMatview < ActiveRecord::Base
   self.primary_key = 'sysid'
 
   scope :has_species_name, -> { where "lower(species_name) NOT IN (#{@@filtered_names}) AND species_name is not null" }
-  scope :filter_by_species_name, -> (search_text) {
+  scope :filter_by_species_name, lambda { |search_text|
     where("lower(species_name) like ?", "%#{search_text.downcase}%") if search_text.present?
   }
-  @@filtered_names = "'arachnids', 'birds', 'other arthropods',
+  @@filtered_names = "'arachnids', 'birds', 'other arthropods', 'other insects',
                      'other invertebrates', 'crustaceans', 'mammals',
                      'amphibians', 'reptiles', 'insects - butterflies and moths',
                      'fungi and friends', 'plants that do not flower', 'plants that flower',
