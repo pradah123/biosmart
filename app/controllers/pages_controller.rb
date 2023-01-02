@@ -80,12 +80,14 @@ class PagesController < ApplicationController
 
   def search_species
     @searched_regions = []
+    @taxonomy_ids = []
     search_text = params[:search_by_species]
+    regions_hash = []
+    regions = []
+
     if search_text.present?
-      regions = []
-      regions = SpeciesByRegionsMatview.get_regions_by_species(search_text: search_text)
-      regions_hash = []
       @taxonomy_ids = SpeciesByRegionsMatview.get_taxonomy_ids(search_text: search_text)
+      regions = SpeciesByRegionsMatview.get_regions_by_species(search_text: search_text)
 
       regions.each do |r|
         region_id = r.id
@@ -95,30 +97,36 @@ class PagesController < ApplicationController
       sorted_regions = regions_hash.sort_by { |h| [h[:total_sightings], h[:bioscore]] }
                                    .reverse
                                    .map { |row| row[:region] }
-
-      @searched_regions = sorted_regions
       @search_by_species = search_text
+      @searched_regions = Kaminari.paginate_array(sorted_regions).page(params[:page]).per(25)
+    else
+      regions = Region.joins(:contests)
+                      .where('contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now)
+                      .distinct
+                      .order('bioscore desc')
+                      .page(params[:page]).per(20)
+      @searched_regions = regions
     end
+
   end
 
   def sightings_count
     region_id = params[:region_id]
-    search_text = params[:search_text]
+    search_text = params[:search_text] || ''
     species_count = '-'
-    taxonomy_ids = params[:taxonomy_ids]
-
-    if region_id.present? && search_text.present?
+    taxonomy_ids = params[:taxonomy_ids] || []
+    if region_id.present?
+      locality       = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
+      greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
       if params[:get_property_sightings] == "true"
         species_count = SpeciesByRegionsMatview.get_species_count(region_id: region_id, 
                                                                   taxonomy_ids: taxonomy_ids)
       elsif params[:get_locality_sightings] == "true"
-        locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
         if locality.present?
           species_count = SpeciesByRegionsMatview.get_species_count(region_id: locality.id,
                                                                     taxonomy_ids: taxonomy_ids)
         end
       elsif params[:get_gr_sightings] == "true"
-        greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
         if greater_region.present?
           species_count = SpeciesByRegionsMatview.get_species_count(region_id: greater_region.id,
                                                                     taxonomy_ids: taxonomy_ids)
@@ -128,11 +136,9 @@ class PagesController < ApplicationController
                                                                                taxonomy_ids: taxonomy_ids)
       end
     end
-
     species_count_json = { 'species_count': species_count }
 
-    render :json => species_count_json
-
+    render json: species_count_json
   end
 
   def get_more
