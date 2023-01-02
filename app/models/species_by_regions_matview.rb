@@ -1,6 +1,6 @@
 class SpeciesByRegionsMatview < ActiveRecord::Base
   self.table_name = 'species_by_regions_matview'
-  # self.primary_key = 'sysid'
+  self.primary_key = 'sysid'
   scope :has_scientific_name, -> { where "lower(scientific_name) NOT IN (#{@@filtered_names}) AND scientific_name is not null" }
   scope :has_common_name, -> { where "lower(common_name) NOT IN (#{@@filtered_names}) or common_name is null" }
   scope :has_images, -> { where 'observation_images_count > ?', 0 }
