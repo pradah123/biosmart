@@ -116,17 +116,17 @@ class PagesController < ApplicationController
     species_count = '-'
     taxonomy_ids = params[:taxonomy_ids] || []
     if region_id.present?
-      locality       = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
-      greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
       if params[:get_property_sightings] == "true"
         species_count = SpeciesByRegionsMatview.get_species_count(region_id: region_id, 
                                                                   taxonomy_ids: taxonomy_ids)
       elsif params[:get_locality_sightings] == "true"
+        locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
         if locality.present?
           species_count = SpeciesByRegionsMatview.get_species_count(region_id: locality.id,
                                                                     taxonomy_ids: taxonomy_ids)
         end
       elsif params[:get_gr_sightings] == "true"
+        greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
         if greater_region.present?
           species_count = SpeciesByRegionsMatview.get_species_count(region_id: greater_region.id,
                                                                     taxonomy_ids: taxonomy_ids)
