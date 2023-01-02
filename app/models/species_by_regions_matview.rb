@@ -1,8 +1,9 @@
 class SpeciesByRegionsMatview < ActiveRecord::Base
   self.table_name = 'species_by_regions_matview'
-  self.primary_key = 'sysid'
+  # self.primary_key = 'sysid'
   scope :has_scientific_name, -> { where "lower(scientific_name) NOT IN (#{@@filtered_names}) AND scientific_name is not null" }
   scope :has_common_name, -> { where "lower(common_name) NOT IN (#{@@filtered_names}) or common_name is null" }
+  scope :has_images, -> { where 'observation_images_count > ?', 0 }
 
   scope :filter_by_scientific_or_common_name, -> (search_text) {
     where("lower(scientific_name) = ? or lower(common_name) = ?", "#{search_text.downcase}", "#{search_text.downcase}") if search_text.present?
@@ -60,7 +61,12 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
     base_region_ids += Region.where(id: region_ids)
                              .where.not(base_region_id: nil)
                              .pluck(:base_region_id)
-    regions = Region.where(id: base_region_ids)
+    regions_in_contests = []
+    Contest.in_progress.each do |c|
+      regions_in_contests += c.regions.where(id: base_region_ids.compact.uniq).pluck(:id)
+    end
+
+    regions = Region.where(id: regions_in_contests.compact.uniq)
                     .where(base_region_id: nil)
                     .where(status: 'online')
   end
@@ -76,6 +82,21 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
 
     species_count = species_count + locality_species_count + greater_region_species_count
     return species_count
+  end
+
+  def self.get_species_image(region_id:, taxonomy_ids:)
+    greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
+    region_id = greater_region.id if greater_region.present?
+    obs_id = SpeciesByRegionsMatview.where(region_id: region_id)
+                                    .has_scientific_name
+                                    .has_common_name
+                                    .where(taxonomy_id: taxonomy_ids)
+                                    .has_images
+                                    .order("observed_at desc")
+                                    .limit(1)
+                                    .pluck(:id)
+    species_image = ObservationImage.where(observation_id: obs_id).pluck(:url).first
+    return species_image
   end
 
   def self.refresh
