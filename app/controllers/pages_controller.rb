@@ -82,12 +82,13 @@ class PagesController < ApplicationController
     @searched_regions = []
     @taxonomy_ids = []
     search_text = params[:search_by_species]
+    contest_id = params[:contest_filter]
     regions_hash = []
     regions = []
 
     if search_text.present?
       @taxonomy_ids = SpeciesByRegionsMatview.get_taxonomy_ids(search_text: search_text)
-      regions = SpeciesByRegionsMatview.get_regions_by_species(search_text: search_text)
+      regions = SpeciesByRegionsMatview.get_regions_by_species(search_text: search_text, contest_id: contest_id)
 
       regions.each do |r|
         region_id = r.id
@@ -100,7 +101,11 @@ class PagesController < ApplicationController
       @search_by_species = search_text
       @searched_regions = Kaminari.paginate_array(sorted_regions).page(params[:page]).per(25)
     else
+      contest_query = ''
+      contest_query = "contests.id = #{contest_id}" if contest_id.present?
+
       regions = Region.joins(:contests)
+                      .where(contest_query)
                       .where('contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now)
                       .distinct
                       .order('bioscore desc')
