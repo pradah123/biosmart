@@ -24,9 +24,8 @@
         <div class="row justify-content-center mt-2 mb-5">
           <div class="col-2"></div>
           <div class="col-8 d-flex justify-content-end">
-            <% n = Observation.all.count %>
-            <% n_has_images = Observation.all.has_images.count %>
-            <span class="me-1" id="nobservations"><%= number_with_delimiter n, delimiter: ',' %></span> observations, <span class="mx-1" id="nobservations_noimage"><%= number_with_delimiter (n-n_has_images), delimiter: ',' %></span> without images
+            <span class="me-1" id="nobservations"></span>
+            <span class="mx-1" id="nobservations_noimage"></span>
           </div>
         </div>             
       	<div class="row" id="observations-block">
