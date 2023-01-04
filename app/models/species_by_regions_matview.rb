@@ -98,6 +98,17 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
   end
 
   def self.get_species_image(region_id:, taxonomy_ids:)
+    obs_id = SpeciesByRegionsMatview.where(region_id: region_id)
+                                    .has_scientific_name
+                                    .has_common_name
+                                    .where(taxonomy_id: taxonomy_ids)
+                                    .has_images
+                                    .order("observed_at desc")
+                                    .limit(1)
+                                    .pluck(:id)
+    species_image = ObservationImage.where(observation_id: obs_id).pluck(:url).first
+    return species_image if species_image.present?
+
     greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
     region_id = greater_region.id if greater_region.present?
     obs_id = SpeciesByRegionsMatview.where(region_id: region_id)

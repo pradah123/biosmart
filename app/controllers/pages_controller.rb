@@ -82,7 +82,7 @@ class PagesController < ApplicationController
     @searched_regions = []
     @taxonomy_ids = []
     search_text = params[:search_by_species]
-    contest_id = params[:contest_filter]
+    contest_id = params[:contest_filter] || params[:contest_id]
     regions_hash = []
     regions = []
 

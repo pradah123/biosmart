@@ -102,9 +102,11 @@
   <% if search_text.present? %>
     <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center" style="padding: 1 0 0 0;">
       <% species_image_url = SpeciesByRegionsMatview.get_species_image(region_id: r.id, taxonomy_ids: taxonomy_ids) %>
-      <a href="<%= species_image_url %>" target="_blank">
-        <img src="<%= species_image_url %>" style="height:150px;width:90%;object-fit:cover;">
-      </a>
+      <% if species_image_url.present? %>
+        <a href="<%= species_image_url %>" target="_blank">
+          <img src="<%= species_image_url %>" style="height:150px;width:90%;object-fit:cover;">
+        </a>
+      <% end %>
     </div>
   <% else %>
     <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center" style="padding: 1 0 0 0;">
@@ -157,16 +159,27 @@
 <%
 =end%>
   </div>
-  <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center fw-bold h3 blue-font" style="padding: 1 0 0 0; " id="<%= r.id %>_total_sightings" >
-  </div>
+  <% if search_text.present? %>
+    <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center fw-bold h3 blue-font" style="padding: 1 0 0 0; " id="<%= r.id %>_total_sightings" >
+    </div>
+  <% else %>
+    <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0; " id="<%= r.id %>_total_sightings" >
+    </div>
+  <% end %>
   <div class="col-1 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0" id="<%= r.id %>_property_sightings" >
   </div>
   <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0" id="<%= r.id %>_locality_sightings" >
   </div>
   <div class="col-1 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0;" id="<%= r.id %>_gr_sightings" >
   </div>
-  <div class="col-1 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0;" id="<%= r.id %>_bioscore">
-    <%= r.bioscore %>
-  </div>
+  <% if search_text.present? %>
+    <div class="col-1 flex-nowrap flex-shrink-1 align-self-center text-center h6 blue-font" style="padding: 1 0 0 0;" id="<%= r.id %>_bioscore">
+      <%= r.bioscore %>
+    </div>
+  <% else %>
+    <div class="col-1 flex-nowrap flex-shrink-1 align-self-center text-center fw-bold h3 blue-font" style="padding: 1 0 0 0;" id="<%= r.id %>_bioscore">
+      <%= r.bioscore %>
+    </div>
+  <% end %>
 </div>
 
