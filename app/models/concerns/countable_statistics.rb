@@ -123,13 +123,25 @@ module CountableStatistics
       if self.is_a? Region
         # get_ranking self.observations.uniq.pluck(:scientific_name), n
         if start_dt.present? && end_dt.present?
-          obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id,
-                                                                       start_dt: start_dt,
-                                                                       end_dt: end_dt)
+          obs = SpeciesByRegionsMatview.get_observations_for_region(region_id: self.id,
+                                                                    start_dt: start_dt,
+                                                                    end_dt: end_dt)
         else
-          obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.id)
+          obs = SpeciesByRegionsMatview.get_observations_for_region(region_id: self.id)
         end
-        get_ranking obs.pluck(:scientific_name), n
+        if n.present?
+          return obs.group(:taxonomy_id)
+                    .pluck('MAX(scientific_name) as scientific_name, count(taxonomy_id)')
+                    .sort_by { |arr| arr[1] }
+                    .reverse
+                    .first(n)
+        else
+          return obs.group(:taxonomy_id)
+                    .pluck('MAX(scientific_name) as scientific_name, count(taxonomy_id)')
+                    .sort_by { |arr| arr[1] }
+                    .reverse
+        end
+        # get_ranking obs.pluck(:scientific_name), n
       elsif self.is_a? Participation
         obs = RegionsObservationsMatview.get_observations_for_region(region_id: self.region.id,
                                                                      start_dt: self.starts_at,
