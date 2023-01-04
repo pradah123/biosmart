@@ -1,31 +1,55 @@
 <div class="row justify-content-center mt-2" id="search_species">
   <div class="col-10">
-    <div class="row my-5">
+    <div class="row my-3">
       <div class="col">
       	<div class="row">
       	  <div class="col h4 text-center proxima section-header mb-3">Search Species</div>
       	</div>
-        <div class="row justify-content-center mt-5">
-
-          <%= form_tag "/regions/search/species", method: "POST", class: "input-group justify-content-center" do %>
-            <div class="col-5 justify-content-left px-1">
-              <%
+        <% if params[:contest_id].present? %>
+          <%= form_tag "/regions/search/species?contest_id=#{params[:contest_id]}", method: "POST", class: "input-group row justify-content-center" do %>
+            <div class="col">
+              <div class="row justify-content-center mt-3">
+                <div class="col-5 justify-content-left px-1">
+    <%
 =begin%>
- <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search By scientific/common name" , class: 'form-control fw-bold', autocomplete: 'on', data: { autocomplete_source: Observation.all.distinct.pluck(:scientific_name).compact.to_json } %> 
-<%
+  <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search By scientific/common name" , class: 'form-control fw-bold', autocomplete: 'on', data: { autocomplete_source: Observation.all.distinct.pluck(:scientific_name).compact.to_json } %>
+  <%
 =end%>
-              <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search by scientific or common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
-
+                  <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search by scientific or common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
+                </div>
+                <div class="col-2 px-1">
+                  <%= submit_tag "Search", class: 'btn btn-warning w-100 fw-bold' %>
+                </div>
+              </div>
             </div>
-            <div class="col-2 px-1">
-              <%= submit_tag "Search", class: 'btn btn-warning w-100 fw-bold' %>
+          <% end %>
+        <% else %>
+          <%= form_tag "/regions/search/species", method: "POST", class: "input-group row justify-content-center" do %>
+            <div class="col">
+              <div class="row justify-content-center mt-2">
+                <div class="col-5 justify-content-left px-1">
+                  <%= select_tag(:contest_filter,
+                              "<option value=''>All</option>".html_safe + options_for_select(Contest.in_progress.collect {|p| [ p['title'], p['id'] ] }, params[:contest_filter].to_i),
+                              { :class => "form-select fw-bold", :selected => "All Contests"})
+                  %>
+                </div>
+              </div>
+              <div class="row justify-content-center mt-3">
+                <div class="col-5 justify-content-left px-1">
+                  <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search by scientific or common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
+                </div>
+                <div class="col-2 px-1">
+                  <%= submit_tag "Search", class: 'btn btn-warning w-100 fw-bold' %>
+                </div>
+              </div>
             </div>
-          <% end %> 
-        </div>
+          <% end %>
+        <% end %>
       </div>
     </div>
   </div>
-
+</div>
+<div class="row justify-content-center mt-2">
   <% if @searched_regions.present? %>
     <div class="col-12">
       <div class="row flex-nowrap flex-shrink-1 mb-3" id="searched_regions_block">

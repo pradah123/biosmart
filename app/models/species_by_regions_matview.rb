@@ -48,7 +48,7 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
     return species_count.as_json
   end
 
-  def self.get_regions_by_species(search_text:)
+  def self.get_regions_by_species(search_text:, contest_id: nil)
     taxonomy_ids = []
     taxonomy_ids = SpeciesByRegionsMatview.get_taxonomy_ids(search_text: search_text)
     region_ids = []
@@ -66,7 +66,9 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
                              .where.not(base_region_id: nil)
                              .pluck(:base_region_id)
     regions_in_contests = []
-    Contest.in_progress.each do |c|
+    contest_query = ''
+    contest_query = "contests.id = #{contest_id}" if contest_id.present?
+    Contest.where(contest_query).in_progress.each do |c|
       regions_in_contests += c.regions.where(id: base_region_ids.compact.uniq).pluck(:id)
     end
 
@@ -96,6 +98,17 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
   end
 
   def self.get_species_image(region_id:, taxonomy_ids:)
+    obs_id = SpeciesByRegionsMatview.where(region_id: region_id)
+                                    .has_scientific_name
+                                    .has_common_name
+                                    .where(taxonomy_id: taxonomy_ids)
+                                    .has_images
+                                    .order("observed_at desc")
+                                    .limit(1)
+                                    .pluck(:id)
+    species_image = ObservationImage.where(observation_id: obs_id).pluck(:url).first
+    return species_image if species_image.present?
+
     greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
     region_id = greater_region.id if greater_region.present?
     obs_id = SpeciesByRegionsMatview.where(region_id: region_id)
