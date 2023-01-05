@@ -87,12 +87,12 @@ class PagesController < ApplicationController
     regions = []
 
     if search_text.present?
-      @taxonomy_ids = SpeciesByRegionsMatview.get_taxonomy_ids(search_text: search_text)
-      regions = SpeciesByRegionsMatview.get_regions_by_species(search_text: search_text, contest_id: contest_id)
+      @taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: search_text)
+      regions = RegionsObservationsMatview.get_regions_by_species(search_text: search_text, contest_id: contest_id)
 
       regions.each do |r|
         region_id = r.id
-        species_count = SpeciesByRegionsMatview.get_total_sightings_for_region(region_id: region_id, taxonomy_ids: @taxonomy_ids)
+        species_count = RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id, taxonomy_ids: @taxonomy_ids)
         regions_hash.push({ region: r, total_sightings: species_count, bioscore: r.bioscore })
       end
       sorted_regions = regions_hash.sort_by { |h| [h[:total_sightings], h[:bioscore]] }
@@ -122,23 +122,23 @@ class PagesController < ApplicationController
     taxonomy_ids = params[:taxonomy_ids] || []
     if region_id.present?
       if params[:get_property_sightings] == "true"
-        species_count = SpeciesByRegionsMatview.get_species_count(region_id: region_id, 
-                                                                  taxonomy_ids: taxonomy_ids)
+        species_count = RegionsObservationsMatview.get_species_count(region_id: region_id, 
+                                                                     taxonomy_ids: taxonomy_ids)
       elsif params[:get_locality_sightings] == "true"
         locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
         if locality.present?
-          species_count = SpeciesByRegionsMatview.get_species_count(region_id: locality.id,
-                                                                    taxonomy_ids: taxonomy_ids)
+          species_count = RegionsObservationsMatview.get_species_count(region_id: locality.id,
+                                                                       taxonomy_ids: taxonomy_ids)
         end
       elsif params[:get_gr_sightings] == "true"
         greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
         if greater_region.present?
-          species_count = SpeciesByRegionsMatview.get_species_count(region_id: greater_region.id,
-                                                                    taxonomy_ids: taxonomy_ids)
+          species_count = RegionsObservationsMatview.get_species_count(region_id: greater_region.id,
+                                                                       taxonomy_ids: taxonomy_ids)
         end
       elsif params[:get_total_sightings] == "true"
-        species_count = SpeciesByRegionsMatview.get_total_sightings_for_region(region_id: region_id,
-                                                                               taxonomy_ids: taxonomy_ids)
+        species_count = RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id,
+                                                                                  taxonomy_ids: taxonomy_ids)
       end
     end
     species_count_json = { 'species_count': species_count }

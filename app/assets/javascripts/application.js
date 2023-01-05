@@ -62,14 +62,13 @@ function require_valid_text(target) {
   target.focus();
   // Add alert class
   target.addClass("ui-state-alert");
-  $("<div>", {
-    class: "required-alert-text",
-    style: "color: #F00; font-size: 18px; display: inline-block; position: absolute;"
-  }).html("Must select from the list").insertBefore(target).position({
-    my: "bottom",
-    at: "top-15",
-    of: target
-  });
+
+  if ($(".required-alert-text").length == 0) {
+    $("<div>", {
+      class: "required-alert-text row justify-content-center mt-3",
+      style: "color: #F00; font-size: 18px;"
+    }).html("Please type and select from the list of suggestions").insertAfter($(".search-species" ));
+  }
   $(':submit').attr('disabled', 'disabled');
 }
 

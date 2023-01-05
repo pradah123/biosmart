@@ -23,6 +23,15 @@ class SpeciesByRegionsMatview < ActiveRecord::Base
     true
   end
 
+  def self.get_observations_for_region(region_id:, start_dt: nil, end_dt: nil)
+    obs = SpeciesByRegionsMatview.where(region_id: region_id)
+    if start_dt.present? && end_dt.present?
+      return obs.where("observed_at BETWEEN ? and ?", start_dt, end_dt)
+    else
+      return obs
+    end
+  end
+
   def self.get_taxonomy_ids(region_id: nil, search_text: nil)
     taxonomy_ids = []
     taxonomy_ids = SpeciesByRegionsMatview.filter_by_region(region_id)

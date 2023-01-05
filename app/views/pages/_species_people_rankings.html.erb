@@ -24,7 +24,7 @@
     <div class="row my-5">
       <div class="col">      
         <% object.get_top_people(10).each.with_index(1) do |p,i| %>
-          <%= render partial: 'ranked_object', locals: { object: p, i: i } %>
+          <%= render partial: 'ranked_observer', locals: { object: p, i: i } %>
         <% end %>
         <div class="row mt-2">
           <div class="col d-flex justify-content-end">
@@ -67,7 +67,7 @@
         <div class="row justify-content-center mb-5">
           <div class="col-8">
             <% object.get_top_people.each.with_index(1) do |s,i| %>
-              <%= render partial: 'ranked_object', locals: { object: s, i: i } %>
+              <%= render partial: 'ranked_observer', locals: { object: s, i: i } %>
             <% end %>
           </div>  
         </div>
