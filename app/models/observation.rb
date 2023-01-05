@@ -245,11 +245,9 @@ class Observation < ApplicationRecord
         #                                   end_dt:       end_dt,
         #                                   include_gbif: true)
         if q.present?
-          taxonomy_ids = SpeciesByRegionsMatview.get_taxonomy_ids(search_text: q)
-          # observations = obs = obj.first.observations.where(taxonomy_id: taxonomy_ids).where("observed_at <= ?", Time.now).distinct
+          taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: q)
         end
         observations = obs = obj.first.observations.where("observed_at <= ?", Time.now).distinct
-        # Need to add taxonomy_id clause above once we add taxonomy_id clause for region's observations and species count
         if observations.present?
           if category.present? && q.present?
             observations = observations.where(taxonomy_id: taxonomy_ids).joins(:taxonomy).where(category_query)

@@ -8,7 +8,7 @@
         <% if params[:contest_id].present? %>
           <%= form_tag "/regions/search/species?contest_id=#{params[:contest_id]}", method: "POST", class: "input-group row justify-content-center" do %>
             <div class="col">
-              <div class="row justify-content-center mt-3">
+              <div class="row justify-content-center mt-3 search-species">
                 <div class="col-5 justify-content-left px-1">
     <%
 =begin%>
@@ -34,7 +34,7 @@
                   %>
                 </div>
               </div>
-              <div class="row justify-content-center mt-3">
+              <div class="row justify-content-center mt-3 search-species">
                 <div class="col-5 justify-content-left px-1">
                   <%= text_field_tag 'search_by_species', params[:search_by_species], placeholder: "Search by scientific or common name" , class: 'form-control fw-bold', autocomplete: 'on' %>
                 </div>
