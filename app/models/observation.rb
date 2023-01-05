@@ -489,7 +489,7 @@ class Observation < ApplicationRecord
     end
     # Update observations taxonomy_id with stored synonym taxonomy's id or taxonomy's id
     taxonomy_id = synonym_taxonomy.present? ? synonym_taxonomy.id : taxonomy&.id
-    taxonomy_updated = Observation.where(taxonomy_id: nil).where(scientific_name: scientific_name).update_all(taxonomy_id: taxonomy_id) if taxonomy_id.present?
+    taxonomy_updated = Observation.where(scientific_name: scientific_name).update_all(taxonomy_id: taxonomy_id) if taxonomy_id.present?
     Delayed::Worker.logger.info "Updated taxonomy for observations with taxonomy id: #{taxonomy_id}, #{taxonomy&.id}" if taxonomy_updated.present?
   end
 
