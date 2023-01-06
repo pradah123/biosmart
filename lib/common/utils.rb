@@ -91,4 +91,20 @@ module Utils
     return ''
   end
 
+  def self.get_day_start_time(date_s:)
+    return unless date_s.present?
+    day_start_time = Date.parse(date_s).strftime("%Y-%m-%d 00:00:00")
+    day_end_time   = Date.parse(date_s).strftime("%Y-%m-%d 23:59:59")
+
+    return day_start_time
+  end
+
+  def self.get_day_end_time(date_s:)
+    return unless date_s.present?
+    day_end_time   = Date.parse(date_s).strftime("%Y-%m-%d 23:59:59")
+
+    return day_end_time
+  end
+
+
 end

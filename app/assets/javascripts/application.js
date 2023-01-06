@@ -1057,4 +1057,47 @@ function login(params) {
   });
 }
 
+$( function() {
+  $( "#start_dt" ).datepicker({
+    showOn: "both",
+    buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
+    buttonImageOnly: true,
+    buttonText: "Select From Date",
+    showButtonPanel: true,
+    changeMonth: true,
+		changeYear: true,
+    dateFormat:"yy-mm-dd",
+    maxDate: new Date(),
+    widgetPositioning:{
+      horizontal: 'auto',
+      vertical: 'bottom'
+    }
+  }).keyup(function(e) {
+    if(e.keyCode == 8 || e.keyCode == 46) {
+        $.datepicker._clearDate(this);
+    }
+  });
+} );
+$( function() {
+  $( "#end_dt" ).datepicker({
+    showOn: "both",
+    buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
+    buttonImageOnly: true,
+    buttonText: "Select To Date",
+    showButtonPanel: true,
+    changeMonth: true,
+		changeYear: true,
+    dateFormat:"yy-mm-dd",
+    maxDate: new Date(),
+    widgetPositioning:{
+      horizontal: 'auto',
+      vertical: 'bottom'
+    }
+  }).keyup(function(e) {
+    if(e.keyCode == 8 || e.keyCode == 46) {
+        $.datepicker._clearDate(this);
+    }
+  });
+} );
+
 
