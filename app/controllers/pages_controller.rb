@@ -90,11 +90,17 @@ class PagesController < ApplicationController
 
     if search_text.present?
       @taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: search_text)
-      regions = RegionsObservationsMatview.get_regions_by_species(search_text: search_text, contest_id: contest_id)
+      regions = RegionsObservationsMatview.get_regions_by_species(search_text: search_text,
+                                                                  contest_id: contest_id,
+                                                                  start_dt: @start_dt,
+                                                                  end_dt: @end_dt)
 
       regions.each do |r|
         region_id = r.id
-        species_count = RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id, taxonomy_ids: @taxonomy_ids)
+        species_count = RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id,
+                                                                                  taxonomy_ids: @taxonomy_ids,
+                                                                                  start_dt: @start_dt,
+                                                                                  end_dt: @end_dt)
         regions_hash.push({ region: r, total_sightings: species_count, bioscore: r.bioscore })
       end
       sorted_regions = regions_hash.sort_by { |h| [h[:total_sightings], h[:bioscore]] }

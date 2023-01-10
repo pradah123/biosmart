@@ -1060,7 +1060,9 @@ function login(params) {
 $( function() {
   $( "#start_dt" ).datepicker({
     showOn: "both",
-    buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
+    // buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
+    buttonImage: "/assets/calendar.png",
+
     buttonImageOnly: true,
     buttonText: "Select From Date",
     showButtonPanel: true,
@@ -1081,7 +1083,7 @@ $( function() {
 $( function() {
   $( "#end_dt" ).datepicker({
     showOn: "both",
-    buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
+    buttonImage: "/assets/calendar.png",
     buttonImageOnly: true,
     buttonText: "Select To Date",
     showButtonPanel: true,
