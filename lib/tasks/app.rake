@@ -129,3 +129,10 @@ namespace :species_by_regions_matview do
     SpeciesByRegionsMatview.refresh
   end
 end
+
+namespace :total_observations_metrics_matview do
+  desc 'Update total_observations_metrics_matview'
+  task refresh: :environment do
+    TotalObservationsMetricsMatview.refresh
+  end
+end

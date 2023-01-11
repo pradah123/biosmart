@@ -522,19 +522,19 @@ class Observation < ApplicationRecord
   end
 
   def self.get_total_observations_count
-    return Observation.count
+    return TotalObservationsMetricsMatview.get_total_observations_count()
   end
 
   def self.get_total_species_count
-    return Observation.distinct.pluck(:accepted_name).count
+    return TotalObservationsMetricsMatview.get_total_species_count
   end
 
   def self.get_total_people_count
-    return Observation.distinct.pluck(:creator_name).count
+    return TotalObservationsMetricsMatview.get_total_people_count
   end
 
   def self.get_total_identifications_count
-    return Observation.sum(:identifications_count)
+    return TotalObservationsMetricsMatview.get_total_identifications_count
   end
 
 
