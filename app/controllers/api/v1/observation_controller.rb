@@ -183,5 +183,16 @@ module Api::V1
       end
       render_success species.uniq.to_json
     end
+
+    def get_total_counts
+      total_counts = {}
+      total_counts[:identifications_count] = Observation.get_total_identifications_count()
+      total_counts[:observations_count] = Observation.get_total_observations_count()
+      total_counts[:species_count] = Observation.get_total_species_count()
+      total_counts[:people_count] = Observation.get_total_people_count()
+
+      render_success total_counts
+    end
+
   end
 end 
