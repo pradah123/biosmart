@@ -1061,7 +1061,7 @@ $( function() {
   $( "#start_dt" ).datepicker({
     showOn: "both",
     // buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
-    buttonImage: "/assets/calendar.png",
+    buttonImage: _calendar_asset_path,
 
     buttonImageOnly: true,
     buttonText: "Select From Date",
@@ -1086,7 +1086,7 @@ $( function() {
 $( function() {
   $( "#end_dt" ).datepicker({
     showOn: "both",
-    buttonImage: "/assets/calendar.png",
+    buttonImage: _calendar_asset_path,
     buttonImageOnly: true,
     buttonText: "Select To Date",
     showButtonPanel: true,
