@@ -521,6 +521,21 @@ class Observation < ApplicationRecord
     end
   end
 
+  def self.get_total_observations_count
+    return Observation.count
+  end
+
+  def self.get_total_species_count
+    return Observation.distinct.pluck(:accepted_name).count
+  end
+
+  def self.get_total_people_count
+    return Observation.distinct.pluck(:creator_name).count
+  end
+
+  def self.get_total_identifications_count
+    return Observation.sum(:identifications_count)
+  end
 
 
 
