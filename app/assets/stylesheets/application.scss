@@ -182,3 +182,19 @@ span.info_text {
 input.ui-state-alert {
   border: 1px inset #F00;
 }
+
+.datepicker {
+  // background: url('http://jqueryui.com/resources/demos/datepicker/images/calendar.gif') no-repeat;
+  padding: .375rem .75rem !important;
+  color: #212529;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+  font-size: 1rem;
+  font-weight: 400;
+  width: 80%;
+  line-height: 1.5;
+}
+.no-overlap {
+  z-index: 0 !important;
+}

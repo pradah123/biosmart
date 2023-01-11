@@ -16,6 +16,12 @@ class RegionsObservationsMatview < ActiveRecord::Base
   scope :filter_by_scientific_or_common_name, lambda { |search_text|
     where("lower(scientific_name) = ? or lower(common_name) = ?", "#{search_text.downcase}", "#{search_text.downcase}") if search_text.present?
   }
+  scope :filter_by_date_range, lambda { |start_dt, end_dt|
+    where("observed_at BETWEEN ? and ?", start_dt, end_dt) if start_dt.present? && end_dt.present?
+  }
+  scope :filter_by_taxonomy, lambda { |taxonomy_ids|
+    where(taxonomy_id: taxonomy_ids) if taxonomy_ids.present?
+  }
 
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
 
@@ -44,22 +50,27 @@ class RegionsObservationsMatview < ActiveRecord::Base
     return taxonomy_ids
   end
 
-  def self.get_species_count(region_id:, taxonomy_ids:)
-    if taxonomy_ids.present?
-      species_count = RegionsObservationsMatview.where(region_id: region_id)
-                                                .where(taxonomy_id: taxonomy_ids)
-                                                .count(:id)
-    else
-      species_count = Region.find_by_id(region_id).observations_count
-    end
+  def self.get_species_count(region_id:, taxonomy_ids:, start_dt: nil, end_dt: nil)
+    start_dt = Utils.get_day_start_time(date_s: start_dt) if start_dt.present?
+    end_dt   = Utils.get_day_end_time(date_s: end_dt) if end_dt.present?
+    species_count = RegionsObservationsMatview.where(region_id: region_id)
+                                              .filter_by_taxonomy(taxonomy_ids)
+                                              .filter_by_date_range(start_dt, end_dt)
+                                              .count(:id)
+
     return species_count.as_json
   end
 
-  def self.get_regions_by_species(search_text:, contest_id: nil)
+
+  def self.get_regions_by_species(search_text:, contest_id: nil, start_dt: nil, end_dt: nil)
     taxonomy_ids = []
     taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: search_text)
+
+    start_dt = Utils.get_day_start_time(date_s: start_dt) if start_dt.present?
+    end_dt   = Utils.get_day_end_time(date_s: end_dt) if end_dt.present?
     region_ids = []
     region_ids = RegionsObservationsMatview.where(taxonomy_id: taxonomy_ids)
+                                           .filter_by_date_range(start_dt, end_dt)
                                            .distinct
                                            .pluck(:region_id)
                                            .compact
@@ -83,26 +94,36 @@ class RegionsObservationsMatview < ActiveRecord::Base
   end
 
 
-  def self.get_total_sightings_for_region(region_id:, taxonomy_ids: nil)
-    locality                     = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
-    greater_region               = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
+  def self.get_total_sightings_for_region(region_id:, taxonomy_ids: nil, start_dt: nil, end_dt: nil)
+    locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
+    greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
     locality_species_count = greater_region_species_count = 0
 
-    if taxonomy_ids.present?
-      species_count                = RegionsObservationsMatview.get_species_count(region_id: region_id, taxonomy_ids: taxonomy_ids)
-      locality_species_count       = RegionsObservationsMatview.get_species_count(region_id: locality.id, taxonomy_ids: taxonomy_ids) if locality.present?
-      greater_region_species_count = RegionsObservationsMatview.get_species_count(region_id: greater_region.id, taxonomy_ids: taxonomy_ids) if greater_region.present?
-    else
-      species_count = Region.find_by_id(region_id).observations_count
-      locality_species_count = locality.observations_count if locality.present?
-      greater_region_species_count = greater_region.observations_count if greater_region.present?
+    species_count = RegionsObservationsMatview.get_species_count(region_id: region_id,
+                                                                 taxonomy_ids: taxonomy_ids,
+                                                                 start_dt: start_dt,
+                                                                 end_dt: end_dt)
+    if greater_region.present?
+      locality_species_count = RegionsObservationsMatview.get_species_count(region_id: locality.id,
+                                                                            taxonomy_ids: taxonomy_ids,
+                                                                            start_dt: start_dt,
+                                                                            end_dt: end_dt)
     end
+    if greater_region.present?
+      greater_region_species_count = RegionsObservationsMatview.get_species_count(region_id: greater_region.id,
+                                                                                  taxonomy_ids: taxonomy_ids,
+                                                                                  start_dt: start_dt,
+                                                                                  end_dt: end_dt)
+    end
+
     species_count = species_count + locality_species_count + greater_region_species_count
 
     return species_count
   end
 
-  def self.get_species_image(region_id:, taxonomy_ids:)
+  def self.get_species_image(region_id:, taxonomy_ids:, start_dt: nil, end_dt: nil)
+    start_dt = Utils.get_day_start_time(date_s: start_dt) if start_dt.present?
+    end_dt   = Utils.get_day_end_time(date_s: end_dt) if end_dt.present?
     obs_id = RegionsObservationsMatview.where(region_id: region_id)
                                        .where(taxonomy_id: taxonomy_ids)
                                        .has_images

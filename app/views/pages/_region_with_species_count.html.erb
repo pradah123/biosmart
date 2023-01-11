@@ -46,6 +46,8 @@
         data: { get_property_sightings: true,
                 region_id: <%= r.id %>,
                 taxonomy_ids: <%= taxonomy_ids %>,
+                start_dt: "<%= start_dt&.html_safe %>",
+                end_dt: "<%= end_dt&.html_safe %>",
                 search_text: "<%= search_text&.html_safe %>" },
         cache: false,
         dataType: 'json',
@@ -62,6 +64,8 @@
         data: { get_locality_sightings: true,
                 region_id: <%= r.id %>,
                 taxonomy_ids: <%= taxonomy_ids %>,
+                start_dt: "<%= start_dt&.html_safe %>",
+                end_dt: "<%= end_dt&.html_safe %>",
                 search_text: "<%= search_text&.html_safe %>" },
         cache: false,
         dataType: 'json',
@@ -74,6 +78,8 @@
         data: { get_gr_sightings: true,
                 region_id: <%= r.id %>,
                 taxonomy_ids: <%= taxonomy_ids %>,
+                start_dt: "<%= start_dt&.html_safe %>",
+                end_dt: "<%= end_dt&.html_safe %>",
                 search_text: "<%= search_text&.html_safe %>" },
         cache: false,
         dataType: 'json',
@@ -86,6 +92,8 @@
         data: { get_total_sightings: true,
                 region_id: <%= r.id %>,
                 taxonomy_ids: <%= taxonomy_ids %>,
+                start_dt: "<%= start_dt&.html_safe %>",
+                end_dt: "<%= end_dt&.html_safe %>",
                 search_text: "<%= search_text&.html_safe %>" },
         cache: false,
         dataType: 'json',
@@ -101,7 +109,7 @@
 
   <% if search_text.present? %>
     <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center" style="padding: 1 0 0 0;">
-      <% species_image_url = SpeciesByRegionsMatview.get_species_image(region_id: r.id, taxonomy_ids: taxonomy_ids) %>
+      <% species_image_url = RegionsObservationsMatview.get_species_image(region_id: r.id, taxonomy_ids: taxonomy_ids, start_dt: start_dt, end_dt: end_dt) %>
       <% if species_image_url.present? %>
         <a href="<%= species_image_url %>" target="_blank">
           <img src="<%= species_image_url %>" style="height:150px;width:90%;object-fit:cover;">
