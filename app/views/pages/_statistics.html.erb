@@ -1,38 +1,54 @@
 <div class="row">
   <div class="col p-3">
     <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2">
-    <% if object.is_a? Region %>
-    <%= number_with_delimiter object.get_identifications_count(include_gbif: true), delimiter: ',' %>
+    <% if object.present? %>
+      <% if object.is_a? Region %>
+      <%= number_with_delimiter object.get_identifications_count(include_gbif: true), delimiter: ',' %>
+      <% else %>
+          <%= number_with_delimiter object.identifications_count, delimiter: ',' %>
+      <% end %>
     <% else %>
-        <%= number_with_delimiter object.identifications_count, delimiter: ',' %>
+      <%= number_with_delimiter Observation.get_total_identifications_count(), delimiter: ',' %>
     <% end %>
     <br/>Identifications</div>
   </div>
   <div class="col p-3">
     <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2">
-    <% if object.is_a? Region %>
-      <%= number_with_delimiter object.get_observations_count(include_gbif: true), delimiter: ',' %>
+    <% if object.present? %>
+      <% if object.is_a? Region %>
+        <%= number_with_delimiter object.get_observations_count(include_gbif: true), delimiter: ',' %>
+      <% else %>
+        <%= number_with_delimiter object.observations_count, delimiter: ',' %>
+      <% end %>
     <% else %>
-      <%= number_with_delimiter object.observations_count, delimiter: ',' %>
+      <%= number_with_delimiter Observation.get_total_observations_count(), delimiter: ',' %>
     <% end %>
     <br/>Observations</div>
   </div>
   <div class="col p-3">
     <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2">
+    <% if object.present? %>
       <% if object.is_a? Region %>
         <%= number_with_delimiter object.get_species_count(include_gbif: true), delimiter: ',' %>
       <% else %>
         <%= number_with_delimiter object.species_count, delimiter: ',' %>
       <% end %>
+    <% else %>
+      <%= number_with_delimiter Observation.get_total_species_count(), delimiter: ',' %>
+    <% end %>
     <br/>Species</div>
   </div>
   <div class="col p-3">
     <div class="border border-4 border-dark rounded-3 text-center bg-dark text-white h6 fs-italic p-2">
+    <% if object.present? %>
       <% if object.is_a? Region %>
         <%= number_with_delimiter object.get_people_count(include_gbif: true), delimiter: ',' %>
       <% else %>
         <%= number_with_delimiter object.people_count, delimiter: ',' %>
       <% end %>
+    <% else %>
+      <%= number_with_delimiter Observation.get_total_people_count(), delimiter: ',' %>
+    <% end %>
     <br/>People</div>
   </div>
 </div>
