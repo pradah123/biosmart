@@ -1073,6 +1073,9 @@ $( function() {
     widgetPositioning:{
       horizontal: 'auto',
       vertical: 'bottom'
+    },
+    onSelect: function(selected) {
+      $("#end_dt").datepicker("option","minDate", selected)
     }
   }).keyup(function(e) {
     if(e.keyCode == 8 || e.keyCode == 46) {
@@ -1094,6 +1097,9 @@ $( function() {
     widgetPositioning:{
       horizontal: 'auto',
       vertical: 'bottom'
+    },
+    onSelect: function(selected) {
+      $("#start_dt").datepicker("option","maxDate", selected)
     }
   }).keyup(function(e) {
     if(e.keyCode == 8 || e.keyCode == 46) {
