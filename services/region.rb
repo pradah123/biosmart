@@ -94,6 +94,11 @@ module Service
 
       def execute(params)
         search_params = Params.new(params)
+        if search_params.start_dt.present? &&
+           search_params.end_dt.present? &&
+           DateTime.parse(search_params.start_dt, "%Y-%m-%d") > DateTime.parse(search_params.end_dt, "%Y-%m-%d")
+          return Failure('start_dt cannot be greater than end_dt.')
+        end
         if search_params.search_text.present?
           fetch_regions_by_species(search_params)
         else
