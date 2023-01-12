@@ -1,3 +1,5 @@
+require_relative '../../lib/common/utils.rb'
+
 class RegionsObservationsMatview < ActiveRecord::Base
   self.table_name = 'regions_observations_matview'
   self.primary_key = 'sysid'

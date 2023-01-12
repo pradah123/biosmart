@@ -30,6 +30,18 @@ module Api::V1
       end
     end
 
+    def search_by_species
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Region::SearchBySpecies.call(search_params) do |result|
+        result.success do |searched_regions|
+          render json: searched_regions
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
     def polygons_old
       data = {}
 

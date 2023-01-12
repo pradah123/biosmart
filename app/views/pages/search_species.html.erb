@@ -117,5 +117,6 @@
     </div>
   <% end %>
 </div>
-
-<%= paginate @searched_regions %>
+<% if @searched_regions.present? %>
+  <%= paginate @searched_regions %>
+<% end %>

@@ -1,3 +1,5 @@
+require './services/region'
+
 class PagesController < ApplicationController
 
   def top
@@ -81,7 +83,7 @@ class PagesController < ApplicationController
   def search_species
     @searched_regions = []
     @taxonomy_ids = []
-    search_text = params[:search_by_species]
+    params[:search_text] = search_text = params[:search_by_species] || ''
     contest_id = params[:contest_filter] || params[:contest_id]
     @start_dt = params[:start_dt] || ''
     @end_dt = params[:end_dt] || ''
@@ -90,38 +92,17 @@ class PagesController < ApplicationController
 
     if search_text.present?
       @taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: search_text)
-      regions = RegionsObservationsMatview.get_regions_by_species(search_text: search_text,
-                                                                  contest_id: contest_id,
-                                                                  start_dt: @start_dt,
-                                                                  end_dt: @end_dt)
-
-      regions.each do |r|
-        region_id = r.id
-        species_count = RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id,
-                                                                                  taxonomy_ids: @taxonomy_ids,
-                                                                                  start_dt: @start_dt,
-                                                                                  end_dt: @end_dt)
-        regions_hash.push({ region: r, total_sightings: species_count, bioscore: r.bioscore })
-      end
-      sorted_regions = regions_hash.sort_by { |h| [h[:total_sightings], h[:bioscore]] }
-                                   .reverse
-                                   .map { |row| row[:region] }
       @search_by_species = search_text
-      @searched_regions = Kaminari.paginate_array(sorted_regions).page(params[:page]).per(25)
-    else
-      contest_query = ''
-      contest_query = "contests.id = #{contest_id}" if contest_id.present?
-
-      regions = Region.joins(:contests)
-                      .where(contest_query)
-                      .where('contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now)
-                      .where(status: 'online')
-                      .distinct
-                      .order('bioscore desc')
-                      .page(params[:page]).per(20)
-      @searched_regions = regions
     end
-
+    search_params = params.to_unsafe_h.symbolize_keys
+    Service::Region::SearchBySpecies.call(search_params) do |result|
+      result.success do |searched_regions|
+        @searched_regions = searched_regions
+      end
+      result.failure do |message|
+        Rails.logger.info(">>>>>>pages_controller::search_species: message: #{message}")
+      end
+    end
   end
 
   def sightings_count
