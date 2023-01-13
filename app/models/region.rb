@@ -744,13 +744,16 @@ class Region < ApplicationRecord
       next unless p.is_active?
       ds = p.data_sources.map {|ds| ds }
       ds.each do |d|
+        next if d.name == 'gbif'
         latest_observation = Region.find_by_id(region.id).observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
         obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
         if latest_observation&.observed_at.present?
           starts_at = latest_observation.observed_at.to_time.to_i 
         else
-          participation_start_dt = p.contest.starts_at.to_time.to_i
+          # participation_start_dt = p.contest.starts_at.to_time.to_i
+          participation_start_dt = p.contest.starts_at
           participation_start_dt = ends_at - Utils.convert_to_seconds(unit: 'year', value: 3) if d.name == 'gbif'
+          participation_start_dt = participation_start_dt.to_time.to_i
           starts_at = participation_start_dt if participation_start_dt < starts_at
         end
         starts_at = obs_date if obs_date.present? && starts_at > obs_date
@@ -762,10 +765,12 @@ class Region < ApplicationRecord
       #  and not from observations.updated_at
       data_sources.push(*ds)
     end
-    data_sources = data_sources.uniq
+    data_sources = data_sources.uniq.compact
     data_sources.map! do |ds|
       data_source = Hash.new([])
       data_source = data_source_with_date_range["#{ds.id}"]
+      next unless data_source.present?
+      # Delayed::Worker.logger.info ">>>>>>>>>>>>>>>>>>>>> data_source: #{data_source}"
       starts_at_date = data_source_with_date_range["#{ds.id}"][:starts_at]
       data_source[:starts_at] = Time.at(starts_at_date).to_datetime
       ds = data_source
