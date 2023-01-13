@@ -307,7 +307,7 @@ class Observation < ApplicationRecord
       obj = nil
     end
 
-    q = q.blank? ? '' : q.strip.downcase
+    q = q.blank? ? '' : q.strip
     category = '' if category == 'All Categories'
     observations = filter_observations(category: category, q: q, obj: obj, start_dt: start_dt, end_dt: end_dt)
     nobservations_all = observations.count

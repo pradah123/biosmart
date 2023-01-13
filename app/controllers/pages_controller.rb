@@ -80,6 +80,7 @@ class PagesController < ApplicationController
     render layout: "basic_template"
   end
 
+
   def search_species
     @searched_regions = []
     @taxonomy_ids = []
@@ -91,7 +92,6 @@ class PagesController < ApplicationController
     regions = []
 
     if search_text.present?
-      @taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: search_text)
       @search_by_species = search_text
     end
     search_params = params.to_unsafe_h.symbolize_keys
@@ -105,46 +105,6 @@ class PagesController < ApplicationController
     end
   end
 
-  def sightings_count
-    region_id = params[:region_id]
-    search_text = params[:search_text] || ''
-    start_dt = params[:start_dt] || ''
-    end_dt = params[:end_dt] || ''
-    species_count = '-'
-    taxonomy_ids = params[:taxonomy_ids] || []
-    if region_id.present?
-      if params[:get_property_sightings] == "true"
-        species_count = RegionsObservationsMatview.get_species_count(region_id: region_id, 
-                                                                     taxonomy_ids: taxonomy_ids,
-                                                                     start_dt: start_dt,
-                                                                     end_dt: end_dt)
-      elsif params[:get_locality_sightings] == "true"
-        locality = Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
-        if locality.present?
-          species_count = RegionsObservationsMatview.get_species_count(region_id: locality.id,
-                                                                       taxonomy_ids: taxonomy_ids,
-                                                                       start_dt: start_dt,
-                                                                       end_dt: end_dt)
-        end
-      elsif params[:get_gr_sightings] == "true"
-        greater_region = Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
-        if greater_region.present?
-          species_count = RegionsObservationsMatview.get_species_count(region_id: greater_region.id,
-                                                                       taxonomy_ids: taxonomy_ids,
-                                                                       start_dt: start_dt,
-                                                                       end_dt: end_dt)
-        end
-      elsif params[:get_total_sightings] == "true"
-        species_count = RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id,
-                                                                                  taxonomy_ids: taxonomy_ids,
-                                                                                  start_dt: start_dt,
-                                                                                  end_dt: end_dt)
-      end
-    end
-    species_count_json = { 'species_count': species_count }
-
-    render json: species_count_json
-  end
 
   def get_more
     result = Observation.get_search_results params[:region_id], params[:contest_id], cookies[:q],

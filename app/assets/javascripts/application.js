@@ -217,7 +217,7 @@ function set_up_observations() {
   });
 
   $("#search_button").click(function () {
-    var q = $("#search_input").val().toLowerCase().trim();
+    var q = $("#search_input").val().trim();
     if (q) {
       Cookies.set("pathname", pathname);
       Cookies.set("q", q);

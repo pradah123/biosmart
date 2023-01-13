@@ -42,63 +42,21 @@
 
     $(document).ready(function() {
       $.ajax({
-        url: "/regions/search/sightings_count",
-        data: { get_property_sightings: true,
-                region_id: <%= r.id %>,
-                taxonomy_ids: <%= taxonomy_ids %>,
-                start_dt: "<%= start_dt&.html_safe %>",
+        url: "/api/v1/region/<%= r.id %>/sightings_count",
+        data: { start_dt: "<%= start_dt&.html_safe %>",
                 end_dt: "<%= end_dt&.html_safe %>",
                 search_text: "<%= search_text&.html_safe %>" },
         cache: false,
         dataType: 'json',
         success: function(data){
-            text = data.species_count
+            text = data.property_sightings_count
             if (text == 0) {
               text = 'Be first to find!';
             }
             $("#<%= r.id %>_property_sightings").text(text);
-        } 
-      });
-      $.ajax({
-        url: "/regions/search/sightings_count",
-        data: { get_locality_sightings: true,
-                region_id: <%= r.id %>,
-                taxonomy_ids: <%= taxonomy_ids %>,
-                start_dt: "<%= start_dt&.html_safe %>",
-                end_dt: "<%= end_dt&.html_safe %>",
-                search_text: "<%= search_text&.html_safe %>" },
-        cache: false,
-        dataType: 'json',
-        success: function(data){
-          $("#<%= r.id %>_locality_sightings").text(data.species_count);
-        } 
-      });
-      $.ajax({
-        url: "/regions/search/sightings_count",
-        data: { get_gr_sightings: true,
-                region_id: <%= r.id %>,
-                taxonomy_ids: <%= taxonomy_ids %>,
-                start_dt: "<%= start_dt&.html_safe %>",
-                end_dt: "<%= end_dt&.html_safe %>",
-                search_text: "<%= search_text&.html_safe %>" },
-        cache: false,
-        dataType: 'json',
-        success: function(data){
-            $("#<%= r.id %>_gr_sightings").text(data.species_count);
-        } 
-      });
-      $.ajax({
-        url: "/regions/search/sightings_count",
-        data: { get_total_sightings: true,
-                region_id: <%= r.id %>,
-                taxonomy_ids: <%= taxonomy_ids %>,
-                start_dt: "<%= start_dt&.html_safe %>",
-                end_dt: "<%= end_dt&.html_safe %>",
-                search_text: "<%= search_text&.html_safe %>" },
-        cache: false,
-        dataType: 'json',
-        success: function(data){
-            $("#<%= r.id %>_total_sightings").text(data.species_count);
+            $("#<%= r.id %>_locality_sightings").text(data.locality_sightings_count);
+            $("#<%= r.id %>_gr_sightings").text(data.greater_region_sightings_count);
+            $("#<%= r.id %>_total_sightings").text(data.total_sightings_count);
         } 
       });
     });
@@ -109,7 +67,7 @@
 
   <% if search_text.present? %>
     <div class="col-2 flex-nowrap flex-shrink-1 align-self-center text-center" style="padding: 1 0 0 0;">
-      <% species_image_url = RegionsObservationsMatview.get_species_image(region_id: r.id, taxonomy_ids: taxonomy_ids, start_dt: start_dt, end_dt: end_dt) %>
+      <% species_image_url = RegionsObservationsMatview.get_species_image(region_id: r.id, search_text: search_text) %>
       <% if species_image_url.present? %>
         <a href="<%= species_image_url %>" target="_blank">
           <img src="<%= species_image_url %>" style="height:150px;width:90%;object-fit:cover;">

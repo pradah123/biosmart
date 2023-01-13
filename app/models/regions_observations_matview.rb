@@ -16,7 +16,7 @@ class RegionsObservationsMatview < ActiveRecord::Base
     where(region_id: region_id) if region_id.present?
   }
   scope :filter_by_scientific_or_common_name, lambda { |search_text|
-    where("lower(scientific_name) = ? or lower(common_name) = ?", "#{search_text.downcase}", "#{search_text.downcase}") if search_text.present?
+    where("scientific_name = ? or common_name = ?", search_text, search_text) if search_text.present?
   }
   scope :filter_by_date_range, lambda { |start_dt, end_dt|
     where("observed_at BETWEEN ? and ?", start_dt, end_dt) if start_dt.present? && end_dt.present?
@@ -46,7 +46,7 @@ class RegionsObservationsMatview < ActiveRecord::Base
     taxonomy_ids = []
     taxonomy_ids = RegionsObservationsMatview.filter_by_region(region_id)
                                              .filter_by_scientific_or_common_name(search_text)
-                                             .distinct
+                                             .group(:taxonomy_id)
                                              .pluck(:taxonomy_id)
                                              .compact
     return taxonomy_ids
@@ -123,9 +123,10 @@ class RegionsObservationsMatview < ActiveRecord::Base
     return species_count
   end
 
-  def self.get_species_image(region_id:, taxonomy_ids:, start_dt: nil, end_dt: nil)
-    start_dt = Utils.get_day_start_time(date_s: start_dt) if start_dt.present?
-    end_dt   = Utils.get_day_end_time(date_s: end_dt) if end_dt.present?
+  def self.get_species_image(region_id:, search_text:)
+    taxonomy_ids = []
+    taxonomy_ids = RegionsObservationsMatview.get_taxonomy_ids(search_text: search_text)
+
     obs_id = RegionsObservationsMatview.where(region_id: region_id)
                                        .where(taxonomy_id: taxonomy_ids)
                                        .has_images
