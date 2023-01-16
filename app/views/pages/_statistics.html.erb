@@ -49,6 +49,13 @@
     <% else %>
       <%= number_with_delimiter Observation.get_total_people_count(), delimiter: ',' %>
     <% end %>
-    <br/>People</div>
+    <br/>People
+    <% if object.present? %>
+      <% if object.is_a? Region %>
+       (<%= number_with_delimiter object.get_yearly_count(score_type: 'people_score', num_years: 1), delimiter: ',' %>
+     &nbsp;active)
+      <% end %>
+    <% end %>
+    </div>
   </div>
 </div>
