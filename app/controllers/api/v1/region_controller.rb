@@ -54,6 +54,18 @@ module Api::V1
       end
     end
 
+    def species_image
+      r = Region.find_by_id params[:region_id]
+      raise ApiFail.new("Invalid region_id provided.") if r.blank?
+      raise ApiFail.new("Must provide search_text.") unless params[:search_text]
+
+      search_text = params[:search_text]
+      raise ApiFail.new("Invalid search_text provided.") if search_text.blank?
+      species_image = RegionsObservationsMatview.get_species_image(region_id: r.id,
+                                                                   search_text: search_text)
+      render json: species_image
+    end
+
     def polygons_old
       data = {}
 

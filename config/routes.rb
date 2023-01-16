@@ -57,6 +57,7 @@ Rails.application.routes.draw do
       get '/region/:region_id/observations', to: 'observation#search'
       get '/regions/search/species', to: 'region#search_by_species'
       get '/region/:region_id/sightings_count', to: 'region#sightings_count'
+      get '/region/:region_id/species_image', to: 'region#species_image'
 
       get '/region/polygons', to: 'region#polygons'
       get '/region/data/:region_id/:contest_id', to: 'region#data'
