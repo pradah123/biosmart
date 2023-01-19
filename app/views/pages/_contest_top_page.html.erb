@@ -1,5 +1,8 @@
-
+<% if c.starts_at < Time.now && c.ends_at > Time.now %>
+<div class="row mt-5 contest">
+<% else %>
 <div class="row mt-5">
+<% end %>
   <div class="col">
   	<div class="row">
   		<div class="col h4 d-flex justify-content-center"><a href="<%= c.get_path %>" class="contest-title-link"><%= c.title %></a></div>

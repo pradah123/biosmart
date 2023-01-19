@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   get '/participants', to: 'pages#participations'
   get '/users', to: 'pages#users'
   get '/observations/more', to: 'pages#get_more'
+  get '/contests/more', to: 'pages#get_more_contests'
 
   get '/contest/:slug', to: 'pages#contest'
   get '/:region_slug/:contest_slug', to: 'pages#region_contest'

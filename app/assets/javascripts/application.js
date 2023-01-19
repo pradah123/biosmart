@@ -210,6 +210,18 @@ function set_up_observations() {
     return false;
   });
 
+  $('#show_more_contests').click(function() {
+    var n = $('.contest').length;
+    var params = "offset="+n;
+    params += "&limit="+ parseInt($(this).attr('data-n-per-fetch'));
+
+    $.ajax({ url: ('/contests/more?'+params), dataType: 'html' })
+    .done(function(data, status) { $('#contests-block').append(data); })
+    .fail(function(xhr, status, error) {});
+
+    return false;
+  });
+
   $('#search_clear').click(function() {
     var cookie_name = 'q'
     clear_search_cookie(cookie_name);
