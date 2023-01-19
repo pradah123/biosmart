@@ -30,14 +30,21 @@
         <div class="col">
           <div class="row mb-3">
             <div class="col h4 text-center proxima section-header mb-3">Contests In Progress</div>
-          </div>  
+          </div>
           <div class="row">
-            <div class="col">
+            <div class="col"  id="contests-block">
               <% Contest.in_progress.online.ordered_by_starts_at.first(5).each.with_index(1) do |c,i| %>
                 <%= render partial: 'contest_top_page', locals: { c: c, i: i, observations_object: c, show_more_link: false } %>
               <% end %>
             </div>    
           </div>
+          <% if Contest.in_progress.online.count > 5 %>
+            <div class="row justify-content-center mt-5 show_more_contests">
+              <div class="col-4">
+                <button type="button" class="btn btn-warning w-100" id="show_more_contests" data-n-per-fetch="5">Show more contests</button>
+              </div>
+            </div>
+          <% end %>
         </div>      
       </div>
     </div>

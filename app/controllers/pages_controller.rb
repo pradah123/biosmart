@@ -116,6 +116,24 @@ class PagesController < ApplicationController
     }, layout: false
   end
 
+  def get_more_contests
+    offset = params[:offset].to_i
+    limit = params[:limit].to_i
+    contests = Contest.in_progress
+                      .online
+                      .ordered_by_starts_at
+                      .offset(params[:offset].to_i)
+                      .limit(params[:limit].to_i)
+    total_contests = Contest.in_progress.online.count
+    contests_displayed = offset + contests.count
+
+    show_more_contests = true
+    show_more_contests = false if total_contests == contests_displayed
+    render partial: 'pages/ongoing_contests', locals: {
+      contests: contests,
+      show_more_contests: show_more_contests
+    }, layout: false
+  end
 
 
 end
