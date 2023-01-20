@@ -33,5 +33,57 @@ module Service
         Success(contest)
       end
     end
+
+
+    class List
+      include Service::Application
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        optional(:status).filled(:string, included_in?: ['in_progress', 'upcoming', 'past'])
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :status, Types::Params::String
+      end
+
+      def execute(params)
+        params = Params.new(params)
+        list_contests(params)
+      end
+
+      private
+
+      def list_contests(params)
+        status = params.status
+        if status.present?
+          case status
+          when 'in_progress'
+            contests = ::Contest.in_progress
+                                .online
+                                .ordered_by_starts_at
+                                .offset(params.offset)
+                                .limit(params.limit)
+          when 'upcoming'
+            contests = ::Contest.upcoming
+                                .online
+                                .ordered_by_starts_at
+                                .offset(params.offset)
+                                .limit(params.limit)
+          when 'past'
+            contests = ::Contest.past
+                                .online
+                                .ordered_by_starts_at
+                                .offset(params.offset)
+                                .limit(params.limit)
+          end
+        else
+          contests = ::Contest.ordered_by_starts_at
+                              .offset(params.offset)
+                              .limit(params.limit)
+        end
+        Success(contests)
+      end
+    end
   end
 end

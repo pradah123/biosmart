@@ -1,5 +1,19 @@
+require './services/contest'
+
 module Api::V1
   class ContestController < ApiController
+
+    def list
+      search_params = params.to_unsafe_h.symbolize_keys
+      Service::Contest::List.call(search_params) do |result|
+        result.success do |contests|
+          render json: contests.to_json
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
 
     #### Returns data of given contests' regions which are within given distance(kms)
     #### from given coordinates
