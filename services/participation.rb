@@ -38,12 +38,15 @@ module Service
         optional(:contest_id).filled(:integer, gt?: 0)
         optional(:sort_by).filled(:string, included_in?: ['id', 'bioscore'])
         optional(:sort_order).filled(:string, included_in?: ['asc', 'desc'])
+        optional(:intersecting_contest_id).filled(:integer, gt?: 0)
+
       end
       
       class Params < AppStruct::Pagination
         attribute? :contest_id, Types::Params::Integer
         attribute? :sort_by, Types::Params::String.default('id')
         attribute? :sort_order, Types::Params::String.default('asc')
+        attribute? :intersecting_contest_id, Types::Params::Integer
 
         def sort_key
           # Bioscore is not populated in participation model
@@ -61,8 +64,25 @@ module Service
 
       def fetch_participations(search_params)
         participations = ::Participation.default_scoped.base_region_participations
-        if search_params.contest_id.present?
-          all_participations = participations.where(contest_id: search_params.contest_id)
+        contest_id = search_params.contest_id
+        intersecting_contest_id = search_params.intersecting_contest_id
+        if contest_id.present?
+          contest = ::Contest.find_by_id(contest_id)
+          return Failure("Invalid contest_id (#{contest_id}).") if contest.blank?
+
+          if intersecting_contest_id.present?
+            intersecting_contest = ::Contest.find_by_id(intersecting_contest_id)
+            return Failure("Invalid intersecting_contest_id (#{intersecting_contest_id}).") if intersecting_contest.blank?
+
+            all_participations = participations.where(contest_id: contest_id)
+                                               .where(
+                                                 'region_id in (:region_ids)',
+                                                 region_ids: participations.where(contest_id: intersecting_contest_id)
+                                                                           .pluck(:region_id)
+                                               )
+          else
+            all_participations = participations.where(contest_id: contest_id)
+          end
         end
         participations = all_participations.includes(:region)
                                            .offset(search_params.offset)
@@ -81,8 +101,8 @@ module Service
           participations_arr.push(region_hash)
         end
 
-        # Need to calculate percentiles for species_diversity, monitoring and community scores and
-        # merge them with regions' other data
+        # Need to calculate percentiles for species_diversity, monitoring and community scores of
+        # all the regions in given contest and merge them with those regions' other data
         regions = []
         all_participations = ::Contest.find_by_id(search_params[:contest_id])&.participations.base_region_participations
         all_participations.each do |p|
