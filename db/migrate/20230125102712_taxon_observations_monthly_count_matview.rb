@@ -6,7 +6,7 @@ class TaxonObservationsMonthlyCountMatview < ActiveRecord::Migration[7.0]
     execute <<-SQL
       CREATE MATERIALIZED VIEW taxon_observations_monthly_count_matview AS
       (
-        SELECT 
+        SELECT
           extract(month from observed_at::date)::integer as month,
           extract(year from observed_at::date)::integer as year,
           count(id) as observations_count,

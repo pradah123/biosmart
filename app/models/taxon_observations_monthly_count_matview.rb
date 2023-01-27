@@ -20,16 +20,6 @@ class TaxonObservationsMonthlyCountMatview < ActiveRecord::Base
   end
 
 
-  def self.get_taxonomy_ids(region_id: nil, search_text: nil)
-    taxonomy_ids = []
-    taxonomy_ids = RegionsObservationsMatview.filter_by_region(region_id)
-                                             .filter_by_scientific_or_common_name(search_text)
-                                             .group(:taxonomy_id)
-                                             .pluck(:taxonomy_id)
-                                             .compact
-    return taxonomy_ids
-  end
-
   def self.get_species_count(region_id:, taxonomy_ids:, month_filter: nil, year_filter: nil)
     species_count = TaxonObservationsMonthlyCountMatview.where(region_id: region_id)
                                                         .filter_by_taxonomy(taxonomy_ids)
