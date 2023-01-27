@@ -86,8 +86,11 @@ class PagesController < ApplicationController
     @taxonomy_ids = []
     params[:search_text] = search_text = params[:search_by_species] || ''
     contest_id = params[:contest_filter] || params[:contest_id]
-    @start_dt = params[:start_dt] || ''
-    @end_dt = params[:end_dt] || ''
+    @month_filter = params[:month_filter] || ''
+    @year_filter = params[:year_filter] || ''
+    @all_years = params[:all_years] || ''
+    @all_months = params[:all_months] || ''
+
     regions_hash = []
     regions = []
 
@@ -95,6 +98,15 @@ class PagesController < ApplicationController
       @search_by_species = search_text
     end
     search_params = params.to_unsafe_h.symbolize_keys
+    if @all_years == 'All'
+      @year_filter = search_params[:year_filter] = ''
+    end
+    if @all_months == 'All'
+      @month_filter = search_params[:month_filter] = ''
+    end
+    @month_filter = search_params[:month_filter] = search_params[:month_filter].join(',') if search_params[:month_filter].present?
+    @year_filter = search_params[:year_filter] = search_params[:year_filter].join(',') if search_params[:year_filter].present?
+
     Service::Region::SearchBySpecies.call(search_params) do |result|
       result.success do |searched_regions|
         @searched_regions = searched_regions

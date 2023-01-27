@@ -136,3 +136,10 @@ namespace :total_observations_metrics_matview do
     TotalObservationsMetricsMatview.refresh
   end
 end
+
+namespace :taxon_observations_monthly_count_matview do
+  desc 'Update taxon_observations_monthly_count_matview'
+  task refresh: :environment do
+    TaxonObservationsMonthlyCountMatview.refresh
+  end
+end

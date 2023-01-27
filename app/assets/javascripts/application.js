@@ -1069,55 +1069,75 @@ function login(params) {
   });
 }
 
-$( function() {
-  $( "#start_dt" ).datepicker({
-    showOn: "both",
-    // buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif",
-    buttonImage: _calendar_asset_path,
+function set_month_filter(month_filter) {
+  $('#month_filter').multiselect({ templates: {
+      button: '<button type="button" class="multiselect" data-bs-toggle="dropdown" aria-expanded="false"><span class="multiselect-selected-text"></span></button>',
+    },
+    includeSelectAllOption: true,
+    buttonClass:'custom-select',
+    inheritClass:true,
+    allSelectedText: 'All months',
+    nSelectedText: 'months',
+    numberDisplayed: 2,
+    selectAllNumber: false,
+    buttonWidth: '100%'
+  });
 
-    buttonImageOnly: true,
-    buttonText: "Select From Date",
-    showButtonPanel: true,
-    changeMonth: true,
-		changeYear: true,
-    dateFormat:"yy-mm-dd",
-    maxDate: new Date(),
-    widgetPositioning:{
-      horizontal: 'auto',
-      vertical: 'bottom'
-    },
-    onSelect: function(selected) {
-      $("#end_dt").datepicker("option","minDate", selected)
+  if (month_filter != '') {
+    $('#month_filter').multiselect('select', month_filter);
+    $("#month_filter").multiselect('updateButtonText');
+  } else {
+    $("#month_filter").multiselect('selectAll', false);
+    $("#month_filter").multiselect('updateButtonText');
+  }
+  var months_selected = $("#month_filter option").not(":selected").length;
+  if (months_selected === 0) {
+    $("#all_months").val("All");
+  }
+  $("#month_filter").change(function() {
+    var months_selected = $("#month_filter option").not(":selected").length;
+    if (months_selected != 0) {
+      $("#all_months").val("");
     }
-  }).keyup(function(e) {
-    if(e.keyCode == 8 || e.keyCode == 46) {
-        $.datepicker._clearDate(this);
-    }
-  });
-} );
-$( function() {
-  $( "#end_dt" ).datepicker({
-    showOn: "both",
-    buttonImage: _calendar_asset_path,
-    buttonImageOnly: true,
-    buttonText: "Select To Date",
-    showButtonPanel: true,
-    changeMonth: true,
-		changeYear: true,
-    dateFormat:"yy-mm-dd",
-    maxDate: new Date(),
-    widgetPositioning:{
-      horizontal: 'auto',
-      vertical: 'bottom'
-    },
-    onSelect: function(selected) {
-      $("#start_dt").datepicker("option","maxDate", selected)
-    }
-  }).keyup(function(e) {
-    if(e.keyCode == 8 || e.keyCode == 46) {
-        $.datepicker._clearDate(this);
+    else {
+      $("#all_months").val("All");
     }
   });
-} );
+}
+
+function set_year_filter(year_filter) {
+  $('#year_filter').multiselect({ templates: {
+       button: '<button type="button" class="multiselect" data-bs-toggle="dropdown" aria-expanded="false"><span class="multiselect-selected-text"></span></button>',
+        },
+    includeSelectAllOption: true,
+    buttonClass:'custom-select',
+    inheritClass:true,
+    allSelectedText: 'All years',
+    nSelectedText: 'years',
+    numberDisplayed: 2,
+    selectAllNumber: false,
+    buttonWidth: '100%'
+  });
+  if (year_filter != '') {
+    $('#year_filter').multiselect('select', year_filter);
+    $("#year_filter").multiselect('updateButtonText');
+  } else {
+    $("#year_filter").multiselect('selectAll', false);
+    $("#year_filter").multiselect('updateButtonText');
+  }
+  var year_selected = $("#year_filter option").not(":selected").length;
+  if (year_selected === 0) {
+    $("#all_years").val("All");
+  }
+  $("#year_filter").change(function() {
+    var year_selected = $("#year_filter option").not(":selected").length;
+    if (year_selected != 0) {
+      $("#all_years").val("");
+    }
+    else {
+      $("#all_years").val("All");
+    }
+  });
+}
 
 
