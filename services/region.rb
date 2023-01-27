@@ -87,18 +87,13 @@ module Service
         attribute? :contest_id, Types::Params::Integer
         attribute? :contest_filter, Types::Params::String
         attribute? :search_text, Types::Params::String
-        attribute? :start_dt, Types::Params::String
-        attribute? :end_dt, Types::Params::String
+        attribute? :month_filter, Types::Params::String
+        attribute? :year_filter, Types::Params::String
         attribute? :page, Types::Params::Integer
       end
 
       def execute(params)
         search_params = Params.new(params)
-        if search_params.start_dt.present? &&
-           search_params.end_dt.present? &&
-           DateTime.parse(search_params.start_dt, "%Y-%m-%d") > DateTime.parse(search_params.end_dt, "%Y-%m-%d")
-          return Failure('start_dt cannot be greater than end_dt.')
-        end
         if search_params.search_text.present?
           fetch_regions_by_species(search_params)
         else
@@ -116,17 +111,18 @@ module Service
         elsif search_params.contest_filter.present? && !search_params.contest_filter.blank?
           contest_id = search_params.contest_filter.to_i
         end
-        regions = ::RegionsObservationsMatview.get_regions_by_species(search_text: search_params.search_text,
-                                                                      contest_id: contest_id,
-                                                                      start_dt: search_params.start_dt,
-                                                                      end_dt: search_params.end_dt)
-
+        month_filter = search_params.month_filter
+        year_filter  = search_params.year_filter
+        regions = ::TaxonObservationsMonthlyCountMatview.get_regions_by_species(search_text: search_params.search_text,
+                                                                                contest_id: contest_id,
+                                                                                month_filter: month_filter,
+                                                                                year_filter: year_filter)
         regions.each do |r|
           region_id = r.id
-          species_count = ::RegionsObservationsMatview.get_total_sightings_for_region(region_id: region_id,
-                                                                                      taxonomy_ids: taxonomy_ids,
-                                                                                      start_dt: search_params.start_dt,
-                                                                                      end_dt: search_params.end_dt)
+          species_count = ::TaxonObservationsMonthlyCountMatview.get_total_sightings_for_region(region_id: region_id,
+                                                                                                taxonomy_ids: taxonomy_ids,
+                                                                                                month_filter: month_filter,
+                                                                                                year_filter: year_filter)
           regions_hash.push({ region: r,
                               total_sightings: species_count,
                               bioscore: r.bioscore })
@@ -176,8 +172,8 @@ module Service
       class Params < AppStruct::Pagination
         attribute? :region_id, Types::Params::Integer
         attribute? :search_text, Types::Params::String
-        attribute? :start_dt, Types::Params::String
-        attribute? :end_dt, Types::Params::String
+        attribute? :month_filter, Types::Params::String
+        attribute? :year_filter, Types::Params::String
         attribute? :get_property_sightings, Types::Params::String
         attribute? :get_locality_sightings, Types::Params::String
         attribute? :get_gr_sightings, Types::Params::String
@@ -194,15 +190,14 @@ module Service
           taxonomy_ids = ::RegionsObservationsMatview.get_taxonomy_ids(search_text: search_params.search_text)
         end
         region_id = search_params.region_id
-        start_dt  = search_params.start_dt
-        end_dt    = search_params.end_dt
-
+        month_filter = search_params.month_filter
+        year_filter  = search_params.year_filter
         sightings_count = if search_params.get_property_sightings == "true"
-                            fetch_property_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+                            fetch_property_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
                           elsif search_params.get_locality_sightings == "true"
-                            fetch_locality_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+                            fetch_locality_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
                           elsif search_params.get_gr_sightings == "true"
-                            fetch_greater_region_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+                            fetch_greater_region_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
                           else
                             fetch_sightings_count(search_params, taxonomy_ids)
                           end
@@ -215,11 +210,6 @@ module Service
 
       def validate_parameters(search_params)
         error_message = ''
-        if search_params.start_dt.present? &&
-           search_params.end_dt.present? &&
-           DateTime.parse(search_params.start_dt, "%Y-%m-%d") > DateTime.parse(search_params.end_dt, "%Y-%m-%d")
-           error_message = 'start_dt cannot be greater than end_dt.'
-        end
         region = ::Region.find_by_id(search_params.region_id)
         error_message = 'Invalid region id provided.' if region.blank?
 
@@ -231,13 +221,13 @@ module Service
         region = ::Region.find_by_id(region_id)
         return Failure('Invalid region id provided.') if region.blank?
 
-        start_dt = search_params.start_dt
-        end_dt = search_params.end_dt
+        month_filter = search_params.month_filter
+        year_filter  = search_params.year_filter
 
         total_sightings_count = 0
-        property_sightings_count       = fetch_property_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
-        locality_sightings_count       = fetch_locality_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
-        greater_region_sightings_count = fetch_greater_region_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+        property_sightings_count       = fetch_property_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
+        locality_sightings_count       = fetch_locality_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
+        greater_region_sightings_count = fetch_greater_region_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
 
         total_sightings_count = property_sightings_count + locality_sightings_count + greater_region_sightings_count
         if search_params.get_total_sightings == "true"
@@ -255,36 +245,35 @@ module Service
         end
       end
 
-      def fetch_property_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+      def fetch_property_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
         property_sightings_count = 0
-        Rails.logger.info("#{region_id}, #{taxonomy_ids}, #{start_dt},#{end_dt}")
-        property_sightings_count = ::RegionsObservationsMatview.get_species_count(region_id: region_id,
-                                                                                  taxonomy_ids: taxonomy_ids,
-                                                                                  start_dt: start_dt,
-                                                                                  end_dt: end_dt)
+        property_sightings_count = ::TaxonObservationsMonthlyCountMatview.get_species_count(region_id: region_id,
+                                                                                            taxonomy_ids: taxonomy_ids,
+                                                                                            month_filter: month_filter,
+                                                                                            year_filter: year_filter)
         return property_sightings_count
       end
 
-      def fetch_locality_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+      def fetch_locality_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
         locality_sightings_count = 0
         locality = ::Region.find_by_id(region_id).get_neighboring_region(region_type: 'locality')
         if locality.present?
-          locality_sightings_count = ::RegionsObservationsMatview.get_species_count(region_id: locality.id,
-                                                                                    taxonomy_ids: taxonomy_ids,
-                                                                                    start_dt: start_dt,
-                                                                                    end_dt: end_dt)
+          locality_sightings_count = ::TaxonObservationsMonthlyCountMatview.get_species_count(region_id: locality.id,
+                                                                                              taxonomy_ids: taxonomy_ids,
+                                                                                              month_filter: month_filter,
+                                                                                              year_filter: year_filter)
         end
         return locality_sightings_count
       end
 
-      def fetch_greater_region_sightings_count(region_id, taxonomy_ids, start_dt, end_dt)
+      def fetch_greater_region_sightings_count(region_id, taxonomy_ids, month_filter, year_filter)
         greater_region_sightings_count = 0
         greater_region = ::Region.find_by_id(region_id).get_neighboring_region(region_type: 'greater_region')
         if greater_region.present?
-          greater_region_sightings_count = ::RegionsObservationsMatview.get_species_count(region_id: greater_region.id,
-                                                                                          taxonomy_ids: taxonomy_ids,
-                                                                                          start_dt: start_dt,
-                                                                                          end_dt: end_dt)
+          greater_region_sightings_count = ::TaxonObservationsMonthlyCountMatview.get_species_count(region_id: greater_region.id,
+                                                                                                    taxonomy_ids: taxonomy_ids,
+                                                                                                    month_filter: month_filter,
+                                                                                                    year_filter: year_filter)
         end
         return greater_region_sightings_count
       end

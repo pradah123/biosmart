@@ -106,5 +106,8 @@ module Utils
     return day_end_time
   end
 
-
+  def self.get_months
+    month_arr = %w[January February March April May June July August September October November December]
+    return month_arr
+  end
 end

@@ -43,8 +43,8 @@
     $(document).ready(function() {
       $.ajax({
         url: "/api/v1/region/<%= r.id %>/sightings_count",
-        data: { start_dt: "<%= start_dt&.html_safe %>",
-                end_dt: "<%= end_dt&.html_safe %>",
+        data: { month_filter: "<%= month_filter&.html_safe %>",
+                year_filter: "<%= year_filter&.html_safe %>",
                 search_text: "<%= search_text&.html_safe %>" },
         cache: false,
         dataType: 'json',
