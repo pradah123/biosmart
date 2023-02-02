@@ -70,15 +70,21 @@
 
         <div class="row">
           <div class="col-12 col-lg-6 mb-3">
+            <label for="latlng" class="form-label">Latitude and Longitude</label>
             <div class="input-group">
               <input type="text" class="form-control region_lat_lng" placeholder="Latitude,Longitude" value="<%= region && region.lat_input && region.lng_input? ? "#{region.lat_input},#{region.lng_input}" : '' %>">
             </div>
           </div>
           <div class="col-12 col-lg-6 mb-3">
+            <label for="side_length" class="form-label">Polygon Side Length(in km)</label>
+
             <div class="input-group">
               <input type="text" class="form-control region_polygon_side" placeholder="Enter polygon side length in km (Default 1 km)" value="<%= region && region.polygon_side_length ? region.polygon_side_length : 1%>">
             </div>
           </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="w-100 text-center my-3">or</div>
         </div>
 
         <div class="row justify-content-center">
