@@ -726,6 +726,9 @@ function set_up_regions() {
       p['lat_input'] = lat_lng[0];
       p['lng_input'] = lat_lng[1];
       p['polygon_side_length'] = $('.region-modal-'+id+' .region_polygon_side').val().trim();
+      if (p['polygon_side_length'] == '' && lat_lng.length > 0) {
+        p['polygon_side_length'] = 1;
+      }
       p['raw_polygon_json'] = [];
       $('.region-modal-'+id+' .polygon-json input').each(function() { 
         var val = $(this).val().trim();
