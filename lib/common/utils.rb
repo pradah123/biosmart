@@ -110,4 +110,36 @@ module Utils
     month_arr = %w[January February March April May June July August September October November December]
     return month_arr
   end
+
+  # The distance from the center of a square to any one of its four corners can be calculated
+  # by taking half the length of one side of the square, squaring that value,
+  # doubling the result, then taking the square root of that number.
+  def self.get_polygon_radius(polygon_side_length)
+    polygon_radius = Math.sqrt(((polygon_side_length/2) ** 2) * 2)
+    return polygon_radius
+  end
+
+  def self.get_polygon_from_lat_lng(lat, lng, radius = 0.35)
+    point = Geokit::LatLng.new lat, lng
+
+    bound = Geokit::Bounds.from_point_and_radius(point, radius, units: :kms)
+    sw = bound.sw
+    ne = bound.ne
+    polygon = {
+      "type" => "Polygon",
+      "coordinates" => [
+        # nw
+        [sw.lng, ne.lat],
+        # ne
+        [ne.lng, ne.lat],
+        # se
+        [ne.lng, sw.lat],
+        # sw
+        [sw.lng, sw.lat],
+        # nw to close polygon
+        [sw.lng, ne.lat]
+      ]
+    }
+    return polygon
+  end
 end

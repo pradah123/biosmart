@@ -720,6 +720,12 @@ function set_up_regions() {
       p['header_image'] = $('img.header-frame-'+id).attr('src');
       p['header_image'] = _images['header']==undefined ? '' : _images['header'];
 
+      lat_lng = $('.region-modal-'+id+' .region_lat_lng').val().trim().split(",").map(function(item) {
+        return item.trim();
+      });
+      p['lat_input'] = lat_lng[0];
+      p['lng_input'] = lat_lng[1];
+      p['polygon_side_length'] = $('.region-modal-'+id+' .region_polygon_side').val().trim();
       p['raw_polygon_json'] = [];
       $('.region-modal-'+id+' .polygon-json input').each(function() { 
         var val = $(this).val().trim();
@@ -730,6 +736,15 @@ function set_up_regions() {
       if(p['name'].length==0) { $('.name_region_v').removeClass('validation-ok'); failed = true; } else { $('.name_region_v').addClass('validation-ok'); }
       if(p['description'].length==0) { $('.description_region_v').removeClass('validation-ok'); failed = true; } else { $('.description_region_v').addClass('validation-ok'); }
       if(p['logo_image'].length==0 && p['logo_image_url'].length==0) { $('.logo_region_v').removeClass('validation-ok'); failed = true; } else { $('.logo_region_v').addClass('validation-ok'); }
+      if (lat_lng.length != 0) {
+        if(isNaN(p['polygon_side_length'])) {
+          $('.region_polygon_side_v').removeClass('validation-ok');
+          failed = true;
+        }
+        else {
+          $('.region_polygon_side_v').addClass('validation-ok');
+        }
+      }
 
       for( var i = 0 ; i <p['raw_polygon_json'].length ; i++ ) { 
         if(!validate_polygon_json(p['raw_polygon_json'][i])) { $('.polygon_json_region_v').removeClass('validation-ok'); failed = true; break; }  
@@ -739,7 +754,13 @@ function set_up_regions() {
       if(failed==false) {
         p['raw_polygon_json'] = "["+p['raw_polygon_json'].join(',')+"]";
 
-        $.ajax({ url: (_api+'/region'), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
+        if (verb === 'PUT') {
+          url = _api + '/region/' + id
+        }
+        else {
+          url = _api + '/region'
+        }
+        $.ajax({ url: (url), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
         .done(function(data, status) {
          
           if(data['status']=='fail') {
@@ -763,8 +784,6 @@ function set_up_regions() {
 
   $('.region-modal').each(function() {
     var modalid = $(this).attr('id');
-
-   
     var s = { lat: 0, lng: 0 };
     var map = new google.maps.Map(document.getElementById('map-'+modalid), { zoom: 2, center: s, controlSize: 20  });
 

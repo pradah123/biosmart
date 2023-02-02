@@ -31,7 +31,9 @@ class Region < ApplicationRecord
   # subregions are used in fetching data when the region size is too large
   # for one api call to cover
   #
+  after_create :set_raw_polygon_json
   after_create :compute_subregions, :set_lat_lng, :compute_neighboring_regions
+  after_update :set_raw_polygon_json
   after_update :compute_subregions, :set_lat_lng, if: :saved_change_to_raw_polygon_json
   after_update :compute_neighboring_regions, if: -> {:saved_change_to_raw_polygon_json || :saved_change_to_name }
   after_update :update_neighboring_region, if: :saved_change_to_size
@@ -79,12 +81,22 @@ class Region < ApplicationRecord
 
   def self.get_all_regions
     arr = Region.where(base_region_id: nil).where.not(lat: nil, lng: nil).map { |r| { name: r.name, url: r.get_path, lat: r.lat, lng: r.lng } }
-    Rails.logger.info arr
     arr
   end  
 
 
-  
+  def set_raw_polygon_json
+    if !saved_change_to_raw_polygon_json &&
+       (saved_change_to_lat_input || saved_change_to_lng_input ||
+       saved_change_to_polygon_side_length) && lat_input && lng_input && polygon_side_length
+      polygon_radius = Utils.get_polygon_radius(polygon_side_length)
+      polygon = Utils.get_polygon_from_lat_lng(lat_input, lng_input, polygon_radius)
+      update_column :raw_polygon_json, "[#{polygon.to_json}]"
+      compute_subregions()
+      set_lat_lng()
+    end
+  end
+
   def set_lat_lng
     #
     # get the centre of the polygons
@@ -106,6 +118,8 @@ class Region < ApplicationRecord
 
     update_column :lat, lat_centre
     update_column :lng, lng_centre
+    update_column :lat_input, lat_centre
+    update_column :lng_input, lng_centre
   end
 
   def set_time_zone_from_polygon
@@ -799,6 +813,7 @@ class Region < ApplicationRecord
     end
     return r_hash
   end
+
 
   rails_admin do
     list do

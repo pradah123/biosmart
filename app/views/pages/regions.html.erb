@@ -15,7 +15,7 @@
 <% @regions.each do |r| %>
   <div class="row mb-3">
   	<div class="col-3 d-flex align-items-center">
-      <% if r.region_url %>
+      <% if !r.region_url.blank? %>
         <a href="<%= r.region_url %>"><%= r.name %></a>
       <% else %>
         <%= r.name %>
