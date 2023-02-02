@@ -118,8 +118,6 @@ class Region < ApplicationRecord
 
     update_column :lat, lat_centre
     update_column :lng, lng_centre
-    update_column :lat_input, lat_centre
-    update_column :lng_input, lng_centre
   end
 
   def set_time_zone_from_polygon
