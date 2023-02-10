@@ -719,10 +719,13 @@ function set_up_regions() {
       
       p['header_image'] = $('img.header-frame-'+id).attr('src');
       p['header_image'] = _images['header']==undefined ? '' : _images['header'];
-
-      lat_lng = $('.region-modal-'+id+' .region_lat_lng').val().trim().split(",").map(function(item) {
-        return item.trim();
-      });
+      var contest_ids = $('.region-modal-'+id+' .contest_filter').val();
+      var lat_lng = []
+      if ($('.region-modal-'+id+' .region_lat_lng').val() != '') {
+        lat_lng = $('.region-modal-'+id+' .region_lat_lng').val().trim().split(",").map(function(item) {
+          return item.trim();
+        });
+      }
       p['lat_input'] = lat_lng[0];
       p['lng_input'] = lat_lng[1];
       p['polygon_side_length'] = $('.region-modal-'+id+' .region_polygon_side').val().trim();
@@ -763,15 +766,14 @@ function set_up_regions() {
         else {
           url = _api + '/region'
         }
-        $.ajax({ url: (url), type: verb, contentType: 'application/json', data: JSON.stringify({ 'region': p }) })
+        $.ajax({ url: (url),
+                 type: verb,
+                 contentType: 'application/json',
+                 data: JSON.stringify({ 'region': p, 'contest': contest_ids }) })
         .done(function(data, status) {
-         
           if(data['status']=='fail') {
             console.log(data);
             console.log('in fail')
-            //if(data['message']['email']!=undefined) $('#'+id+' .email_unique').removeClass('validation-ok');
-            //if(data['message']['organization_name']!=undefined) $('#'+id+' .organization_name_unique').removeClass('validation-ok');
-
           } else {
             reload();
           }
@@ -1160,6 +1162,34 @@ function set_year_filter(year_filter) {
       $("#all_years").val("All");
     }
   });
+}
+
+
+function set_contest_filter(contest_filter, region_id) {
+  var elem_id = 'contest_filter';
+  if (region_id) {
+    elem_id = 'contest_filter_' + region_id;
+  }
+  $("#" + elem_id).multiselect({ templates: {
+      button: '<button type="button" class="multiselect" data-bs-toggle="dropdown" aria-expanded="false"><span class="multiselect-selected-text"></span></button>',
+    },
+    includeSelectAllOption: true,
+    buttonClass:'custom-select',
+    inheritClass:true,
+    allSelectedText: 'All Contests',
+    nonSelectedText: '-- Select Contest --',
+    nSelectedText: 'contests',
+    numberDisplayed: 1,
+    selectAllNumber: false,
+    buttonWidth: '100%'
+  });
+
+  var contest_ids = new Array();
+  contest_ids = JSON.parse(contest_filter);
+  if (contest_ids.length > 0) {
+    $("#" + elem_id).multiselect('select', contest_ids);
+    $("#" + elem_id).multiselect('updateButtonText');
+  }
 }
 
 

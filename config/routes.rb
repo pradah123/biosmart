@@ -50,7 +50,7 @@ Rails.application.routes.draw do
       post '/region', to: 'region#create'
       get '/region/:region_id', to: 'region#show'
       put '/region/:id', to: 'region#update'
-      patch '/region/:id', to: 'region#update'      
+      patch '/region/:id', to: 'region#update'
       delete '/region/:id', to: 'region#destroy'
       get '/regions', to: 'region#search'
       get '/region/:region_id/undiscovered_species', to: 'observation#undiscovered_species'

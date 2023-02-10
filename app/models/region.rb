@@ -86,9 +86,11 @@ class Region < ApplicationRecord
 
 
   def set_raw_polygon_json
-    if !saved_change_to_raw_polygon_json &&
+    if ((!saved_change_to_raw_polygon_json  &&
        (saved_change_to_lat_input || saved_change_to_lng_input ||
-       saved_change_to_polygon_side_length) && lat_input && lng_input && polygon_side_length
+       saved_change_to_polygon_side_length) && lat_input && lng_input && polygon_side_length) ||
+       (saved_change_to_raw_polygon_json && raw_polygon_json == "[]" && lat_input &&
+       lng_input && polygon_side_length))
       polygon_radius = Utils.get_polygon_radius(polygon_side_length)
       polygon = Utils.get_polygon_from_lat_lng(lat_input, lng_input, polygon_radius)
       update_column :raw_polygon_json, "[#{polygon.to_json}]"
@@ -811,6 +813,23 @@ class Region < ApplicationRecord
     end
     return r_hash
   end
+
+
+  def add_to_contest(contest_id:)
+    params = {}
+    params[:region_id] = id
+    params[:contest_id] = contest_id
+    params[:status] = 'accepted'
+    participation = Participation.new params
+    if participation.save!
+      participation.data_sources << DataSource.where.not(name: ['ebird', 'observation.org', 'gbif'])
+      Rails.logger.info("Added participation: #{participation.id} for contest id: #{contest_id} and region id: #{id}")
+    else
+      Rails.logger.info("Error in adding participation for region #{id}, and contest: #{contest_id} ")
+    end
+    return
+  end
+
 
 
   rails_admin do

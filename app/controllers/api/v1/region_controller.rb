@@ -2,6 +2,59 @@ require './services/region'
 
 module Api::V1
   class RegionController < ApiController
+    def create
+      region = params[:region].permit!
+      contest_ids = params[:contest] || []
+      region_obj = Region.find_by_id region['id']
+      if !region_obj.nil?
+        render json: { status: 'fail' }
+        return
+      else
+        region_obj = Region.new region
+        if region_obj.save
+          contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
+          contest_ids.each do |contest_id|
+            region_obj.add_to_contest(contest_id: contest_id)
+          end
+          render json: { status: 'success' }
+          return
+        else
+          render json: { status: 'fail' }
+        end
+      end
+    end
+
+    def update
+      region = params[:region].permit!
+      contest_ids = params[:contest] || []
+      region_obj = Region.find_by_id region['id']
+      if region_obj.nil?
+        render json: { status: 'fail' }
+        return
+      end
+
+      region_obj.attributes = region
+      if region_obj.save
+        contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
+        existing_contests = region_obj.contests
+                                      .where("contests.utc_starts_at <  '#{Time.now}' AND
+                                          contests.last_submission_accepted_at > '#{Time.now}'")
+                                      .pluck(:id)
+        contests_to_add = contest_ids - existing_contests
+        contests_to_remove = existing_contests - contest_ids
+
+        contests_to_add.each do |contest_id|
+          region_obj.add_to_contest(contest_id: contest_id)
+        end
+        contests_to_remove.each do |contest_id|
+          region_obj.participations.where(contest_id: contest_id).delete_all
+        end
+        render json: { status: 'success' }
+      else
+        render json: { status: 'fail' }
+      end
+      return
+    end
 
     def search
       search_params = params.to_unsafe_h.symbolize_keys
