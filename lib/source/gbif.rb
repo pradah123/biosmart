@@ -10,6 +10,7 @@ module Source
     extend Dry::Initializer
 
     API_URL = 'https://api.gbif.org/v1/occurrence/search'.freeze
+    GBIF_RECORDS_LIMIT = 9_990_0
     
     param :count, default: proc { nil }, reader: :private
 
@@ -87,6 +88,8 @@ module Source
         if fetch_count.present?
           return (@count.present? ? @count : 0)
         end
+        @count = GBIF_RECORDS_LIMIT if @count > GBIF_RECORDS_LIMIT
+
         t = Source::GBIF::Transformer.new()
         (start_dt, end_dt) = event_date.split(/,/, 2)
 

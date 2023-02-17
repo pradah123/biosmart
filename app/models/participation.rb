@@ -116,14 +116,15 @@ class Participation < ApplicationRecord
       field :region
       field :contest
       field :status
-      field :data_sources do
-        associated_collection_scope do
-          participation = bindings[:object]
-          Proc.new { |scope|
-            scope = scope.where.not(name: 'gbif')
-          }
-        end
-      end
+      field :data_sources
+      # field :data_sources do
+      #   associated_collection_scope do
+      #     participation = bindings[:object]
+      #     Proc.new { |scope|
+      #       scope = scope.where.not(name: 'gbif')
+      #     }
+      #   end
+      # end
     end
     show do
       field :id

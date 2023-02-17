@@ -751,13 +751,13 @@ class Region < ApplicationRecord
     starts_at = 99999999999
 
     participations = region.participations.in_competition
-    participations = Region.find_by_id(region.base_region_id).participations.in_competition if ((!participations.count.positive?) && region.base_region_id.present?)
+    participations = Region.find_by_id(region.base_region_id).participations.in_competition if !participations.count.positive? && region.base_region_id.present?
 
     participations.each do |p|
       next unless p.is_active?
       ds = p.data_sources.map {|ds| ds }
       ds.each do |d|
-        next if d.name == 'gbif'
+        # next if d.name == 'gbif'
         latest_observation = Region.find_by_id(region.id).observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
         obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
         if latest_observation&.observed_at.present?
