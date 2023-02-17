@@ -1,10 +1,17 @@
 class ObservationsFetchJob < ApplicationJob
   queue_as :queue_observations_fetch
 
+  before_enqueue do |job|
+    # If jobs are already running then avoid starting new ObservationsFetchJob
+    if Delayed::Job.where('locked_by is not null and failed_at is null').count.positive?
+      Delayed::Worker.logger.info ">>>>>>>>>> Other delayed job is already running, hence exiting, job count #{Delayed::Job.where('locked_by is not null and failed_at is null').count}"
+      exit(0)
+    end
+  end
+
   def perform
     Delayed::Worker.logger.info "\n\n\n\n"
     Delayed::Worker.logger.info ">>>>>>>>>> ObservationsFetchJob fetching observations"
-    
     regions = []
     regions = Region.get_regions_for_data_fetching()
 
@@ -14,8 +21,18 @@ class ObservationsFetchJob < ApplicationJob
     r_hash.each do |r|
       r[:data_sources].each do |data_source|
         next unless data_source.present?
-        Delayed::Worker.logger.info ">>>>>>>>>>>>>>>>>>>>> ObservationsFetchJob fetching data for region: #{r[:region].name}, data_source: #{data_source[:data_source].name}, starts_at: #{data_source[:starts_at]}"
-        data_source[:data_source].fetch_observations r[:region], data_source[:starts_at], data_source[:ends_at]
+
+        ds_obj = data_source[:data_source]
+        region_obj = r[:region]
+        start_dt = data_source[:starts_at]
+        end_dt = data_source[:ends_at]
+        Delayed::Worker.logger.info ">>>>>>>>>>>>>>>>>>>>> ObservationsFetchJob fetching data for region: #{region_obj.name}, data_source: #{ds_obj.name}, starts_at: #{start_dt}"
+
+        if data_source[:data_source].name == 'gbif'
+          GbifObservationsFetchJob.perform_later(start_dt: start_dt, end_dt: end_dt, greater_region_id: region_obj.id)
+        else
+          ds_obj.fetch_observations region_obj, start_dt, end_dt
+        end
       end
     end
 

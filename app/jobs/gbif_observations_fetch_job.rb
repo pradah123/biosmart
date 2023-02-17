@@ -2,15 +2,10 @@ class GbifObservationsFetchJob < ApplicationJob
   queue_as :queue_gbif_observations_fetch
 
   def perform (start_dt: nil, end_dt: nil, greater_region_id: nil, split_dates: true)
-    Delayed::Worker.logger.info "\n\n\n\n>>>>>>>>>> fetching observations"
+    Delayed::Worker.logger.info ">>>>>>>>>>>>>>>>>>>>> GbifObservationsFetchJob fetching observations"
     greater_regions = []
     if greater_region_id.present?
       greater_regions = Region.where(id: greater_region_id)
-    else
-      Region.all.each { |r|
-        largest_nr = r.get_neighboring_region(region_type: 'greater_region')
-        greater_regions.push(largest_nr) if largest_nr.present?
-      }
     end
     greater_regions.each do |region|
       data_source = DataSource.find_by_name('gbif')
@@ -36,8 +31,9 @@ class GbifObservationsFetchJob < ApplicationJob
       Delayed::Worker.logger.info "Total gbif observations count for region (#{region.name} - #{region.id}) and date range #{starts_at} - #{ends_at}: #{total_count}"
 
       if total_count > 100000
-        Delayed::Worker.logger.info "Skipping fetch observations for region #{region.name} - #{region.id} as total count exceeds 100k for date range #{starts_at} - #{ends_at}"
-      elsif total_count > 10000 && split_dates.present?
+        Delayed::Worker.logger.info "Upto 1_000_00 sightings will be fetched for region #{region.name} - #{region.id} as max limit for gbif api is 1_000_00"
+      end
+      if total_count > 10000 && split_dates.present?
         ## If total records exceed 10k, split the date range monthwise and fetch the data for each month seperately
         (DateTime.parse(starts_at.strftime("%Y-%m-%d"))..DateTime.parse(ends_at.strftime("%Y-%m-%d"))).
         group_by {|arr| [arr.year, arr.month]}.map do |group|
