@@ -822,7 +822,7 @@ class Region < ApplicationRecord
     params[:status] = 'accepted'
     participation = Participation.new params
     if participation.save!
-      participation.data_sources << DataSource.where.not(name: ['ebird', 'observation.org', 'gbif'])
+      participation.data_sources << DataSource.where.not(name: ['ebird', 'observation.org'])
       Rails.logger.info("Added participation: #{participation.id} for contest id: #{contest_id} and region id: #{id}")
     else
       Rails.logger.info("Error in adding participation for region #{id}, and contest: #{contest_id} ")
