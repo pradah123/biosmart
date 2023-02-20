@@ -104,7 +104,7 @@ class Participation < ApplicationRecord
 
   rails_admin do
     list do
-      scopes [:base_region_participations, :neighboring_region_participations]
+      scopes [:base_region_participations]
       field :id
       field :region          
       field :contest
