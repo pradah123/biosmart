@@ -35,7 +35,6 @@ class ObservationsCreateJob < ApplicationJob
           image_urls.each do |url|
             ObservationImage.create! observation_id: obs.id, url: url
           end
-          TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
         else
           ncreates_failed += 1          
           Delayed::Worker.logger.info "\n\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
@@ -50,13 +49,11 @@ class ObservationsCreateJob < ApplicationJob
         if obs.changed.empty?
           Delayed::Worker.logger.info "Inside obs.changed.empty?"
           obs.update_to_regions_and_contests(region_id: region_id, data_source_id: data_source.id, participant_id: participant_id)
-          TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
         else
           nupdates += 1  
           nfields_updated += obs.changed.length
           if obs.save
             obs.update_to_regions_and_contests(region_id: region_id, data_source_id: data_source.id, participant_id: participant_id)
-            TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
             current_image_urls = obs.observation_images.pluck :url
             if current_image_urls-image_urls!=[] 
               # if the images given are not the same as the ones present, delete the old

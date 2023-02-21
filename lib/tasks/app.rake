@@ -38,8 +38,8 @@ namespace :taxonomy do
   end
 
   desc 'Update Taxonomy to Observations'
-  task :update, [:update_all] => [:environment] do |task, args|
-    Observation.update_observations_taxonomy(update_all: args[:update_all])
+  task :update, [:update_all, :from_date] => [:environment] do |task, args|
+    Observation.update_observations_taxonomy(update_all: args[:update_all], from_date: args[:from_date])
   end
 end
 
@@ -60,8 +60,8 @@ end
 namespace :add_data_source_gbif do
   desc 'Add data_source gbif to all the participations'
   task participations: :environment do
-    # participations = Participation.where(status: 'accepted')
-    Participation.all.each do |p|
+    participations = Participation.where(status: 'accepted')
+    participations.each do |p|
       data_sources = p.data_sources
       data_sources.push(DataSource.find_by_name('gbif'))
       p.data_sources = data_sources

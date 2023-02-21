@@ -3,7 +3,9 @@ class ObservationsFetchJob < ApplicationJob
 
   before_enqueue do |job|
     # If jobs are already running then avoid starting new ObservationsFetchJob
-    if Delayed::Job.where('locked_by is not null and failed_at is null').count.positive?
+    # Exclude taxonomy update job from this check, as it is being run separately
+    # and not along with observations fetch/create cycle
+    if Delayed::Job.where("locked_by is not null and failed_at is null and queue != 'observations_#{Rails.env}_queue_taxonomy_update'").count.positive?
       Delayed::Worker.logger.info ">>>>>>>>>> Other delayed job is already running, hence exiting, job count #{Delayed::Job.where('locked_by is not null and failed_at is null').count}"
       exit(0)
     end

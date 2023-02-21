@@ -496,28 +496,22 @@ class Observation < ApplicationRecord
 
   # Update taxonomies to observations
   # This will be used mainly for one shot update at the start for updating taxonomies for existing observations
-  def self.update_observations_taxonomy(update_all:)
+  def self.update_observations_taxonomy(update_all: nil, from_date: nil)
     # If update_all has been passed then update the taxonomy for all the observatiobs using distinct scientific names
     # else only update those observations which don't have taxonomy linked with them
     if update_all.present?
       scientific_names = Observation.group(:scientific_name).order("count(id) desc").pluck(:scientific_name)
-      scientific_names.each do |scientific_name|
-        TaxonomyUpdateJob.perform_later(scientific_name: scientific_name)
-      end
     else
-      offset = 0
-      limit = 100
-      total_count = Observation.where(taxonomy_id: nil).where.not(scientific_name: nil).count
-      loop do
-        observations = nil
-        observations = Observation.where(taxonomy_id: nil).where.not(scientific_name: nil).offset(offset).limit(limit)
-        observations.each do |obs|
-          TaxonomyUpdateJob.perform_later(scientific_name: obs.scientific_name) unless obs.taxonomy.present?
-        end
-        offset = limit if offset == 0
-        break if offset > total_count
-        offset += 100
-      end
+      from_date ||= Date.today
+      scientific_names = Observation.where("created_at > '#{from_date}'")
+                                    .where(taxonomy_id: nil)
+                                    .where
+                                    .not(scientific_name: nil)
+                                    .distinct
+                                    .pluck(:scientific_name)
+    end
+    scientific_names.each do |scientific_name|
+      TaxonomyUpdateJob.perform_later(scientific_name: scientific_name)
     end
   end
 
