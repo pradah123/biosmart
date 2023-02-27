@@ -761,15 +761,22 @@ class Region < ApplicationRecord
         latest_observation = Region.find_by_id(region.id).observations.where("observations_regions.data_source_id = #{d.id}").order("observed_at").last
         obs_date = data_source_with_date_range["#{d.id}"][:starts_at] if data_source_with_date_range["#{d.id}"].present?
         if latest_observation&.observed_at.present?
-          starts_at = latest_observation.observed_at.to_time.to_i 
+          starts_at = latest_observation.observed_at.to_time.to_i
+          # For gbif, if latest observation found was more than 3 years back
+          # then set the start date to 3 years back
+          if d.name == 'gbif'
+            start_dt_ballpark = ends_at - Utils.convert_to_seconds(unit: 'year', value: 3)
+            start_dt_ballpark = start_dt_ballpark.to_time.to_i
+            starts_at = start_dt_ballpark if starts_at < start_dt_ballpark
+          end
         else
-          # participation_start_dt = p.contest.starts_at.to_time.to_i
           participation_start_dt = p.contest.starts_at
           participation_start_dt = ends_at - Utils.convert_to_seconds(unit: 'year', value: 3) if d.name == 'gbif'
           participation_start_dt = participation_start_dt.to_time.to_i
           starts_at = participation_start_dt if participation_start_dt < starts_at
         end
         starts_at = obs_date if obs_date.present? && starts_at > obs_date
+
         data_source_with_date_range["#{d.id}"] = { data_source: d,
                                                    starts_at: starts_at,
                                                    ends_at: Time.now }
@@ -822,7 +829,7 @@ class Region < ApplicationRecord
     params[:status] = 'accepted'
     participation = Participation.new params
     if participation.save!
-      participation.data_sources << DataSource.where.not(name: ['ebird', 'observation.org'])
+      participation.data_sources << DataSource.where.not(name: ['citsci', 'ebird', 'observation.org'])
       Rails.logger.info("Added participation: #{participation.id} for contest id: #{contest_id} and region id: #{id}")
     else
       Rails.logger.info("Error in adding participation for region #{id}, and contest: #{contest_id} ")
