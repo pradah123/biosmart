@@ -30,10 +30,6 @@ class GbifObservationsFetchJob < ApplicationJob
       total_count = data_source.fetch_gbif_observations_count region, starts_at, ends_at
       Delayed::Worker.logger.info "Total gbif observations count for region (#{region.name} - #{region.id}) and date range #{starts_at} - #{ends_at}: #{total_count}"
 
-      if total_count > 100000
-        Delayed::Worker.logger.info "Upto 1_000_00 sightings will be fetched for region #{region.name} - #{region.id} as max limit for gbif api is 1_000_00"
-        split_dates = false # If we further split dates by month, it might fetch 100k records for each month
-      end
       if total_count > 10000 && split_dates.present?
         ## If total records exceed 10k, split the date range monthwise and fetch the data for each month seperately
         (DateTime.parse(starts_at.strftime("%Y-%m-%d"))..DateTime.parse(ends_at.strftime("%Y-%m-%d"))).

@@ -10,7 +10,7 @@ module Source
     extend Dry::Initializer
 
     API_URL = 'https://api.gbif.org/v1/occurrence/search'.freeze
-    GBIF_RECORDS_LIMIT = 9_990_0
+    GBIF_RECORDS_LIMIT = 1_020_0  # Limit the number of records to fetch in one request
     
     param :count, default: proc { nil }, reader: :private
 
