@@ -6,21 +6,34 @@ module Api::V1
       region = params[:region].permit!
       contest_ids = params[:contest] || []
 
+      if !region['name'] || !region['description'] || !region['logo_image_url']
+        raise ApiFail.new("Must provide 'name', 'description' and 'logo_image_url' to add a new region")
+      end
+
       region_obj = Region.find_by_id region['id']
       if !region_obj.nil?
-        render json: { status: 'fail' }
-        return
+        raise ApiFail.new("Region with id '#{region['id']}' already exists.")
       else
         region_obj = Region.new region
+        success_message = ''
         if region_obj.save
+          success_message = 'Region has been added successfully. '
           contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
+          error_message = ''
           contest_ids.each do |contest_id|
-            region_obj.add_to_contest(contest_id: contest_id)
+            contest_obj = Contest.in_progress.find_by_id(contest_id)
+            if contest_obj.present?
+              region_obj.add_to_contest(contest_id: contest_id)
+              success_message += "Region has been added to contest '#{contest_id}'. "
+            else
+              error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
+            end
           end
-          render json: { status: 'success' }
+          r = { 'success_message': success_message, 'warning_message': error_message }
+          render_success r
           return
         else
-          render json: { status: 'fail' }
+          raise ApiFail.new("Error occurred while creating the region.")
         end
       end
     end
@@ -31,12 +44,14 @@ module Api::V1
       id = region['id'] || params[:id] || ''
       region_obj = Region.find_by_id id
       if region_obj.nil?
-        render json: { status: 'fail' }
-        return
+        raise ApiFail.new("Region with '#{id}' does not exist.")
       end
+      raise ApiFail.new("Must provide 'contest'") if !region['id'] && params[:id] && contest_ids.blank?
 
       region_obj.attributes = region
+      success_message = ''
       if region_obj.save
+        success_message = 'Region has been updated successfully. '
         contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
         existing_contests = region_obj.contests
                                       .where("contests.utc_starts_at <  '#{Time.now}' AND
@@ -45,15 +60,24 @@ module Api::V1
         contests_to_add = contest_ids - existing_contests
         contests_to_remove = existing_contests - contest_ids
 
+        error_message = ''
         contests_to_add.each do |contest_id|
-          region_obj.add_to_contest(contest_id: contest_id)
+          contest_obj = Contest.in_progress.find_by_id(contest_id)
+          if contest_obj.present?
+            region_obj.add_to_contest(contest_id: contest_id)
+            success_message += "Region has been added to contest '#{contest_id}'. "
+          else
+            error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
+          end
         end
         contests_to_remove.each do |contest_id|
           region_obj.participations.where(contest_id: contest_id).delete_all
+          success_message += "Region has been removed from contest '#{contest_id}'. "
         end
-        render json: { status: 'success' }
+        r = { 'success_message': success_message, 'warning_message': error_message }
+        render_success r
       else
-        render json: { status: 'fail' }
+        raise ApiFail.new("Error occurred while updating the region '#{id}'")
       end
       return
     end
@@ -77,6 +101,9 @@ module Api::V1
           region_hash = RegionSerializer.new(region).serializable_hash[:data][:attributes]
           region_scores = region.get_region_scores
           region_hash.merge!(region_scores)
+          contest_ids = region.contests.in_progress.pluck(:id)
+          contest_ids = contest_ids.map(&:to_s)
+          region_hash[:contest] = contest_ids
           render json: region_hash
         end
         result.failure do |message|
