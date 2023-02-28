@@ -27,8 +27,16 @@ paths:
                   type: string
                 raw_polygon_json:
                   type: string
-                population:
-                  type: integer
+                lat_input:
+                  type: number
+                lng_input:
+                  type: number
+                polygon_side_length:
+                  type: number
+                contest:
+                  type: array
+                  items:
+                    type: string
                 status:
                   type: string
                   enum:
@@ -37,7 +45,7 @@ paths:
               required:
               - name
               - description
-              - logo_url
+              - logo_image_url
               - status
   "/api/v1/region/{id}":
     parameters:
@@ -79,8 +87,16 @@ paths:
                   type: string
                 raw_polygon_json:
                   type: string
-                population:
-                  type: integer
+                lat_input:
+                  type: number
+                lng_input:
+                  type: number
+                polygon_side_length:
+                  type: number
+                contest:
+                  type: array
+                  items:
+                    type: string
                 status:
                   type: string
                   enum:
@@ -89,7 +105,7 @@ paths:
               required:
               - name
               - description
-              - logo_url
+              - logo_image_url
               - status
     patch:
       summary: update region
