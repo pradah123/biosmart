@@ -5,6 +5,7 @@ module Api::V1
     def create
       region = params[:region].permit!
       contest_ids = params[:contest] || []
+
       region_obj = Region.find_by_id region['id']
       if !region_obj.nil?
         render json: { status: 'fail' }
@@ -27,7 +28,8 @@ module Api::V1
     def update
       region = params[:region].permit!
       contest_ids = params[:contest] || []
-      region_obj = Region.find_by_id region['id']
+      id = region['id'] || params[:id] || ''
+      region_obj = Region.find_by_id id
       if region_obj.nil?
         render json: { status: 'fail' }
         return
