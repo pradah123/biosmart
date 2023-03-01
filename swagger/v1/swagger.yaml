@@ -141,6 +141,35 @@ paths:
               - description
               - logo_url
               - status
+  "/api/v1/region/polygon/generate":
+    get:
+      summary: generate polygon
+      parameters:
+      - in: query
+        name: lat
+        schema:
+          type: number
+        description: Latitude for which polygon needs to be generated
+        required: true
+      - in: query
+        name: lng
+        schema:
+          type: number
+        description: Longitude for which polygon needs to be generated
+        required: true
+      - in: query
+        name: polygon_side_length
+        schema:
+          type: number
+        description: Longitude for which polygon needs to be generated
+      - in: query
+        name: polygon_format
+        schema:
+          type: string
+        description: Longitude for which polygon needs to be generated
+      responses:
+        '200':
+          description: successful
 servers:
 - url: https://portal-staging.biosmart.life
 - url: https://portal.biosmart.life

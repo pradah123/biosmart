@@ -1,4 +1,5 @@
 require './services/region'
+require './lib/common/utils'
 
 module Api::V1
   class RegionController < ApiController
@@ -211,5 +212,26 @@ module Api::V1
       render json: data
     end
 
+    # This function returns polygon(square) of side length 1 km for given coordinates.
+    # Used for API api/v1/region/polygon/from_coordinates
+    # Required parameters are lat and lng
+    # Optional parameters are polygon_side_length (if not passed considered as 1 km),
+    #                         polygon_format (valid value is wkt, for anything else it will return
+    #                                         polygon in geojson format)
+    def generate_polygon
+      lat = params[:lat]
+      lng = params[:lng]
+      polygon_side_length = params[:polygon_side_length] || 1
+      polygon_format = params[:polygon_format]
+
+      if !lat || !lng
+        raise ApiFail.new("Must provide 'lat' and 'lng'")
+      end
+      polygon_radius = Utils.get_polygon_radius(polygon_side_length.to_f)
+      polygon = Utils.get_polygon_from_lat_lng(lat, lng, polygon_radius)
+      polygon = Region.get_polygon_from_raw_polygon_json(polygon.to_json) if polygon_format.present? && polygon_format == 'wkt'
+
+      render json: { raw_polygon_json: polygon }
+    end
   end
 end 
