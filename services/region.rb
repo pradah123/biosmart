@@ -72,6 +72,164 @@ module Service
       end
     end
 
+    class Create
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        required(:name).filled(:string)
+        required(:description).filled(:string)
+        required(:logo_image_url).filled(:string)
+        optional(:contest_ids).array(:str?)
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :id, Types::Params::Integer
+        attribute? :name, Types::Params::String
+        attribute? :description, Types::Params::String
+        attribute? :logo_image_url, Types::Params::String
+        attribute? :header_image_url, Types::Params::String
+        attribute? :raw_polygon_json, Types::Params::String
+        attribute? :lat_input, Types::Params::Float
+        attribute? :lng_input, Types::Params::Float
+        attribute? :polygon_side_length, Types::Params::Float
+        attribute? :status, Types::Params::String
+        attribute? :contest_ids, Types::Params::Array
+      end
+
+      def execute(params)
+        create_params = Params.new(params)
+        params.delete(:contest_ids)
+        create_region(create_params, params)
+      end
+
+      private
+
+      def create_region(create_params, params)
+        region = params
+        contest_ids = create_params.contest_ids
+        begin
+          region_obj = ::Region.find_by_id create_params.id if create_params&.id.present?
+        rescue => e
+          Rails.logger.info("error: #{e}")
+          return Failure("Internal Error.")
+        end
+        if !region_obj.nil?
+          return Failure("Region with id '#{create_params.id}' already exists.")
+        else
+          begin
+            region_obj = ::Region.new params
+          rescue => e
+            Rails.logger.info("error: #{e}")
+            return Failure("Internal Error.")
+          end
+          success_message = ''
+          if region_obj.save
+            success_message = 'Region has been added successfully. '
+            contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
+            error_message = ''
+            contest_ids.each do |contest_id|
+              contest_obj = ::Contest.in_progress.find_by_id(contest_id)
+              if contest_obj.present?
+                region_obj.add_to_contest(contest_id: contest_id)
+                success_message += "Region has been added to contest '#{contest_id}'. "
+              else
+                error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
+              end
+            end
+            r = { 'success_message': success_message, 'warning_message': error_message }
+            Success(r)
+          else
+            return Failure("Error occurred while creating the region.")
+          end
+        end
+      end
+    end
+
+    class Update
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        # required(:contest_ids).array(:str?)
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :id, Types::Params::Integer
+        attribute? :name, Types::Params::String
+        attribute? :description, Types::Params::String
+        attribute? :logo_image_url, Types::Params::String
+        attribute? :header_image_url, Types::Params::String
+        attribute? :raw_polygon_json, Types::Params::String
+        attribute? :lat_input, Types::Params::Float
+        attribute? :lng_input, Types::Params::Float
+        attribute? :polygon_side_length, Types::Params::Float
+        attribute? :status, Types::Params::String
+        attribute? :contest_ids, Types::Params::Array
+      end
+
+      def execute(params)
+        update_params = Params.new(params)
+        update_region(update_params, params)
+      end
+
+      private
+
+      def update_region(update_params, params)
+        contest_ids = params[:contest_ids] if params.key?(:contest_ids)
+        params.delete(:contest_ids) if params.key?(:contest_ids)
+        region = params
+
+        id = update_params.id || ''
+        if id.blank?
+          return Failure("Must provide 'id'.")
+        end
+        region_obj = ::Region.find_by_id id
+        if region_obj.nil?
+          return Failure("Region with id '#{id}' does not exist.")
+        end
+
+        region_obj.attributes = region
+        success_message = ''
+        if region_obj.save
+          success_message = 'Region has been updated successfully. '
+          if contest_ids.is_a?(Array)
+            contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
+            existing_contests = region_obj.contests
+                                          .where("contests.utc_starts_at <  '#{Time.now}' AND
+                                              contests.last_submission_accepted_at > '#{Time.now}'")
+                                          .pluck(:id)
+            contests_to_add = contests_to_remove = []
+            contests_to_add    = contest_ids - existing_contests
+            contests_to_remove = existing_contests - contest_ids
+
+            error_message = ''
+            contests_to_add.each do |contest_id|
+              contest_obj = ::Contest.in_progress.find_by_id(contest_id)
+              if contest_obj.present?
+                region_obj.add_to_contest(contest_id: contest_id)
+                success_message += "Region has been added to contest '#{contest_id}'. "
+              else
+                error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
+              end
+            end
+            contests_to_remove.each do |contest_id|
+              region_obj.participations.where(contest_id: contest_id).delete_all
+              success_message += "Region has been removed from contest '#{contest_id}'. "
+            end
+            r = { 'success_message': success_message, 'warning_message': error_message }
+          else
+            r = { 'success_message': success_message }
+          end
+          Success(r)
+        else
+          return Failure("Error occurred while updating the region '#{id}'")
+        end
+      end
+    end
+
     class SearchBySpecies
       include Service::Application
       include Dry::Monads[:result, :do]

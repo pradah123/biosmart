@@ -3,84 +3,41 @@ require './lib/common/utils'
 
 module Api::V1
   class RegionController < ApiController
+    # Create region API
     def create
       region = params[:region].permit!
       contest_ids = params[:contest] || []
 
-      if !region['name'] || !region['description'] || !region['logo_image_url']
-        raise ApiFail.new("Must provide 'name', 'description' and 'logo_image_url' to add a new region")
-      end
-
-      region_obj = Region.find_by_id region['id']
-      if !region_obj.nil?
-        raise ApiFail.new("Region with id '#{region['id']}' already exists.")
-      else
-        region_obj = Region.new region
-        success_message = ''
-        if region_obj.save
-          success_message = 'Region has been added successfully. '
-          contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
-          error_message = ''
-          contest_ids.each do |contest_id|
-            contest_obj = Contest.in_progress.find_by_id(contest_id)
-            if contest_obj.present?
-              region_obj.add_to_contest(contest_id: contest_id)
-              success_message += "Region has been added to contest '#{contest_id}'. "
-            else
-              error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
-            end
-          end
-          r = { 'success_message': success_message, 'warning_message': error_message }
-          render_success r
-          return
-        else
-          raise ApiFail.new("Error occurred while creating the region.")
+      region['contest_ids'] = contest_ids
+      create_params = region.to_unsafe_h.symbolize_keys
+      Service::Region::Create.call(create_params) do |result|
+        result.success do |message|
+          render_success message
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
         end
       end
     end
 
+    # Update region API
     def update
       region = params[:region].permit!
-      contest_ids = params[:contest] || []
-      id = region['id'] || params[:id] || ''
-      region_obj = Region.find_by_id id
-      if region_obj.nil?
-        raise ApiFail.new("Region with '#{id}' does not exist.")
-      end
-      raise ApiFail.new("Must provide 'contest'") if !region['id'] && params[:id] && contest_ids.blank?
+      contest_ids = params[:contest]
+      region['contest_ids'] = params[:contest] if params.key?(:contest) && params[:contest]
 
-      region_obj.attributes = region
-      success_message = ''
-      if region_obj.save
-        success_message = 'Region has been updated successfully. '
-        contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
-        existing_contests = region_obj.contests
-                                      .where("contests.utc_starts_at <  '#{Time.now}' AND
-                                          contests.last_submission_accepted_at > '#{Time.now}'")
-                                      .pluck(:id)
-        contests_to_add = contest_ids - existing_contests
-        contests_to_remove = existing_contests - contest_ids
-
-        error_message = ''
-        contests_to_add.each do |contest_id|
-          contest_obj = Contest.in_progress.find_by_id(contest_id)
-          if contest_obj.present?
-            region_obj.add_to_contest(contest_id: contest_id)
-            success_message += "Region has been added to contest '#{contest_id}'. "
-          else
-            error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
-          end
+      # For direct API access (e.g. through swagger), we don't get region['id'], hence needs to assign
+      region['id'] = params[:id] || '' unless region['id']
+      region.delete(:polygon_side_length) if region[:polygon_side_length].blank? # It is expected to be float so for blank value it gives error
+      update_params = region.to_unsafe_h.symbolize_keys
+      Service::Region::Update.call(update_params) do |result|
+        result.success do |message|
+          render_success message
         end
-        contests_to_remove.each do |contest_id|
-          region_obj.participations.where(contest_id: contest_id).delete_all
-          success_message += "Region has been removed from contest '#{contest_id}'. "
+        result.failure do |message|
+          raise ApiFail.new(message)
         end
-        r = { 'success_message': success_message, 'warning_message': error_message }
-        render_success r
-      else
-        raise ApiFail.new("Error occurred while updating the region '#{id}'")
       end
-      return
     end
 
     def search
