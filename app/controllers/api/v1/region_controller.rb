@@ -9,6 +9,8 @@ module Api::V1
       contest_ids = params[:contest] || []
 
       region['contest_ids'] = contest_ids
+      region.delete(:polygon_side_length) if region[:polygon_side_length].blank? # It is expected to be float so for blank value it gives error
+
       create_params = region.to_unsafe_h.symbolize_keys
       Service::Region::Create.call(create_params) do |result|
         result.success do |message|

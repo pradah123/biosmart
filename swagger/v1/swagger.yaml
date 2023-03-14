@@ -45,7 +45,6 @@ paths:
               required:
               - name
               - description
-              - logo_image_url
               - status
   "/api/v1/region/{id}":
     parameters:
@@ -104,9 +103,6 @@ paths:
                   - offline
               required:
               - name
-              - description
-              - logo_image_url
-              - status
     patch:
       summary: update region
       parameters: []

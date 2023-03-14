@@ -80,7 +80,6 @@ module Service
       ValidationSchema = Dry::Schema.Params do
         required(:name).filled(:string)
         required(:description).filled(:string)
-        required(:logo_image_url).filled(:string)
         optional(:contest_ids).array(:str?)
       end
 
@@ -138,7 +137,7 @@ module Service
                 error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
               end
             end
-            r = { 'success_message': success_message, 'warning_message': error_message }
+            r = { 'region_id': region_obj.id, 'success_message': success_message, 'warning_message': error_message }
             Success(r)
           else
             return Failure("Error occurred while creating the region.")
