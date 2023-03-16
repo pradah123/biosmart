@@ -769,7 +769,7 @@ function set_up_regions() {
         $.ajax({ url: (url),
                  type: verb,
                  contentType: 'application/json',
-                 data: JSON.stringify({ 'region': p, 'contest': contest_ids }) })
+                 data: JSON.stringify({ 'region': p, 'contest': contest_ids, 'gui_call': 'true' }) })
         .done(function(data, status) {
           if(data['status']=='fail') {
             console.log(data);

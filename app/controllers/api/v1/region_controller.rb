@@ -9,6 +9,13 @@ module Api::V1
       contest_ids = params[:contest] || []
 
       region['contest_ids'] = contest_ids
+      region['api_hash'] = params[:api_hash]
+      # api_hash is required to pass through external API calls only.
+      # If API is called from GUI then, api_hash needed to be fetched from db constant
+      if params[:gui_call].present?
+        region['api_hash'] = Constant.find_by_name('api_hash').text_value if params[:gui_call] == 'true'
+        params.delete(:gui_call)
+      end
       region.delete(:polygon_side_length) if region[:polygon_side_length].blank? # It is expected to be float so for blank value it gives error
 
       create_params = region.to_unsafe_h.symbolize_keys
@@ -27,8 +34,15 @@ module Api::V1
       region = params[:region].permit!
       contest_ids = params[:contest]
       region['contest_ids'] = params[:contest] if params.key?(:contest) && params[:contest]
+      region['api_hash'] = params[:api_hash]
+      # api_hash is required to pass through external API calls only.
+      # If API is called from GUI then, api_hash needed to be fetched from db constant
+      if params[:gui_call].present?
+        region['api_hash'] = Constant.find_by_name('api_hash').text_value if params[:gui_call] == 'true'
+        params.delete(:gui_call)
+      end
 
-      # For direct API access (e.g. through swagger), we don't get region['id'], hence needs to assign
+      # For direct API access (e.g. through swagger or GOE), we don't get region['id'], hence needs to assign
       region['id'] = params[:id] || '' unless region['id']
       region.delete(:polygon_side_length) if region[:polygon_side_length].blank? # It is expected to be float so for blank value it gives error
       update_params = region.to_unsafe_h.symbolize_keys
@@ -65,6 +79,18 @@ module Api::V1
           contest_ids = contest_ids.map(&:to_s)
           region_hash[:contest] = contest_ids
           render json: region_hash
+        end
+        result.failure do |message|
+          raise ApiFail.new(message)
+        end
+      end
+    end
+
+    def destroy
+      delete_params = params.to_unsafe_h.symbolize_keys
+      Service::Region::Delete.call(delete_params) do |result|
+        result.success do |message|
+          render_success message
         end
         result.failure do |message|
           raise ApiFail.new(message)
