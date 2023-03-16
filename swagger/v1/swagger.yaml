@@ -17,6 +17,8 @@ paths:
             schema:
               type: object
               properties:
+                api_hash:
+                  type: string
                 name:
                   type: string
                 description:
@@ -43,6 +45,7 @@ paths:
                   - online
                   - offline
               required:
+              - api_hash
               - name
               - description
               - status
@@ -61,9 +64,20 @@ paths:
           description: successful
     delete:
       summary: delete region
+      parameters: []
       responses:
         '200':
           description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                api_hash:
+                  type: string
+              required:
+              - api_hash
     put:
       summary: update region
       parameters: []
@@ -76,6 +90,8 @@ paths:
             schema:
               type: object
               properties:
+                api_hash:
+                  type: string
                 name:
                   type: string
                 description:
@@ -102,7 +118,7 @@ paths:
                   - online
                   - offline
               required:
-              - name
+              - api_hash
     patch:
       summary: update region
       parameters: []

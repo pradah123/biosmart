@@ -72,6 +72,8 @@ module Service
       end
     end
 
+
+    # Class to create a region through gui page or external request (API)
     class Create
       include Service::Application
       include Dry::Monads[:result, :do]
@@ -80,11 +82,13 @@ module Service
       ValidationSchema = Dry::Schema.Params do
         required(:name).filled(:string)
         required(:description).filled(:string)
+        required(:api_hash).filled(:string)
         optional(:contest_ids).array(:str?)
       end
 
       class Params < AppStruct::Pagination
         attribute? :id, Types::Params::Integer
+        attribute? :api_hash, Types::Params::String
         attribute? :name, Types::Params::String
         attribute? :description, Types::Params::String
         attribute? :logo_image_url, Types::Params::String
@@ -100,6 +104,7 @@ module Service
       def execute(params)
         create_params = Params.new(params)
         params.delete(:contest_ids)
+        params.delete(:api_hash)
         create_region(create_params, params)
       end
 
@@ -107,6 +112,10 @@ module Service
 
       def create_region(create_params, params)
         region = params
+        api_hash_constant = Constant.find_by_name('api_hash').text_value
+        if create_params.api_hash != api_hash_constant
+          return Failure("'api_hash' value is invalid.")
+        end
         contest_ids = create_params.contest_ids
         begin
           region_obj = ::Region.find_by_id create_params.id if create_params&.id.present?
@@ -146,17 +155,20 @@ module Service
       end
     end
 
+
+    # Class to update a region through gui page or external request (API)
     class Update
       include Service::Application
       include Dry::Monads[:result, :do]
 
       # Schema to encapsulate parameter validation
       ValidationSchema = Dry::Schema.Params do
-        # required(:contest_ids).array(:str?)
+        required(:api_hash).filled(:string)
       end
 
       class Params < AppStruct::Pagination
         attribute? :id, Types::Params::Integer
+        attribute? :api_hash, Types::Params::String
         attribute? :name, Types::Params::String
         attribute? :description, Types::Params::String
         attribute? :logo_image_url, Types::Params::String
@@ -178,7 +190,12 @@ module Service
 
       def update_region(update_params, params)
         contest_ids = params[:contest_ids] if params.key?(:contest_ids)
+        api_hash_constant = Constant.find_by_name('api_hash').text_value
+        if update_params.api_hash != api_hash_constant
+          return Failure("'api_hash' value is invalid.")
+        end
         params.delete(:contest_ids) if params.key?(:contest_ids)
+        params.delete(:api_hash) if params.key?(:api_hash)
         region = params
 
         id = update_params.id || ''
@@ -225,6 +242,52 @@ module Service
           Success(r)
         else
           return Failure("Error occurred while updating the region '#{id}'")
+        end
+      end
+    end
+
+    # Class to delete a region through external request (API)
+    class Delete
+      include Service::Application
+      include Dry::Monads[:result, :do]
+
+      # Schema to encapsulate parameter validation
+      ValidationSchema = Dry::Schema.Params do
+        required(:api_hash).filled(:string)
+      end
+
+      class Params < AppStruct::Pagination
+        attribute? :id, Types::Params::Integer
+        attribute? :api_hash, Types::Params::String
+      end
+
+      def execute(params)
+        delete_params = Params.new(params)
+        delete_region(delete_params)
+      end
+
+      private
+
+      def delete_region(delete_params)
+        api_hash_constant = Constant.find_by_name('api_hash').text_value
+        if delete_params.api_hash != api_hash_constant
+          return Failure("'api_hash' value is invalid.")
+        end
+        id = delete_params.id || ''
+        if id.blank?
+          return Failure("Must provide 'id'.")
+        end
+        region_obj = ::Region.find_by_id id
+        if region_obj.nil?
+          return Failure("Region with id '#{id}' does not exist.")
+        end
+
+        if region_obj.destroy
+          success_message = 'Region has been deleted successfully. '
+          r = { 'success_message': success_message }
+          Success(r)
+        else
+          return Failure("Error occurred while deleting the region '#{id}'")
         end
       end
     end
