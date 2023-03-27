@@ -44,6 +44,8 @@ paths:
                   enum:
                   - online
                   - offline
+                subscription:
+                  type: string
               required:
               - api_hash
               - name
@@ -117,6 +119,8 @@ paths:
                   enum:
                   - online
                   - offline
+                subscription:
+                  type: string
               required:
               - api_hash
     patch:
@@ -131,6 +135,8 @@ paths:
             schema:
               type: object
               properties:
+                api_hash:
+                  type: string
                 name:
                   type: string
                 description:
@@ -143,16 +149,25 @@ paths:
                   type: string
                 population:
                   type: integer
+                lat_input:
+                  type: number
+                lng_input:
+                  type: number
+                polygon_side_length:
+                  type: number
+                contest:
+                  type: array
+                  items:
+                    type: string
                 status:
                   type: string
                   enum:
                   - online
                   - offline
+                subscription:
+                  type: string
               required:
-              - name
-              - description
-              - logo_url
-              - status
+              - api_hash
   "/api/v1/region/polygon/generate":
     get:
       summary: generate polygon

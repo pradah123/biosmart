@@ -60,7 +60,12 @@ module Api::V1
       search_params = params.to_unsafe_h.symbolize_keys
       Service::Region::Fetch.call(search_params) do |result|
         result.success do |regions|
-          @regions = regions
+          regions_json = []
+          regions.each do |region|
+            region_hash = RegionSerializer.new(region).serializable_hash[:data][:attributes]
+            regions_json.push(region_hash)
+          end
+          render json: regions_json
         end
         result.failure do |message|
           raise ApiFail.new(message)
