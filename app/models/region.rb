@@ -876,6 +876,7 @@ class Region < ApplicationRecord
       field :logo_image_url
       field :header_image_url
       field :raw_polygon_json
+      field :subscription
       field :observation_dot_org_id
       field :inaturalist_place_id
       field :citsci_project_id

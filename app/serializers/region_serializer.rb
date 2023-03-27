@@ -4,7 +4,8 @@ class RegionSerializer
              :header_image, :raw_polygon_json, :region_url, :bioscore, :lat, :lng,
              :lat_input, :lng_input, :polygon_side_length, :status,
              :observations_count, :species_count, :people_count, :identifications_count,
-             :physical_health_score, :mental_health_score
+             :physical_health_score, :mental_health_score,
+             :subscription
 
   # attribute :polygon do |object|
   #   object.get_polygon_json
