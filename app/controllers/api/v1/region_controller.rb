@@ -85,19 +85,21 @@ module Api::V1
           contest_ids = region.contests.in_progress.pluck(:id)
           contest_ids = contest_ids.map(&:to_s)
           region_hash[:contest] = contest_ids
-          search_params = {}
-          search_params[:contest_id] = params[:bioscore_pctile_contest_id]
-          search_params[:offset] = 0
-          search_params[:limit] = 9223372036854775807 #postgresql bigint last number
-          # Get bioscore_percentile for given bioscore_pctile_contest_id
-          Service::Participation::Fetch.call(search_params.symbolize_keys) do |regions|
-            regions.success do |region|
-              region.each do |r|
-                region_hash[:bioscore_percentile] = r[:bioscore_percentile] if r[:id] == params[:region_id].to_i
+          if params[:bioscore_pctile_contest_id]
+            search_params = {}
+            search_params[:contest_id] = params[:bioscore_pctile_contest_id]
+            search_params[:offset] = 0
+            search_params[:limit] = 9223372036854775807 #postgresql bigint last number
+            # Get bioscore_percentile for given bioscore_pctile_contest_id
+            Service::Participation::Fetch.call(search_params.symbolize_keys) do |regions|
+              regions.success do |region|
+                region.each do |r|
+                  region_hash[:bioscore_percentile] = r[:bioscore_percentile] if r[:id] == params[:region_id].to_i
+                end
               end
-            end
-            regions.failure do |message|
-              raise ApiFail.new(message)
+              regions.failure do |message|
+                raise ApiFail.new(message)
+              end
             end
           end
           render json: region_hash

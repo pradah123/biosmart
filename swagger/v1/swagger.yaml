@@ -59,13 +59,15 @@ paths:
       required: true
       schema:
         type: string
-    - name: bioscore_pctile_contest_id
-      in: query
-      description: contest id required for reference to fetch bioscore percentile
-      schema:
-        type: string
     get:
       summary: show region
+      parameters:
+        - in: query
+          name: bioscore_pctile_contest_id
+          description: contest id required as reference to fetch bioscore percentile
+          schema:
+            type: integer
+          required: false
       responses:
         '200':
           description: successful
