@@ -694,7 +694,7 @@ class Region < ApplicationRecord
 
       if nr.present?
         fetch_neighboring_region_data = false
-        r.participations.in_competition.each do |p|
+        r.participations.in_progress.in_competition.each do |p|
           next unless p.is_active?
           if p.contest.fetch_neighboring_region_data == false
             fetch_neighboring_region_data = false
@@ -749,8 +749,8 @@ class Region < ApplicationRecord
 
     data_source_with_date_range = Hash.new([])
 
-    participations = region.participations.in_competition
-    participations = Region.find_by_id(region.base_region_id).participations.in_competition if !participations.count.positive? && region.base_region_id.present?
+    participations = region.participations.in_progress.in_competition
+    participations = Region.find_by_id(region.base_region_id).participations.in_progress.in_competition if !participations.count.positive? && region.base_region_id.present?
 
     participations.each do |p|
       next unless p.is_active?
