@@ -9,6 +9,8 @@ class Participation < ApplicationRecord
   #
 
   scope :in_competition, -> { where status: Participation.statuses[:accepted] }
+  scope :in_progress, -> { where "participations.starts_at < ? AND participations.last_submission_accepted_at > ?", Time.now, Time.now }
+
   scope :ordered_by_observations_count, -> { order observations_count: :desc }
   scope :base_region_participations, -> { where base_participation_id: nil }
   scope :neighboring_region_participations, -> { where.not(base_participation_id: nil) }
