@@ -46,6 +46,8 @@ paths:
                   - offline
                 subscription:
                   type: string
+                display_flag:
+                  type: string
               required:
               - api_hash
               - name
@@ -128,6 +130,8 @@ paths:
                   - offline
                 subscription:
                   type: string
+                display_flag:
+                  type: string
               required:
               - api_hash
     patch:
@@ -172,6 +176,8 @@ paths:
                   - online
                   - offline
                 subscription:
+                  type: string
+                display_flag:
                   type: string
               required:
               - api_hash
