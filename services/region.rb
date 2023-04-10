@@ -84,6 +84,7 @@ module Service
         required(:description).filled(:string)
         required(:api_hash).filled(:string)
         optional(:contest_ids).array(:str?)
+        optional(:display_flag).filled(:string, included_in?: ['true', 'false'])
       end
 
       class Params < AppStruct::Pagination
@@ -99,6 +100,7 @@ module Service
         attribute? :polygon_side_length, Types::Params::Float
         attribute? :status, Types::Params::String
         attribute? :contest_ids, Types::Params::Array
+        attribute? :display_flag, Types::Params::String
       end
 
       def execute(params)
@@ -164,6 +166,7 @@ module Service
       # Schema to encapsulate parameter validation
       ValidationSchema = Dry::Schema.Params do
         required(:api_hash).filled(:string)
+        optional(:display_flag).filled(:string, included_in?: ['true', 'false'])
       end
 
       class Params < AppStruct::Pagination
@@ -179,6 +182,7 @@ module Service
         attribute? :polygon_side_length, Types::Params::Float
         attribute? :status, Types::Params::String
         attribute? :contest_ids, Types::Params::Array
+        attribute? :display_flag, Types::Params::String
       end
 
       def execute(params)

@@ -855,28 +855,29 @@ class Region < ApplicationRecord
       field :status
       field :name
       field :slug
+      field :subscription
+      field :display_flag
       field :size do
         visible do
           bindings[:object].base_region_id.present?
         end
       end
-      field :fetch_neighboring_region_data do
-        visible do
-          !bindings[:object].base_region_id.present?
-        end
-      end
-      field :create_neighboring_region_subregions_for_ebird do
-        visible do
-          !bindings[:object].base_region_id.present?
-        end
-      end
+      # field :fetch_neighboring_region_data do
+      #   visible do
+      #     !bindings[:object].base_region_id.present?
+      #   end
+      # end
+      # field :create_neighboring_region_subregions_for_ebird do
+      #   visible do
+      #     !bindings[:object].base_region_id.present?
+      #   end
+      # end
       field :description
       field :region_url
       field :population
       field :logo_image_url
       field :header_image_url
       field :raw_polygon_json
-      field :subscription
       field :observation_dot_org_id
       field :inaturalist_place_id
       field :citsci_project_id

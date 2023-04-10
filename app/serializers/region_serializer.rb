@@ -5,7 +5,7 @@ class RegionSerializer
              :lat_input, :lng_input, :polygon_side_length, :status,
              :observations_count, :species_count, :people_count, :identifications_count,
              :physical_health_score, :mental_health_score,
-             :subscription
+             :subscription, :display_flag
 
   # attribute :polygon do |object|
   #   object.get_polygon_json

@@ -80,8 +80,16 @@ module Service
                                                  region_ids: participations.where(contest_id: intersecting_contest_id)
                                                                            .pluck(:region_id)
                                                )
+                                               .where(
+                                                 'region_id not in (:region_ids)',
+                                                 region_ids: ::Region.where(display_flag: false).pluck(:id)
+                                               )
           else
             all_participations = participations.where(contest_id: contest_id)
+                                               .where(
+                                                 'region_id not in (:region_ids)',
+                                                 region_ids: ::Region.where(display_flag: false).pluck(:id)
+                                              )
           end
         end
         participations = all_participations.includes(:region)
@@ -110,7 +118,7 @@ module Service
         end
         scores = ::Region.merge_intermediate_scores_and_percentiles(regions: regions)
         participations_arr.each do |p|
-          p_scores_hash = scores.detect{ |s| s[:id] == p[:id].to_i }
+          p_scores_hash = scores.detect { |s| s[:id] == p[:id].to_i }
           p.merge!(p_scores_hash)
         end
 
