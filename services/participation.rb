@@ -39,7 +39,6 @@ module Service
         optional(:sort_by).filled(:string, included_in?: ['id', 'bioscore'])
         optional(:sort_order).filled(:string, included_in?: ['asc', 'desc'])
         optional(:intersecting_contest_id).filled(:integer, gt?: 0)
-
       end
       
       class Params < AppStruct::Pagination
@@ -47,6 +46,7 @@ module Service
         attribute? :sort_by, Types::Params::String.default('id')
         attribute? :sort_order, Types::Params::String.default('asc')
         attribute? :intersecting_contest_id, Types::Params::Integer
+        attribute? :region_name, Types::Params::String
 
         def sort_key
           # Bioscore is not populated in participation model
@@ -66,6 +66,7 @@ module Service
         participations = ::Participation.default_scoped.base_region_participations
         contest_id = search_params.contest_id
         intersecting_contest_id = search_params.intersecting_contest_id
+        region_name = search_params.region_name
         if contest_id.present?
           contest = ::Contest.find_by_id(contest_id)
           return Failure("Invalid contest_id (#{contest_id}).") if contest.blank?
@@ -82,14 +83,18 @@ module Service
                                                )
                                                .where(
                                                  'region_id in (:region_ids)',
-                                                 region_ids: ::Region.where(display_flag: true).pluck(:id)
+                                                 region_ids: ::Region.where(display_flag: true)
+                                                                     .where("name like '%#{region_name}%'")
+                                                                     .pluck(:id)
                                                )
           else
             all_participations = participations.where(contest_id: contest_id)
                                                .where(
                                                  'region_id in (:region_ids)',
-                                                 region_ids: ::Region.where(display_flag: true).pluck(:id)
-                                              )
+                                                 region_ids: ::Region.where(display_flag: true)
+                                                                     .where("name like '%#{region_name}%'")
+                                                                     .pluck(:id)
+                                               )
           end
         end
         participations = all_participations.includes(:region)
