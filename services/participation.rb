@@ -81,14 +81,14 @@ module Service
                                                                            .pluck(:region_id)
                                                )
                                                .where(
-                                                 'region_id not in (:region_ids)',
-                                                 region_ids: ::Region.where(display_flag: false).pluck(:id)
+                                                 'region_id in (:region_ids)',
+                                                 region_ids: ::Region.where(display_flag: true).pluck(:id)
                                                )
           else
             all_participations = participations.where(contest_id: contest_id)
                                                .where(
-                                                 'region_id not in (:region_ids)',
-                                                 region_ids: ::Region.where(display_flag: false).pluck(:id)
+                                                 'region_id in (:region_ids)',
+                                                 region_ids: ::Region.where(display_flag: true).pluck(:id)
                                               )
           end
         end
