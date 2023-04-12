@@ -855,8 +855,16 @@ class Region < ApplicationRecord
       field :status
       field :name
       field :slug
-      field :subscription
-      field :display_flag
+      field :subscription do
+        visible do
+          !bindings[:object].base_region_id.present?
+        end
+      end
+      field :display_flag do
+        visible do
+          !bindings[:object].base_region_id.present?
+        end
+      end
       field :size do
         visible do
           bindings[:object].base_region_id.present?
