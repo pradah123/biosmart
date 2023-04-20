@@ -140,12 +140,12 @@ module Service
             contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
             error_message = ''
             contest_ids.each do |contest_id|
-              contest_obj = ::Contest.in_progress.find_by_id(contest_id)
+              contest_obj = ::Contest.in_progress_or_upcoming.find_by_id(contest_id)
               if contest_obj.present?
                 region_obj.add_to_contest(contest_id: contest_id)
                 success_message += "Region has been added to contest '#{contest_id}'. "
               else
-                error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
+                error_message += "No ongoing or upcoming contest found for contest id '#{contest_id}', couldn't add region to it."
               end
             end
             r = { 'region_id': region_obj.id, 'success_message': success_message, 'warning_message': error_message }
@@ -218,7 +218,7 @@ module Service
           if contest_ids.is_a?(Array)
             contest_ids = contest_ids.reject(&:empty?).map(&:to_i)
             existing_contests = region_obj.contests
-                                          .where("contests.utc_starts_at <  '#{Time.now}' AND
+                                          .where("(contests.utc_starts_at <  '#{Time.now}' OR contests.utc_starts_at >  '#{Time.now}') AND
                                               contests.last_submission_accepted_at > '#{Time.now}'")
                                           .pluck(:id)
             contests_to_add = contests_to_remove = []
@@ -227,12 +227,12 @@ module Service
 
             error_message = ''
             contests_to_add.each do |contest_id|
-              contest_obj = ::Contest.in_progress.find_by_id(contest_id)
+              contest_obj = ::Contest.in_progress_or_upcoming.find_by_id(contest_id)
               if contest_obj.present?
                 region_obj.add_to_contest(contest_id: contest_id)
                 success_message += "Region has been added to contest '#{contest_id}'. "
               else
-                error_message += "No ongoing contest found for contest id '#{contest_id}', couldn't add region to it."
+                error_message += "No ongoing or upcoming contest found for contest id '#{contest_id}', couldn't add region to it."
               end
             end
             contests_to_remove.each do |contest_id|

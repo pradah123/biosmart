@@ -82,7 +82,7 @@ module Api::V1
           region_hash = RegionSerializer.new(region).serializable_hash[:data][:attributes]
           region_scores = region.get_region_scores
           region_hash.merge!(region_scores)
-          contest_ids = region.contests.in_progress.pluck(:id)
+          contest_ids = region.contests.in_progress_or_upcoming.pluck(:id)
           contest_ids = contest_ids.map(&:to_s)
           region_hash[:contest] = contest_ids
           if params[:bioscore_pctile_contest_id]

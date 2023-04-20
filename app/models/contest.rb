@@ -11,6 +11,7 @@ class Contest < ApplicationRecord
   scope :in_progress, -> { where 'contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now }
   scope :past, -> { where 'contests.last_submission_accepted_at < ?', Time.now }
   scope :online, -> { where status: Contest.statuses[:online] }
+  scope :in_progress_or_upcoming, -> { where "(contests.utc_starts_at < ? OR contests.utc_starts_at > ?) AND contests.last_submission_accepted_at > ?", Time.now, Time.now, Time.now }
 
   belongs_to :user, optional: true
   has_many :participations, dependent: :delete_all
@@ -38,6 +39,9 @@ class Contest < ApplicationRecord
     participations.each {|p|
       p.set_start_and_end_times
     }
+    if participations.count == 0
+      set_utc_start_and_end_times
+    end
   end
 
 
@@ -45,6 +49,9 @@ class Contest < ApplicationRecord
     if participations.count > 0
       update_column :utc_starts_at, participations.pluck(:starts_at).compact.min
       update_column :utc_ends_at, participations.pluck(:ends_at).compact.max
+    else
+      update_column :utc_starts_at, starts_at
+      update_column :utc_ends_at, ends_at
     end
   end
 

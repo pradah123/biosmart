@@ -5,7 +5,7 @@
     var contest_filter = '[]';
     var region_id;
     <% if !region.nil? %>
-      contest_filter = '<%= escape_javascript region.contests.where("contests.utc_starts_at < '#{Time.now}' AND contests.last_submission_accepted_at > '#{Time.now}'").collect {|p| "#{p['id']}" }.to_json.html_safe %>';
+      contest_filter = '<%= escape_javascript region.contests.where("(contests.utc_starts_at < '#{Time.now}' OR contests.utc_starts_at > '#{Time.now}') AND contests.last_submission_accepted_at > '#{Time.now}'").collect {|p| "#{p['id']}" }.to_json.html_safe %>';
       region_id = '<%= region.id %>';
     <% end %>
     set_contest_filter(contest_filter, region_id);
@@ -48,7 +48,7 @@
                 <% contest_select_id = "contest_filter_" + region.id.to_s %>
 
                 <%= select_tag(contest_select_id,
-                    options_for_select(Contest.in_progress.collect {|p| [ p['title'], p['id'] ] },
+                    options_for_select(Contest.in_progress_or_upcoming.collect {|p| [ p['title'], p['id'] ] },
                                       region.contests.where("contests.utc_starts_at < '#{Time.now}' AND contests.last_submission_accepted_at > '#{Time.now}'").collect {|p| "p['id']" }
                                       ),
                     { :class => "form-select contest_filter", :multiple => true }
@@ -56,7 +56,7 @@
                 %>
               <% else %>
                 <%= select_tag(:contest_filter,
-                    options_for_select(Contest.in_progress.collect {|p| [ p['title'], p['id'] ] },
+                    options_for_select(Contest.in_progress_or_upcoming.collect {|p| [ p['title'], p['id'] ] },
                                        params[:contest_filter]),
                     { :class => "form-select contest_filter", :multiple => true }
                   )
