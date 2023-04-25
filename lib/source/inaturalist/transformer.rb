@@ -35,6 +35,19 @@ module Source
           bioscore: bioscore
         })
       end
+
+      def self.add_license_code(hash)
+        # As per https://www.inaturalist.org/pages/api+reference#get-observations
+        # if 'license' param (which later seems to be changed to 'license_code')
+        # has no value, then observer withholds all rights to distribution
+        # # and we are not allowed to use these records
+        # but we are downloading them for future use (in case license_code is changed) and
+        # marking them as reserved and filtering them on gui so are not displayed anywhere.
+        license_code = 'reserved' if hash[:license_code].blank?
+        hash.merge({
+          license_code: license_code
+        })
+      end
     end
 
     class Transformer < Dry::Transformer::Pipe
@@ -69,6 +82,7 @@ module Source
         add_obs_dttm(:observed_at)
         populate_identifications_count()
         add_bioscore()
+        add_license_code()
         accept_keys [
           :unique_id,
           :scientific_name,
@@ -81,7 +95,8 @@ module Source
           :lng,
           :observed_at,
           :identifications_count,
-          :bioscore
+          :bioscore,
+          :license_code
         ]                
       end
     end    
