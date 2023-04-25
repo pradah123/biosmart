@@ -56,11 +56,8 @@ module Source
         t = Inaturalist::Transformer.new()
         result[:results].each do |inat_obs|
           # Skip copyright all reserved observations from inaturalist
-          # As per https://www.inaturalist.org/pages/api+reference#get-observations
-          # if 'license' param (which later seems to be changed to 'license_code')
-          # has no value, then observer withholds all rights to distribution
-          # and we are allowed to use these records hence skipping
-          next if inat_obs[:license_code].blank?
+          # Keeping following commented code for now. We are still downloading these records and marking them as reserved
+          # next if inat_obs[:license_code].blank?
           transformed_obs = t.call(inat_obs)
           validation_result = Source::Schema::ObservationSchema.call(transformed_obs)
           if validation_result.failure?
