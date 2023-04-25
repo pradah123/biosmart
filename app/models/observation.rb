@@ -17,6 +17,7 @@ class Observation < ApplicationRecord
     ret << " ELSE #{priority.count} END"
     order(Arel.sql(ret))
   }
+  scope :ignore_reserved_sightings, -> { where license_code: nil }
 
   #
   # an observation may belong to multiple regions, participations, or contests
@@ -317,6 +318,7 @@ class Observation < ApplicationRecord
     observations = observations.includes(:observation_images)
                                .has_images
                                .has_scientific_name
+                               .ignore_reserved_sightings
                                .recent
                                .offset(offset)
                                .limit(limit)
