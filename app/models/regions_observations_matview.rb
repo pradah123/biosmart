@@ -24,6 +24,8 @@ class RegionsObservationsMatview < ActiveRecord::Base
   scope :filter_by_taxonomy, lambda { |taxonomy_ids|
     where(taxonomy_id: taxonomy_ids) if taxonomy_ids.present?
   }
+  scope :ignore_reserved_sightings, -> { where license_code: nil }
+
 
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
 
@@ -130,6 +132,7 @@ class RegionsObservationsMatview < ActiveRecord::Base
     obs_id = RegionsObservationsMatview.where(region_id: region_id)
                                        .where(taxonomy_id: taxonomy_ids)
                                        .has_images
+                                       .ignore_reserved_sightings
                                        .order("observed_at desc")
                                        .limit(1)
                                        .pluck(:id)
@@ -141,6 +144,7 @@ class RegionsObservationsMatview < ActiveRecord::Base
     obs_id = RegionsObservationsMatview.where(region_id: region_id)
                                        .where(taxonomy_id: taxonomy_ids)
                                        .has_images
+                                       .ignore_reserved_sightings
                                        .order("observed_at desc")
                                        .limit(1)
                                        .pluck(:id)
