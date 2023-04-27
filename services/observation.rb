@@ -30,6 +30,7 @@ module Service
         optional(:category).filled(:string)
         optional(:search_text).filled(:string)
         optional(:with_images).filled(:string, included_in?: ['true', 'false'])
+        optional(:get_counts_only).filled(:string, included_in?: ['true', 'false'])
       end
       
       class Params < AppStruct::Pagination
@@ -41,7 +42,7 @@ module Service
         attribute? :category, Types::Params::String
         attribute? :search_text, Types::Params::String
         attribute? :with_images, Types::Params::String.default('false')
-
+        attribute? :get_counts_only, Types::Params::String.default('false')
       end
 
       def execute(params)
@@ -70,32 +71,52 @@ module Service
             search_params.region_id, search_params.category, search_params.search_text
           )
         end
-
-        if search_params.with_images == 'true'
-          observations = observations.includes(:observation_images)
-                                    .includes(:data_source)
-                                    .includes(:taxonomy)
-                                    .has_images
-                                    .offset(search_params.offset)
-                                    .limit(search_params.limit)
-                                    .order(search_params.sort_by => search_params.sort_order)
+        if search_params.get_counts_only == 'false'
+          if search_params.with_images == 'true'
+            observations = observations.includes(:observation_images)
+                                       .includes(:data_source)
+                                       .includes(:taxonomy)
+                                       .has_images
+                                       .offset(search_params.offset)
+                                       .limit(search_params.limit)
+                                       .order(search_params.sort_by => search_params.sort_order)
+          else
+            observations = observations.includes(:data_source)
+                                       .includes(:taxonomy)
+                                       .offset(search_params.offset)
+                                       .limit(search_params.limit)
+                                       .order(search_params.sort_by => search_params.sort_order)
+          end
+          if search_params.datasource_order.present?
+            # https://guides.rubyonrails.org/active_record_querying.html#unscope
+            observations = observations.unscope(:order)
+            # https://edgeapi.rubyonrails.org/classes/ActiveRecord/QueryMethods.html#method-i-in_order_of
+            observations = observations.sort_by_data_source(search_params.datasource_order)
+          end
+          none_observation = ::Observation.where('1 = 0')
+          observations = observations.uniq
+          observations += none_observation
+          Success(observations)
         else
-          observations = observations.includes(:data_source)
-                                    .includes(:taxonomy)
-                                    .offset(search_params.offset)
-                                    .limit(search_params.limit)
-                                    .order(search_params.sort_by => search_params.sort_order)
+          data = {}
+          filtered_scientific_names = "'homo sapiens', 'Homo Sapiens', 'Homo sapiens'"
+          data[:observations_count] = observations.distinct.count
+          data[:species_count] = observations.distinct
+                                             .select("observations.accepted_name")
+                                             .where("observations.accepted_name not in (#{filtered_scientific_names})")
+                                             .where("observations.accepted_name is not null")
+                                             .where('observations.accepted_name != lower(observations.accepted_name)')
+                                             .distinct
+                                             .count
+          data[:people_count] = observations.distinct
+                                            .select("observations.creator_name")
+                                            .where("observations.creator_name is not null")
+                                            .distinct
+                                            .count
+          data[:identifications_count] = observations.sum(:identifications_count)
+          Success(data)
         end
-        if search_params.datasource_order.present?
-          # https://guides.rubyonrails.org/active_record_querying.html#unscope
-          observations = observations.unscope(:order)
-          # https://edgeapi.rubyonrails.org/classes/ActiveRecord/QueryMethods.html#method-i-in_order_of
-          observations = observations.sort_by_data_source(search_params.datasource_order)
-        end
-        none_observation = ::Observation.where('1 = 0')
-        observations = observations.uniq
-        observations += none_observation
-        Success(observations)
+
       end
 
       def get_region_observations_relation(region_id, category, search_text)
@@ -135,7 +156,6 @@ module Service
       def filter_observations(obj, category, search_text)
         if category.present?
           category_query = Utils.get_category_rank_name_and_value(category_name: category)
-          Rails.logger.info "category_query: #{category_query}"
           if category_query.blank?
             return Failure(
               "Invalid category '#{category}'."
@@ -162,7 +182,7 @@ module Service
             region_ids = obj.participations.map { |p|
               p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
             }.compact
-            obs = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.starts_at, ends_at)
+            obs = ::Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.starts_at, ends_at)
           end
           # For contest or participation page
           if category.present? && search_text.present?
@@ -173,6 +193,7 @@ module Service
             observations = obs.search(search_text)
           else
             observations = obs
+            Rails.logger.info("observations: #{observations.count}")
           end
         end
         Success(observations)
