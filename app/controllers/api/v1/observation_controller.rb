@@ -7,11 +7,15 @@ module Api::V1
       search_params = params.to_unsafe_h.symbolize_keys
       Service::Observation::Fetch.call(search_params) do |result|
         result.success do |observations|
-          serialized_observations = []
-          observations.each do |obs|
-            serialized_observations.push(ObservationSerializer.new(obs).serializable_hash[:data][:attributes])
+          if params[:get_counts_only] == 'true'
+            render json: observations
+          else
+            serialized_observations = []
+            observations.each do |obs|
+              serialized_observations.push(ObservationSerializer.new(obs).serializable_hash[:data][:attributes])
+            end
+            render json: serialized_observations
           end
-          render json: serialized_observations
         end
         result.failure do |message|
           raise ApiFail.new(message)
