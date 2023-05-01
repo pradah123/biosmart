@@ -76,6 +76,7 @@ module Service
             observations = observations.includes(:observation_images)
                                        .includes(:data_source)
                                        .includes(:taxonomy)
+                                       .where(license_code: nil)
                                        .has_images
                                        .offset(search_params.offset)
                                        .limit(search_params.limit)
@@ -83,6 +84,7 @@ module Service
           else
             observations = observations.includes(:data_source)
                                        .includes(:taxonomy)
+                                       .where(license_code: nil)
                                        .offset(search_params.offset)
                                        .limit(search_params.limit)
                                        .order(search_params.sort_by => search_params.sort_order)
