@@ -257,7 +257,10 @@ module CountableStatistics
 
   # For given list of species get common name and image
   def get_species_details(species: , offset: , limit: )
-    observations_with_images = observations.where(taxonomy_id: species).has_images.includes(:observation_images)
+    observations_with_images = observations.where(taxonomy_id: species)
+                                           .has_images
+                                           .where(license_code: nil)
+                                           .includes(:observation_images)
 
     total = 0
     idx = 0
