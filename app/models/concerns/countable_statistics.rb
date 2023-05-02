@@ -261,7 +261,7 @@ module CountableStatistics
                                            .has_images
                                            .where(license_code: nil)
                                            .includes(:observation_images)
-
+                                           .order('observed_at desc')
     total = 0
     idx = 0
     final_species = []
