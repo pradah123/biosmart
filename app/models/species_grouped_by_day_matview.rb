@@ -28,7 +28,7 @@ class SpeciesGroupedByDayMatview < ActiveRecord::Base
                                               .has_scientific_name
                                               .has_images
                                               .filter_by_offset_limit(offset, limit)
-                                              .order('species_count desc')
+                                              .order('species_count desc, scientific_name')
     return top_species.as_json
   end
 
@@ -40,7 +40,7 @@ class SpeciesGroupedByDayMatview < ActiveRecord::Base
                                               .filter_by_category(category)
                                               .has_scientific_name
                                               .filter_by_offset_limit(offset, limit)
-                                              .order('species_count desc')
+                                              .order('species_count desc, scientific_name')
     return top_species.as_json
   end
 
