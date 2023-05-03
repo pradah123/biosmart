@@ -72,11 +72,12 @@ module Service
           )
         end
         if search_params.get_counts_only == 'false'
+          license_codes = [nil, 'cc-0', 'cc-by', 'cc-by-nc', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc-sa', 'cc-by-nc-nd']
           if search_params.with_images == 'true'
             observations = observations.includes(:observation_images)
                                        .includes(:data_source)
                                        .includes(:taxonomy)
-                                       .where(license_code: nil)
+                                       .where(license_code: license_codes)
                                        .has_images
                                        .offset(search_params.offset)
                                        .limit(search_params.limit)
@@ -84,7 +85,7 @@ module Service
           else
             observations = observations.includes(:data_source)
                                        .includes(:taxonomy)
-                                       .where(license_code: nil)
+                                       .where(license_code: license_codes)
                                        .offset(search_params.offset)
                                        .limit(search_params.limit)
                                        .order(search_params.sort_by => search_params.sort_order)

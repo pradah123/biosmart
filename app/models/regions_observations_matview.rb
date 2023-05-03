@@ -24,10 +24,11 @@ class RegionsObservationsMatview < ActiveRecord::Base
   scope :filter_by_taxonomy, lambda { |taxonomy_ids|
     where(taxonomy_id: taxonomy_ids) if taxonomy_ids.present?
   }
-  scope :ignore_reserved_sightings, -> { where license_code: nil }
+  scope :ignore_reserved_sightings, -> { where license_code: @@license_codes }
 
 
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
+  @@license_codes = [nil, 'cc-0', 'cc-by', 'cc-by-nc', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc-sa', 'cc-by-nc-nd']
 
   has_many :observation_images
 
