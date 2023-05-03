@@ -54,8 +54,10 @@ class UpdateObserverSpeciesGroupedByDayMatview < ActiveRecord::Migration[7.0]
             taxonomies tax
           ON
             o.taxonomy_id = tax.id
-          WHERE
+          WHERE (
             o.license_code is null
+            OR o.license_code IN ('cc-0', 'cc-by', 'cc-by-nc', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc-sa', 'cc-by-nc-nd')
+          )
           GROUP BY
             obrs.region_id,
             o.scientific_name,

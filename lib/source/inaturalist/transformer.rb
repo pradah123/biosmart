@@ -43,7 +43,7 @@ module Source
         # # and we are not allowed to use these records
         # but we are downloading them for future use (in case license_code is changed) and
         # marking them as reserved and filtering them on gui so are not displayed anywhere.
-        license_code = 'reserved' if hash[:license_code].blank?
+        license_code = hash[:license_code].blank? ? 'reserved' : hash[:license_code]
         hash.merge({
           license_code: license_code
         })

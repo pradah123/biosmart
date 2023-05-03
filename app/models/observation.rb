@@ -17,7 +17,7 @@ class Observation < ApplicationRecord
     ret << " ELSE #{priority.count} END"
     order(Arel.sql(ret))
   }
-  scope :ignore_reserved_sightings, -> { where license_code: nil }
+  scope :ignore_reserved_sightings, -> { where license_code: @@license_codes }
 
   #
   # an observation may belong to multiple regions, participations, or contests
@@ -39,6 +39,7 @@ class Observation < ApplicationRecord
   validates :observed_at, presence: true
 
   @@filtered_scientific_names = [nil, 'homo sapiens', 'Homo Sapiens', 'Homo sapiens']
+  @@license_codes = [nil, 'cc-0', 'cc-by', 'cc-by-nc', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc-sa', 'cc-by-nc-nd']
   @@nobservations_per_page = 18
 
   def update_search_text

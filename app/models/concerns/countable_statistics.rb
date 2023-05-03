@@ -259,7 +259,7 @@ module CountableStatistics
   def get_species_details(species: , offset: , limit: )
     observations_with_images = observations.where(taxonomy_id: species)
                                            .has_images
-                                           .where(license_code: nil)
+                                           .ignore_reserved_sightings
                                            .includes(:observation_images)
                                            .order('observed_at desc')
     total = 0
