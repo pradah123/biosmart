@@ -128,7 +128,9 @@ module Api::V1
         observations = Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.first.starts_at, ends_at).distinct
       end
       limit = 5000 unless limit.present?
-      observations = observations.recent.offset(offset).limit(limit)
+      observations = observations.recent
+                                 .ignore_reserved_sightings
+                                 .offset(offset).limit(limit)
 
       j['observations'] = obj.nil? ? [] : observations.map { |o|
          { id:  o.id,
