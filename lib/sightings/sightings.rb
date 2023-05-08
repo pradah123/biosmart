@@ -6,7 +6,9 @@ module Sightings
   end
 
   def self.update_inaturalist_sightings(from_date, to_date, days)
-    # file_name = "#{Rails.root}/lib/sightings/.to_date.txt"
+    from_date = from_date.to_time
+    to_date = to_date.to_time
+
     file = File.open(self.file_name, "r") if File.file?(self.file_name)
     file_to_date = file.read if file.present?
     file.close()
