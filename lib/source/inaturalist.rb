@@ -24,6 +24,7 @@ module Source
     option :per_page, default: proc { 200 }, reader: :private, type: Types::Strict::Integer
     option :iconic_taxa, optional: true, reader: :private, type: Types::Strict::Array
     option :page, default: proc { 1 }, reader: :private, type: Types::Strict::Integer
+    option :id, optional: true, reader: :private, type: Types::Coercible::Integer
 
     def get_params()
       params = Source::Inaturalist.dry_initializer.attributes(self)
@@ -43,11 +44,20 @@ module Source
 
     def get_observations()
       biosmart_obs = []
-      response = HTTParty.get(
-        API_URL,
-        query: get_params(),
-        # debug_output: $stdout
-      )
+      params = Source::Inaturalist.dry_initializer.attributes(self)
+
+      if params[:id].present?
+        url = "#{API_URL}/#{params[:id]}"
+        response = HTTParty.get(
+          url
+        )
+      else
+        response = HTTParty.get(
+          API_URL,
+          query: get_params(),
+          # debug_output: $stdout
+        )
+      end
       Delayed::Worker.logger.info "Source::Inaturalist.api_url: #{response.request.last_uri.to_s}"
 
       if response.success? && !response.body.nil?
