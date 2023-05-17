@@ -47,7 +47,7 @@ module Source
       params = Source::Inaturalist.dry_initializer.attributes(self)
 
       if params[:id].present?
-        url = "#{API_URL}/#{params[:id]}"
+        url = "#{API_URL}/#{params[:id]}?geo=true"
         response = HTTParty.get(
           url
         )
