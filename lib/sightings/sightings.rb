@@ -6,10 +6,10 @@ module Sightings
   end
 
   def self.update_inaturalist_sightings(from_date, to_date, days)
-    from_date = from_date.to_time
-    to_date = to_date.to_time
+    from_date = from_date.to_time if from_date.present?
+    to_date = to_date.to_time if to_date.present?
 
-    file = File.open(self.file_name, "r") if File.file?(self.file_name)
+    file = File.open(file_name, "r") if File.file?(file_name)
     file_to_date = file.read if file.present?
     file.close()
     unless from_date.present?
@@ -20,14 +20,15 @@ module Sightings
     
     unique_ids = Observation.where("observed_at BETWEEN ? and ?", from_date, to_date)
                             .where(data_source_id: data_source_id)
-                            .ignore_reserved_sightings
+                            .where(license_code: nil)
+                            #.ignore_reserved_sightings
                             .order("observed_at desc")
                             .pluck(:unique_id)
-    Rails.logger.info("Sightings::filter_inaturalist_sightings no. of observations to be fetched from #{from_date} - to #{to_date}: #{unique_ids.count}")
+    Rails.logger.info("Sightings::update_inaturalist_sightings - No. of observations to be fetched from #{from_date} - to #{to_date}: #{unique_ids.count}")
 
     unique_ids.each do |unique_id|
       id = unique_id.gsub('inaturalist-', '')
-      Rails.logger.info("Fetching observation for id: #{id}")
+      Rails.logger.info("Sightings::update_inaturalist_sightings - Fetching observation for id: #{id}")
       attributes = fetch_sighting_from_inaturalist(from_date, to_date, id)
       next unless attributes.present?
 
@@ -41,11 +42,12 @@ module Sightings
         file.write(observed_at)
         file.close()
       rescue => e
-        Rails.logger.info("Failed to update inaturalist license code for sighting #{unique_id}, #{e}")
+        Rails.logger.info("Sightings::update_inaturalist_sightings - Failed to update inaturalist license code for sighting #{unique_id}, #{e}")
       end
 
-      sleep(1)
+      sleep(13)
     end
+    Rails.logger.info("Sightings::update_inaturalist_sightings - Finished processing.")
   end
 
   def self.fetch_sighting_from_inaturalist(from_date, to_date, id)
@@ -64,4 +66,3 @@ module Sightings
     return attributes
   end
 end
-
