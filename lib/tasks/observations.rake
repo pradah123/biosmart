@@ -3,7 +3,7 @@ require_relative '../sightings/sightings.rb'
 namespace :inaturalist_sightings do
   desc "Update inaturalist sightings"
   task :update, [:from_date, :to_date, :days] => [:environment] do |task, args|
-    Rails.logger.info("inaturalist_sightings::processes running :#{status}")
+    Rails.logger.info("inaturalist_sightings::processes running")
     Rails.logger.info(`ps aux | pgrep -f inaturalist_sightings:update`)
     status = `ps aux | pgrep -f inaturalist_sightings:update | tail -n +5`
     Rails.logger.info("inaturalist_sightings::process running? :#{status}")
