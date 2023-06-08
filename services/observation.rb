@@ -183,7 +183,7 @@ module Service
             obs = obj.region.observations.where("observed_at BETWEEN ? and ?", obj.starts_at, ends_at)
           else
             region_ids = obj.participations.map { |p|
-              p.is_active? && !p.region.base_region_id.present? ? p.region.id : nil
+              !p.region.base_region_id.present? ? p.region.id : nil
             }.compact
             obs = ::Observation.joins(:observations_regions).where("observations_regions.region_id IN (?)", region_ids).where("observations.observed_at BETWEEN ? and ?", obj.starts_at, ends_at)
           end
