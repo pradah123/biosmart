@@ -94,7 +94,13 @@ module Api::V1
             Service::Participation::Fetch.call(search_params.symbolize_keys) do |regions|
               regions.success do |region|
                 region.each do |r|
-                  region_hash[:bioscore_percentile] = r[:bioscore_percentile] if r[:id] == params[:region_id].to_i
+                  if r[:id] == params[:region_id].to_i
+                    region_hash[:bioscore_percentile] = r[:bioscore_percentile]
+                    region_hash[:species_diversity_percentile] = r[:species_diversity_percentile]
+                    region_hash[:monitoring_percentile] = r[:monitoring_percentile]
+                    region_hash[:community_percentile] = r[:community_percentile]
+                    region_hash[:biovalue_percentile] = r[:biovalue_percentile]
+                  end
                 end
               end
               regions.failure do |message|

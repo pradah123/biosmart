@@ -16,8 +16,9 @@ module Sightings
       to_date = file_to_date.present? ? file_to_date.to_time : Time.now.utc
       from_date = to_date - Utils.convert_to_seconds(unit: 'days', value: days.to_i)
     end
+    # data_source_id = DataSource.where(name: ["inaturalist", "gbif"]).pluck(:id)
     data_source_id = DataSource.find_by_name("inaturalist")
-    
+
     unique_ids = Observation.where("observed_at BETWEEN ? and ?", from_date, to_date)
                             .where(data_source_id: data_source_id)
                             .where(license_code: nil)
@@ -45,7 +46,7 @@ module Sightings
         Rails.logger.info("Sightings::update_inaturalist_sightings - Failed to update inaturalist license code for sighting #{unique_id}, #{e}")
       end
 
-      sleep(13)
+      sleep(30)
     end
     Rails.logger.info("Sightings::update_inaturalist_sightings - Finished processing.")
   end
