@@ -66,4 +66,29 @@ module Sightings
     attributes.delete :image_urls if attributes.present?
     return attributes
   end
+
+  def self.generate_questa_civilizations_json
+    url = Addressable::URI.parse("https://api.questagame.com/api/civilization_details").display_uri.to_s
+    response = HTTParty.get(url)
+    result = JSON.parse(response.body)
+    File.open("#{Rails.root}/lib/sightings/questa_civilizations.json", 'w') do |f|
+      f.write(result["data"].to_json)
+    end
+  end
+
+  def self.fetch_questa_civilizations
+    file_name = "#{Rails.root}/lib/sightings/questa_civilizations.json"
+    generate_questa_civilizations_json() unless File.file?(file_name)
+    file = File.open file_name
+    civilizations = JSON.load file
+  end
+
+
+  def self.get_random_civilization
+    civilizations = fetch_questa_civilizations()
+    civilizations_hash = Hash[civilizations.map { |r| [r["id"], r] }]
+    key = civilizations_hash.keys.sample
+    return civilizations_hash[key]
+  end
+
 end
