@@ -30,10 +30,10 @@ class ObservationsCreateJob < ApplicationJob
       end
       unless data_source.name == 'qgame'
         civilization = Sightings.get_random_civilization()
-        params[:civilization_id]          = civilization["id"]
-        params[:civilization_name]        = civilization["name"]
-        params[:civilization_color]       = civilization["color"]
-        params[:civilization_profile_pic] = civilization["profile_pic"]
+        params[:civilization_id]          = obs.present? && obs.civilization_id.present? ? obs.civilization_id : civilization["id"]
+        params[:civilization_name]        = obs.present? && obs.civilization_name.present? ? obs.civilization_name : civilization["name"]
+        params[:civilization_color]       = obs.present? && obs.civilization_color.present? ? obs.civilization_color : civilization["color"]
+        params[:civilization_profile_pic] = obs.present? && obs.civilization_profile_pic.present? ? obs.civilization_profile_pic : civilization["profile_pic"]
       end
       if obs.nil?
         obs = Observation.new params
@@ -52,7 +52,6 @@ class ObservationsCreateJob < ApplicationJob
           Delayed::Worker.logger.info params.inspect
           Delayed::Worker.logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\n"
         end
-
       else
         obs.attributes = params
         if obs.changed.empty?
@@ -72,7 +71,6 @@ class ObservationsCreateJob < ApplicationJob
                 ObservationImage.create! observation_id: obs.id, url: url
               end
             end  
-
           else  
             nupdates_failed +=1 
             Delayed::Worker.logger.info "\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
