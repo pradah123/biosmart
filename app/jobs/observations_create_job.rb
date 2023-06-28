@@ -1,3 +1,5 @@
+require_relative '../../lib/sightings/sightings.rb'
+
 class ObservationsCreateJob < ApplicationJob
   queue_as :queue_observations_create
 
@@ -25,6 +27,13 @@ class ObservationsCreateJob < ApplicationJob
         params[:bioscore] = avg_bio_score
       elsif params[:bioscore].present? && params[:bioscore] > max_bio_score
         params[:bioscore] = max_bio_score
+      end
+      unless data_source.name == 'qgame'
+        civilization = Sightings.get_random_civilization()
+        params[:civilization_id]          = civilization["id"]
+        params[:civilization_name]        = civilization["name"]
+        params[:civilization_color]       = civilization["color"]
+        params[:civilization_profile_pic] = civilization["profile_pic"]
       end
       if obs.nil?
         obs = Observation.new params

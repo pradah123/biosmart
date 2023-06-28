@@ -14,3 +14,10 @@ namespace :inaturalist_sightings do
     end
   end
 end
+
+namespace :questa_civilizations_json do
+  desc "Generate json file from questagame civilizations"
+  task create: :environment do
+    Sightings.generate_questa_civilizations_json()
+  end
+end
