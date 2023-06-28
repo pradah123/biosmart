@@ -21,3 +21,19 @@ namespace :questa_civilizations_json do
     Sightings.generate_questa_civilizations_json()
   end
 end
+
+
+namespace :civilization_for_old_sightings do
+  desc "Update civilization data for old sightings"
+  task :update, [:days] => [:environment] do |task, args|
+    Rails.logger.info("civilization_for_old_sightings::processes running")
+    Rails.logger.info(`ps aux | pgrep -f civilization_for_old_sightings:update`)
+    status = `ps aux | pgrep -f civilization_for_old_sightings:update | tail -n +5`
+    Rails.logger.info("civilization_for_old_sightings::process running? :#{status}")
+    if status == ""
+      Sightings.update_civilization_for_old_sightings(args[:days])
+    else
+      Rails.logger.info("civilization_for_old_sightings::update task is already running")
+    end
+  end
+end
