@@ -396,7 +396,7 @@ class Region < ApplicationRecord
 
 
   ## Calculate minimum and maximum distance of region from a given coordinate
-  def distance_from_point(lat, lng, polygon_geojson)
+  def self.distance_from_point(lat, lng, polygon_geojson)
     min = max = nil
     if polygon_geojson.nil?
       return min, max
@@ -436,7 +436,7 @@ class Region < ApplicationRecord
     ## If given coordinate resides inside the polygon then return as true
     return true if contains? lat, lng
 
-    (min_dist, max_dist) = distance_from_point(lat, lng, polygon_geojson)
+    (min_dist, max_dist) = Region.distance_from_point(lat, lng, polygon_geojson)
 
     ## Return true, if distance between any polygon coordinate and given coordinate is
     ## less than or equal to required distance
