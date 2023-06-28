@@ -84,11 +84,50 @@ module Sightings
   end
 
 
-  def self.get_random_civilization
-    civilizations = fetch_questa_civilizations()
+  def self.get_random_civilization(civilizations: nil)
+    civilizations = fetch_questa_civilizations() unless civilizations.present?
     civilizations_hash = Hash[civilizations.map { |r| [r["id"], r] }]
     key = civilizations_hash.keys.sample
     return civilizations_hash[key]
   end
 
+
+  def self.update_civilization_for_old_sightings(days)
+    file_name = "#{Rails.root}/lib/sightings/.old_sightings_civilization_update_last_date.txt"
+    if File.file?(file_name)
+      file = File.open(file_name, "r")
+      file_to_date = file.read if file.present?
+      file.close()
+    end
+    to_date = file_to_date.present? ? file_to_date.to_time : Time.now.utc
+    from_date = to_date - Utils.convert_to_seconds(unit: 'days', value: days.to_i)
+    civilizations = fetch_questa_civilizations
+    data_source_id = DataSource.find_by_name("qgame")
+
+    observation_ids = Observation.where("observed_at BETWEEN ? and ?", from_date, to_date)
+                                 .where.not(data_source_id: data_source_id)
+                                 .where(civilization_id: nil).pluck(:id)
+    Rails.logger.info("Sightings::update_civilization_for_old_sightings - No. of observations to be updated from #{from_date} - to #{to_date}: #{observation_ids.length}")
+
+    observation_ids.each do |obs_id|
+      random_civilization = get_random_civilization(civilizations: civilizations)
+
+      begin
+        obs = Observation.find_by_id(obs_id)
+        update_status = obs.update(civilization_id: random_civilization["id"],
+                                   civilization_name: random_civilization["name"],
+                                   civilization_color: random_civilization["color"],
+                                   civilization_profile_pic: random_civilization["profile_pic"] )
+        if update_status
+          observed_at = obs.observed_at.to_s
+          file = File.open(file_name, "w")
+          file.write(observed_at)
+          file.close()
+        end
+      rescue => e
+        Rails.logger.info("Sightings::update_civilization_for_old_sightings - Failed to update inaturalist license code for sighting #{unique_id}, #{e}")
+      end
+    end
+    Rails.logger.info("Sightings::update_civilization_for_old_sightings - Finished processing.")
+  end
 end
