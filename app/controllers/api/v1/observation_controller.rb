@@ -200,5 +200,94 @@ module Api::V1
       render_success total_counts
     end
 
+
+    def get_closest_sightings
+      lat = params[:lat]
+      lng = params[:lng]
+      offset = params[:limit] || 15
+      raise ApiFail.new("No 'lat' given") unless lat.present?
+      raise ApiFail.new("No 'lng' given") unless lng.present?
+      begin
+        select_sql = "select final_observations.*, oi.url as images from (SELECT id, " \
+                     "scientific_name as sname,common_name as cname, bioscore as gold_rewarded, "\
+                     "civilization_name, civilization_color, " \
+                     "civilization_profile_pic as civilization_profile_image, distance, " \
+                     "lat, lng, creator_name as fullname, 'biosmart' as data_source " \
+                     "FROM (SELECT  *,( 6371 * acos( cos( radians(#{lat}) ) * " \
+                     "cos( radians( lat ) ) * cos( radians( lng ) - radians(#{lng}) ) + " \
+                     "sin( radians(#{lat}) ) * sin( radians( lat ) ) ) ) " \
+                     "AS distance FROM observations " \
+                     "WHERE data_source_id not in (select id from data_sources where name='qgame') AND " \
+                     "observation_images_count > 0 ) al " \
+                     "ORDER BY distance limit #{offset} ) as final_observations " \
+                     "inner join observation_images oi on " \
+                     "final_observations.id = oi.observation_id"
+        Rails.logger.info("select_sql: #{select_sql}")
+        results = ActiveRecord::Base.connection.execute select_sql
+      rescue => e
+        Delayed::Worker.logger.info("ERROR for getting closest sightings data #{e.message}")
+      end
+      hash = {}
+      final_results = []
+      results.each do |r|
+        if hash.key?("#{r['id']}")
+          url = r["images"]
+          urls = final_results[hash["#{r['id']}"]]["images"]
+          final_urls = [url, urls]
+          final_results[hash["#{r['id']}"]]["images"] = final_urls.flatten
+        else
+          r['captured_user_info'] = {
+            id: nil,
+            exp_level: nil,
+            fullname: r["fullname"],
+            user_profile_pic: nil
+          }
+          r['verifier_response'] = nil
+          r['model'] = nil
+          r['user_id'] = nil
+          final_results.push(r)
+          hash["#{r['id']}"] = final_results.length - 1
+        end
+      end
+      render_success final_results
+    end
+
+
+    def get_observation_for_questa
+      id = params[:id]
+      raise ApiFail.new("No 'id' given") unless id.present?
+      obs = Observation.where(id: id).includes(:observation_images).first
+
+      images = obs.observation_images.pluck(:url)
+      final_images = []
+      images.each do |i|
+        final_images.push(
+          { original: i,
+            main: nil,
+            thumb: nil})
+      end
+      final_obs = {
+        id: obs.id,
+        species: {
+          cname: obs.common_name,
+          sname: obs.scientific_name,
+          image_url: nil
+        },
+        gold_rewarded: obs.bioscore,
+        civilization_color: obs.civilization_color,
+        user: {
+          id: nil,
+          fullname: obs.creator_name,
+          profile_image: [],
+          exp_level: nil,
+          civilization_color: obs.civilization_color,
+          civilization_name: obs.civilization_name,
+          civilization_profile_image: obs.civilization_profile_pic
+        },
+        images: final_images
+      }
+
+      render_success final_obs
+    end
   end
 end 

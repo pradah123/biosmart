@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  resources :scaffold_tests
+  # get '/scaffold_tests', to: 'scaffold_tests#index'
+  get 'cards/create'
+  get 'cards/update'
+  get 'cards/destroy'
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
     
@@ -68,6 +73,8 @@ Rails.application.routes.draw do
       post '/observations', to: 'observation#bulk_create'
       get '/observations/more', to: 'observation#get_more'
       get '/observations/total_counts', to: 'observation#get_total_counts'
+      get '/observations/closest', to: 'observation#get_closest_sightings'
+      get '/observations/for_questa/:id', to: 'observation#get_observation_for_questa'
 
       get '/observations/contest_region', to: 'observation#contest_region'
       get '/observations/region/:id', to: 'observation#region'
