@@ -73,7 +73,7 @@ Rails.application.routes.draw do
       post '/observations', to: 'observation#bulk_create'
       get '/observations/more', to: 'observation#get_more'
       get '/observations/total_counts', to: 'observation#get_total_counts'
-      get '/observations/closest', to: 'observation#get_closest_sightings'
+      get '/observations/for_questa/closest', to: 'observation#get_closest_sightings'
       get '/observations/for_questa/:id', to: 'observation#get_observation_for_questa'
 
       get '/observations/contest_region', to: 'observation#contest_region'
