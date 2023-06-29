@@ -227,9 +227,9 @@ module Api::V1
         begin
           select_sql = "select final_observations.*, oi.url as images from (SELECT al.id, " \
                       "al.scientific_name as sname,al.common_name as cname, al.bioscore as gold_rewarded, "\
-                      "al.civilization_name, al.civilization_color, " \
+                      "al.civilization_name, al.civilization_color, al.data_source_id, " \
                       "al.civilization_profile_pic as civilization_profile_image, distance, " \
-                      "al.lat, al.lng, al.creator_name as fullname, 'biosmart' as data_source " \
+                      "al.lat, al.lng, al.creator_name as fullname " \
                       "FROM (SELECT  distinct o.*,( 6371 * acos( cos( radians(#{lat}) ) * " \
                       "cos( radians( lat ) ) * cos( radians( lng ) - radians(#{lng}) ) + " \
                       "sin( radians(#{lat}) ) * sin( radians( lat ) ) ) ) " \
@@ -258,6 +258,9 @@ module Api::V1
           final_urls = [url, urls]
           final_results[hash["#{r['id']}"]]["images"] = final_urls.flatten
         else
+          r['data_source'] = "biosmart-#{DataSource.find_by_id(r['data_source_id']).name}"
+          r.delete('data_source_id')
+
           r['captured_user_info'] = {
             id: nil,
             exp_level: nil,
@@ -267,6 +270,7 @@ module Api::V1
           r['verifier_response'] = nil
           r['model'] = nil
           r['user_id'] = nil
+
           final_results.push(r)
           hash["#{r['id']}"] = final_results.length - 1
         end
