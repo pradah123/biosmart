@@ -535,6 +535,59 @@ class Observation < ApplicationRecord
   end
 
 
+  def self.get_closest_sightings_to_location(lat, lng, nstart, nend)
+    regions = Region.where(base_region_id: nil).where.not(raw_polygon_json: nil)
+    final_regions = []
+    regions.each do |r|
+      polygon_geojson = r.get_polygon_json
+      is_region_near_to_point = r.is_region_near_to_point(lat, lng)
+      next unless is_region_near_to_point.present?
+      (min_dist, max_dist) = Region.distance_from_point(lat, lng, polygon_geojson)
+      final_regions.push([r.id, min_dist])
+    end
+    final_regions.sort! do |a, b|
+      a[1] <=> b[1]
+    end
+    Rails.logger.info("Observation::get_closest_sightings_to_location => final_regions #{final_regions}")
+    license_codes = "null, 'cc-0', 'cc-by', 'cc-by-nc', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc-sa', 'cc-by-nc-nd'"
+
+    results = []
+    final_regions.each do |fr|
+      region_id = fr[0]
+      begin
+        select_sql = "select final_observations.*, oi.url as images from (SELECT al.id, " \
+                    "al.scientific_name as sname,al.common_name as cname, al.accepted_name, " \
+                    "al.observed_at, al.created_at, al.updated_at, al.bioscore as gold_rewarded, " \
+                    "al.taxonomy_id, al.unique_id, al.identifications_count, al.creator_id, al.address, " \
+                    "al.civilization_name, al.civilization_color, al.data_source_id, " \
+                    "al.civilization_profile_pic as civilization_profile_image, distance, " \
+                    "al.lat, al.lng, al.creator_name as fullname, al.license_code " \
+                    "FROM (SELECT  distinct o.*,( 6371 * acos( cos( radians(#{lat}) ) * " \
+                    "cos( radians( lat ) ) * cos( radians( lng ) - radians(#{lng}) ) + " \
+                    "sin( radians(#{lat}) ) * sin( radians( lat ) ) ) ) " \
+                    "AS distance FROM observations o " \
+                    "INNER JOIN observations_regions org " \
+                    "ON org.observation_id = o.id " \
+                    "WHERE org.region_id = #{region_id} AND " \
+                    "o.license_code IN (#{license_codes}) AND " \
+                    "o.taxonomy_id is not null AND " \
+                    "o.data_source_id not in (select ds.id from data_sources ds where ds.name='qgame') AND " \
+                    "o.observation_images_count > 0 ) al " \
+                    "ORDER BY distance limit #{nend} offset(#{nstart})) as final_observations " \
+                    "inner join observation_images oi on " \
+                    "final_observations.id = oi.observation_id"
+        Rails.logger.info("select_sql: #{select_sql}")
+        results = ActiveRecord::Base.connection.execute select_sql
+      rescue => e
+        Delayed::Worker.logger.info("ERROR for getting closest sightings data #{e.message}")
+      end
+      break if results.to_json.length.positive?
+    end
+    return results
+  end
+
+
+
 
   rails_admin do
     list do

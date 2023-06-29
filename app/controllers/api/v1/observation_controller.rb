@@ -202,53 +202,14 @@ module Api::V1
 
 
     def get_closest_sightings
-      lat = params[:lat]
-      lng = params[:lng]
-      offset = params[:limit] || 15
+      lat    = params[:lat]
+      lng    = params[:lng]
+      nstart = params[:offset] || 0
+      nend   = params[:limit] || 15
       raise ApiFail.new("No 'lat' given") unless lat.present?
       raise ApiFail.new("No 'lng' given") unless lng.present?
-      regions = Region.where(base_region_id: nil).where.not(raw_polygon_json: nil)
-      final_regions = []
-      regions.each do |r|
-        polygon_geojson = r.get_polygon_json
-        is_region_near_to_point = r.is_region_near_to_point(lat, lng)
-        next unless is_region_near_to_point.present?
-        (min_dist, max_dist) = Region.distance_from_point(lat, lng, polygon_geojson)
-        final_regions.push([r.id, min_dist])
-      end
-      final_regions.sort! do |a, b|
-        a[1] <=> b[1]
-      end
-      Rails.logger.info(final_regions)
-      # region_id = final_regions[0][0]
-      results = []
-      final_regions.each do |fr|
-        region_id = fr[0]
-        begin
-          select_sql = "select final_observations.*, oi.url as images from (SELECT al.id, " \
-                      "al.scientific_name as sname,al.common_name as cname, al.bioscore as gold_rewarded, "\
-                      "al.civilization_name, al.civilization_color, al.data_source_id, " \
-                      "al.civilization_profile_pic as civilization_profile_image, distance, " \
-                      "al.lat, al.lng, al.creator_name as fullname " \
-                      "FROM (SELECT  distinct o.*,( 6371 * acos( cos( radians(#{lat}) ) * " \
-                      "cos( radians( lat ) ) * cos( radians( lng ) - radians(#{lng}) ) + " \
-                      "sin( radians(#{lat}) ) * sin( radians( lat ) ) ) ) " \
-                      "AS distance FROM observations o " \
-                      "INNER JOIN observations_regions org " \
-                      "ON org.observation_id = o.id " \
-                      "WHERE org.region_id = #{region_id} AND " \
-                      "o.data_source_id not in (select ds.id from data_sources ds where ds.name='qgame') AND " \
-                      "o.observation_images_count > 0 ) al " \
-                      "ORDER BY distance limit #{offset} ) as final_observations " \
-                      "inner join observation_images oi on " \
-                      "final_observations.id = oi.observation_id"
-          Rails.logger.info("select_sql: #{select_sql}")
-          results = ActiveRecord::Base.connection.execute select_sql
-        rescue => e
-          Delayed::Worker.logger.info("ERROR for getting closest sightings data #{e.message}")
-        end
-        break if results.to_json.length.positive?
-      end
+
+      results = Observation.get_closest_sightings_to_location(lat, lng, nstart, nend)
       hash = {}
       final_results = []
       results.each do |r|
@@ -260,6 +221,9 @@ module Api::V1
         else
           r['data_source'] = "biosmart-#{DataSource.find_by_id(r['data_source_id']).name}"
           r.delete('data_source_id')
+          r['category_name'] = Taxonomy.find_by_id(r['taxonomy_id']).get_category_name || ''
+          r.delete('taxonomy_id')
+          r['images'] = [r['images']]
 
           r['captured_user_info'] = {
             id: nil,
@@ -270,7 +234,6 @@ module Api::V1
           r['verifier_response'] = nil
           r['model'] = nil
           r['user_id'] = nil
-
           final_results.push(r)
           hash["#{r['id']}"] = final_results.length - 1
         end
