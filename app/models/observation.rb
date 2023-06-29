@@ -448,6 +448,13 @@ class Observation < ApplicationRecord
     return "#{ observed_at.strftime '%Y-%m-%d %H:%M' } UTC"
   end
 
+  def created_at_utc
+    return "#{ created_at.strftime '%Y-%m-%d %H:%M' } UTC"
+  end
+
+  def updated_at_utc
+    return "#{ updated_at.strftime '%Y-%m-%d %H:%M' } UTC"
+  end
 
   # This function checks if taxonomy exists for given scientific_name or not
   # a. If doesn't exist then
