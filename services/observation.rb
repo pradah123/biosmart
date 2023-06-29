@@ -31,6 +31,7 @@ module Service
         optional(:search_text).filled(:string)
         optional(:with_images).filled(:string, included_in?: ['true', 'false'])
         optional(:get_counts_only).filled(:string, included_in?: ['true', 'false'])
+        optional(:ignore_data_sources).filled(:string)
       end
       
       class Params < AppStruct::Pagination
@@ -43,6 +44,7 @@ module Service
         attribute? :search_text, Types::Params::String
         attribute? :with_images, Types::Params::String.default('false')
         attribute? :get_counts_only, Types::Params::String.default('false')
+        attribute? :ignore_data_sources, Types::Params::String
       end
 
       def execute(params)
@@ -68,7 +70,10 @@ module Service
           )
         elsif search_params.region_id.present?
           observations = yield get_region_observations_relation(
-            search_params.region_id, search_params.category, search_params.search_text
+            search_params.region_id,
+            search_params.category,
+            search_params.search_text,
+            search_params.ignore_data_sources
           )
         end
         if search_params.get_counts_only == 'false'
@@ -122,13 +127,14 @@ module Service
 
       end
 
-      def get_region_observations_relation(region_id, category, search_text)
+      def get_region_observations_relation(region_id, category, search_text, ignore_data_sources)
         Rails.logger.debug "get_region_observations_relation(#{region_id})"
         region = ::Region.find_by_id(region_id)
         return Failure("Invalid region id (#{region_id}).") if region.blank?
+        Rails.logger.debug "get_region_observations_relation::ignore_data_sources(#{ignore_data_sources})"
 
         # (start_dt, end_dt) = region.first.get_date_range_for_report()
-        observations = yield filter_observations(region, category, search_text)
+        observations = yield filter_observations(region, category, search_text, ignore_data_sources)
         # observations = ::Observation.filter_observations(category: category, q: search_text, obj: region, start_dt: start_dt, end_dt:end_dt)
 
         Success(observations)
@@ -156,7 +162,7 @@ module Service
         return Success(observations)
       end
 
-      def filter_observations(obj, category, search_text)
+      def filter_observations(obj, category, search_text, ignore_data_sources = nil)
         if category.present?
           category_query = Utils.get_category_rank_name_and_value(category_name: category)
           if category_query.blank?
@@ -167,7 +173,14 @@ module Service
         end
         # For region page
         if obj.is_a? ::Region
-          observations = obj.observations.where("observed_at <= ?", Time.now)
+          if ignore_data_sources.present?
+            ignore_data_sources = ignore_data_sources.gsub(/\s+/, '')
+            data_source_ids = DataSource.where(name: ignore_data_sources.split(",")).pluck(:id)
+            filter_data_source_query = "observations.data_source_id not in (#{data_source_ids.join(', ')})"
+          else
+            filter_data_source_query = ""
+          end
+          observations = obj.observations.where("observed_at <= ?", Time.now).where(filter_data_source_query)
           if observations.present?
             if category.present? && search_text.present?
               observations = observations.joins(:taxonomy).where(category_query).search(search_text)

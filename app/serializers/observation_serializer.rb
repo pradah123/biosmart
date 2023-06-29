@@ -19,8 +19,16 @@ class ObservationSerializer
       object.accepted_name || ''
     end
 
+    attribute :created_at do |object|
+      object.created_at_utc
+    end
+
     attribute :observed_at do |object|
       object.observed_at_utc
+    end
+
+    attribute :updated_at do |object|
+      object.updated_at_utc
     end
 
     attribute :data_source do |object|
