@@ -343,6 +343,7 @@ module Service
                                                                                 year_filter: year_filter)
         regions.each do |r|
           region_id = r.id
+          next if r.subscription == 'seeded-public' || r.display_flag == false
           species_count = ::TaxonObservationsMonthlyCountMatview.get_total_sightings_for_region(region_id: region_id,
                                                                                                 taxonomy_ids: taxonomy_ids,
                                                                                                 month_filter: month_filter,
@@ -372,6 +373,7 @@ module Service
                           .where(contest_query)
                           .where('contests.utc_starts_at < ? AND contests.last_submission_accepted_at > ?', Time.now, Time.now)
                           .where(status: 'online')
+                          .where.not("regions.subscription = 'seeded-public' or regions.display_flag = false")
                           .distinct
                           .order('bioscore desc')
                           .page(search_params.page).per(20)
