@@ -84,7 +84,7 @@ module Service
                                                .where(
                                                  'region_id in (:region_ids)',
                                                  region_ids: ::Region.where(display_flag: true)
-                                                                     .where("name like '%#{region_name}%'")
+                                                                     .where("lower(name) like '%#{region_name&.downcase}%'")
                                                                      .pluck(:id)
                                                )
           else
@@ -92,7 +92,7 @@ module Service
                                                .where(
                                                  'region_id in (:region_ids)',
                                                  region_ids: ::Region.where(display_flag: true)
-                                                                     .where("name like '%#{region_name}%'")
+                                                                     .where("lower(name) like '%#{region_name&.downcase}%'")
                                                                      .pluck(:id)
                                                )
           end
