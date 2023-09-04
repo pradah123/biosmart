@@ -83,7 +83,7 @@ module Service
                                                )
                                                .where(
                                                  'region_id in (:region_ids)',
-                                                 region_ids: ::Region.where(display_flag: true)
+                                                 region_ids: ::Region.where.not("regions.subscription = 'seeded-public' or regions.display_flag = false")
                                                                      .where("lower(name) like '%#{region_name&.downcase}%'")
                                                                      .pluck(:id)
                                                )
@@ -91,7 +91,7 @@ module Service
             all_participations = participations.where(contest_id: contest_id)
                                                .where(
                                                  'region_id in (:region_ids)',
-                                                 region_ids: ::Region.where(display_flag: true)
+                                                 region_ids: ::Region.where.not("regions.subscription = 'seeded-public' or regions.display_flag = false")
                                                                      .where("lower(name) like '%#{region_name&.downcase}%'")
                                                                      .pluck(:id)
                                                )
