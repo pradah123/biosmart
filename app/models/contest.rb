@@ -217,6 +217,10 @@ class Contest < ApplicationRecord
       field :slug
       field :fetch_neighboring_region_data
       field :description
+      field :goe_text
+      field :goe_url
+      field :logo_image_url
+      field :header_image_url
       field :starts_at
       field :ends_at
       field :last_submission_accepted_at   
