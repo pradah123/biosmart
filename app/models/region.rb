@@ -122,6 +122,11 @@ class Region < ApplicationRecord
     update_column :lng, lng_centre
   end
 
+  def set_polygon_area(polygon_area)
+    update_column :polygon_area, polygon_area
+  end
+
+
   def set_time_zone_from_polygon
     #
     # https://developers.google.com/maps/documentation/timezone/get-started#maps_http_timezone-rb

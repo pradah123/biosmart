@@ -156,6 +156,7 @@ namespace :calculate do
       json.each do |polygon|
         area += Utils.calculate_polygon_area(polygon['coordinates'])
       end
+      r.set_polygon_area(area.round(2))
       Rails.logger.info "#{r.name} - #{area}"
     end
   end
