@@ -142,4 +142,29 @@ module Utils
     }
     return polygon
   end
+
+  def self.calculate_polygon_area(coordinates)
+    return 0.0 unless coordinates.size > 2
+
+    area = 0.0
+    coor_p = coordinates.first
+    if coordinates[0].join != coordinates[-1].join
+      coordinates.push coordinates[0]
+    end
+    coordinates[1..].each do |coor|
+      area += deg2rad(coor[1] - coor_p[1]) *
+              (2 + Math.sin(deg2rad(coor_p[0])) + Math.sin(deg2rad(coor[0])))
+      coor_p = coor
+    end
+    area = (area * 6_378_137 * 6_378_137 / 2.0).abs # 6378137 Earth's radius in meters
+    area /= 10_000 #In hectare
+
+    return area
+  end
+
+  def self.deg2rad(degrees)
+    radians = degrees * Math::PI / 180
+    return radians
+  end
+
 end

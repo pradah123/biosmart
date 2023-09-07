@@ -143,3 +143,20 @@ namespace :taxon_observations_monthly_count_matview do
     TaxonObservationsMonthlyCountMatview.refresh
   end
 end
+
+
+namespace :calculate do
+  desc 'Calculate polygon area'
+  task polygon_area: :environment do
+    regions = Region.where(base_region_id: nil)
+    regions.each do |r|
+      json = JSON.parse r.raw_polygon_json
+      next if json.nil?
+      area = 0
+      json.each do |polygon|
+        area += Utils.calculate_polygon_area(polygon['coordinates'])
+      end
+      Rails.logger.info "#{r.name} - #{area}"
+    end
+  end
+end
