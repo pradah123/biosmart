@@ -199,6 +199,9 @@ class Contest < ApplicationRecord
 
   end
 
+  def update_total_area(total_area)
+    update_column :total_area, total_area
+  end
 
   rails_admin do
     list do
