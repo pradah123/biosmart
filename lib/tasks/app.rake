@@ -146,7 +146,7 @@ end
 
 
 namespace :calculate do
-  desc 'Calculate polygon area'
+  desc 'Calculate area of each region polygon and total area of all regions in each contest'
   task region_and_contest_area: :environment do
     regions = Region.where(base_region_id: nil)
     regions.each do |r|
