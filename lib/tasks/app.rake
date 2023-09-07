@@ -143,3 +143,29 @@ namespace :taxon_observations_monthly_count_matview do
     TaxonObservationsMonthlyCountMatview.refresh
   end
 end
+
+
+namespace :calculate do
+  desc 'Calculate area of each region polygon and total area of all regions in each contest'
+  task region_and_contest_area: :environment do
+    regions = Region.where(base_region_id: nil)
+    regions.each do |r|
+      json = JSON.parse r.raw_polygon_json
+      next if json.nil?
+      area = 0
+      json.each do |polygon|
+        area += Utils.calculate_polygon_area(polygon['coordinates'])
+      end
+      r.set_polygon_area(area.round(2))
+      Rails.logger.info "Region name: #{r.name}, Area: #{area}"
+    end
+
+    contests = Contest.all
+    contests.each do |c|
+      contest_area = 0
+      contest_area = c.regions&.sum(:polygon_area)
+      c.update_total_area(contest_area.round(2))
+      Rails.logger.info "Contest name: #{c.title}, Area: #{contest_area.round(2)}"
+    end
+  end
+end
