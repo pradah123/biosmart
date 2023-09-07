@@ -147,7 +147,7 @@ end
 
 namespace :calculate do
   desc 'Calculate polygon area'
-  task polygon_area: :environment do
+  task region_and_contest_area: :environment do
     regions = Region.where(base_region_id: nil)
     regions.each do |r|
       json = JSON.parse r.raw_polygon_json
