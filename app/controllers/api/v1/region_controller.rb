@@ -90,6 +90,7 @@ module Api::V1
             search_params[:contest_id] = params[:bioscore_pctile_contest_id]
             search_params[:offset] = 0
             search_params[:limit] = 9223372036854775807 #postgresql bigint last number
+            search_params[:ignore_display_and_subscription_filter] = "true"
             # Get bioscore_percentile for given bioscore_pctile_contest_id
             Service::Participation::Fetch.call(search_params.symbolize_keys) do |regions|
               regions.success do |region|

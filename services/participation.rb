@@ -39,6 +39,8 @@ module Service
         optional(:sort_by).filled(:string, included_in?: ['id', 'bioscore'])
         optional(:sort_order).filled(:string, included_in?: ['asc', 'desc'])
         optional(:intersecting_contest_id).filled(:integer, gt?: 0)
+        optional(:ignore_display_and_subscription_filter).filled(:string, included_in?: ['true', 'false'])
+
       end
       
       class Params < AppStruct::Pagination
@@ -47,6 +49,8 @@ module Service
         attribute? :sort_order, Types::Params::String.default('asc')
         attribute? :intersecting_contest_id, Types::Params::Integer
         attribute? :region_name, Types::Params::String
+        attribute? :ignore_display_and_subscription_filter, Types::Params::String.default('false')
+
 
         def sort_key
           # Bioscore is not populated in participation model
@@ -66,6 +70,7 @@ module Service
         participations = ::Participation.default_scoped.base_region_participations
         contest_id = search_params.contest_id
         intersecting_contest_id = search_params.intersecting_contest_id
+        ignore_display_and_subscription_filter = search_params.ignore_display_and_subscription_filter
         region_name = search_params.region_name
         if contest_id.present?
           contest = ::Contest.find_by_id(contest_id)
@@ -88,13 +93,22 @@ module Service
                                                                      .pluck(:id)
                                                )
           else
-            all_participations = participations.where(contest_id: contest_id)
-                                               .where(
-                                                 'region_id in (:region_ids)',
-                                                 region_ids: ::Region.where.not("regions.subscription = 'seeded-public' or regions.display_flag = false")
-                                                                     .where("lower(name) like '%#{region_name&.downcase}%'")
-                                                                     .pluck(:id)
-                                               )
+            if ignore_display_and_subscription_filter == 'true'
+              all_participations = participations.where(contest_id: contest_id)
+                                                 .where(
+                                                   'region_id in (:region_ids)',
+                                                   region_ids: ::Region.where("lower(name) like '%#{region_name&.downcase}%'")
+                                                                       .pluck(:id)
+                                                 )
+            else
+              all_participations = participations.where(contest_id: contest_id)
+                                                 .where(
+                                                   'region_id in (:region_ids)',
+                                                   region_ids: ::Region.where.not("regions.subscription = 'seeded-public' or regions.display_flag = false")
+                                                                       .where("lower(name) like '%#{region_name&.downcase}%'")
+                                                                       .pluck(:id)
+                                                 )
+            end
           end
         end
         participations = all_participations.includes(:region)
