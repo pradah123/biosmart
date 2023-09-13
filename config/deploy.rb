@@ -52,7 +52,7 @@ namespace :setup do
   end
 end
 
-after :deploy, 'setup:libraries'
 after 'deploy:symlink:release', 'assets:compile'
+after 'assets:compile', 'setup:libraries'
 after 'puma:restart', 'deploy:restart'
 after 'puma:restart', 'delayed_job:restart'
