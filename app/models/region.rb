@@ -271,18 +271,17 @@ class Region < ApplicationRecord
       # Rails.logger.info("logo_image: #{logo_image}")
       Rails.logger.info("logo_image_url: #{logo_image_url}")
       Rails.logger.info "logo_image_url_changed : #{saved_change_to_logo_image_url?} || :logo_image_changed : #{saved_change_to_logo_image?}"
-      if !logo_image.nil? && !logo_image.blank?
+      if !logo_image_url.nil? && !logo_image_url.blank?
+        Rails.logger.info("Inside logo_image_url")
+        logo_image_path = FileOperations.download_image(logo_file_name, logo_image_url)
+      elsif !logo_image.nil? && !logo_image.blank?
         Rails.logger.info("Inside logo_image")
         logo_image_path = save_img(logo_image, logo_file_name)
-      elsif !logo_image_url.nil? && !logo_image_url.blank?
-        Rails.logger.info("Inside logo_image_url")
-
-        logo_image_path = FileOperations.download_image(logo_file_name, logo_image_url)
       end
       if logo_image_path
         logo_thumbnail = "#{logo_file_name}_thumbnail"
         logo_thumbnail_path = FileOperations.save_thumbnail_image(logo_image_path, logo_thumbnail)
-        # Save logo and thumbnail files to S3
+        # TO DO: Save logo and thumbnail files to S3
         # Update S3 file locations to regions schema
       else
         # Delete files from S3 if exists for the region
@@ -295,21 +294,18 @@ class Region < ApplicationRecord
     if base_region_id.nil?
       Rails.logger.info("change in header image #{saved_change_to_header_image}, #{saved_change_to_header_image_url}")
       header_file_name = "region_#{self.id}_header"
-
-      if !header_image.nil? && !header_image.blank?
-        Rails.logger.info("Inside header_image")
-
-        header_image_path = save_img(header_image, header_file_name)
-      elsif !header_image_url.nil? && !header_image_url.blank?
+      if !header_image_url.nil? && !header_image_url.blank?
         Rails.logger.info("Inside header_image_url")
         header_image_path = FileOperations.download_image(header_file_name, header_image_url)
+      elsif !header_image.nil? && !header_image.blank?
+        Rails.logger.info("Inside header_image")
+        header_image_path = save_img(header_image, header_file_name)
       end
       Rails.logger.info "header_image_path: #{header_image_path}"
       if header_image_path
         header_thumbnail = "#{header_file_name}_thumbnail"
         header_thumbnail_path = FileOperations.save_thumbnail_image(header_image_path, header_thumbnail)
       end
-
     end
     # region_id = self.id
     # url = self.header_image_url
