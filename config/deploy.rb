@@ -43,6 +43,16 @@ namespace :delayed_job do
 	end
 end
 
+namespace :setup do
+  desc 'installs required libraries'
+  task :libraries do
+    on roles(:app), in: :sequence do
+      execute :sudo, "apt-get -y install imagemagick"
+    end
+  end
+end
+
+after 'setup:libraries'
 after 'deploy:symlink:release', 'assets:compile'
 after 'puma:restart', 'deploy:restart'
 after 'puma:restart', 'delayed_job:restart'
