@@ -1,13 +1,13 @@
 <% if !@region.header_image_url.blank? || !@region.header_image.blank? %>
   <div class="row m-0 p-0">
     <div class="col d-flex justify-content-center">
-      <% if @region.header_image_url %>
-      <% if @region.region_url %>
+    <% if @region.header_image_url || @region.header_image%>
+      <% if !@region.region_url.nil? && !@region.region_url.blank? %>
         <a href="<%= @region.region_url %>" target="_blank">
-          <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid">
+          <img src="<%= (!@region.header_image_url.nil? && !@region.header_image_url.blank?) ? @region.header_image_url : @region.header_image %>" class="img-fluid">
         </a>
       <% else %>
-      <img src="<%= @region.header_image_url ? @region.header_image_url : @region.header_image %>" class="img-fluid">
+      <img src="<%= (!@region.header_image_url.nil? && !@region.header_image_url.blank?) ? @region.header_image_url : @region.header_image %>" class="img-fluid">
       <% end %>
     <% end %>
     </div>    
