@@ -24,7 +24,6 @@ staging:
         - gem install capistrano-rails
         - gem install capistrano-rvm
         - gem install capistrano3-puma
-        - apt-get install imagemagick
         # - gem install capistrano3-delayed-job -v '~> 1.0'
     script:
         - cap staging deploy
