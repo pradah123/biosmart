@@ -27,7 +27,7 @@ module FileOperations
         actual_img = IO.binread(original_image_path)
         IO.binwrite(file_path, actual_img)
       end
-      return 1
+      return file_path if File.file?(file_path)
     rescue => e
       Rails.logger.error "Unable to create logo thumbnail image #{file_path}"
       return 0

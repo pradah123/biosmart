@@ -1,5 +1,6 @@
 require_relative '../../lib/region/neighboring_region.rb'
 require_relative '../../lib/common/file_operations.rb'
+require_relative '../../lib/common/aws_operations.rb'
 
 require 'date'
 
@@ -268,6 +269,7 @@ class Region < ApplicationRecord
   def update_logo_image
     if base_region_id.nil?
       logo_file_name = "region_#{self.id}_logo"
+
       # Rails.logger.info("logo_image: #{logo_image}")
       Rails.logger.info("logo_image_url: #{logo_image_url}")
       Rails.logger.info "logo_image_url_changed : #{saved_change_to_logo_image_url?} || :logo_image_changed : #{saved_change_to_logo_image?}"
@@ -281,8 +283,13 @@ class Region < ApplicationRecord
       if logo_image_path
         logo_thumbnail = "#{logo_file_name}_thumbnail"
         logo_thumbnail_path = FileOperations.save_thumbnail_image(logo_image_path, logo_thumbnail)
-        # TO DO: Save logo and thumbnail files to S3
-        # Update S3 file locations to regions schema
+        # Save logo and thumbnail files to S3
+        client = AWSOperations.get_s3_client
+        if client
+          AWSOperations.aws_s3_file_upload(client, logo_image_path, "region-logos/" )
+          AWSOperations.aws_s3_file_upload(client, logo_thumbnail_path, "region-logos/" ) if logo_thumbnail_path
+          # TBD: Update S3 file locations to regions schema
+        end
       else
         # Delete files from S3 if exists for the region
         Rails.logger.info("No logo image to upload on S3 ")
