@@ -6,13 +6,13 @@ module AWSOperations
       # TBD: Read region and credentials values from encrypted aws config file and
       # replace them with 'xyz' values below
       client = Aws::S3::Client.new(
-        region: 'xyz',
-        credentials: Aws::Credentials.new('xyz', 'xyz')
+        region: ENV.fetch('AWS_REGION'),
+        credentials: Aws::Credentials.new(ENV.fetch('AWS_ACCESS_KEY_ID'), ENV.fetch('AWS_SECRET_ACCESS_KEY'))
       )
       return client
     rescue => e
-      return 0
       Rails.logger.error("Unable to get s3 client => #{e}")
+      return 0
     end
   end
 
@@ -23,7 +23,7 @@ module AWSOperations
       File.open(file_path, 'rb') do |file|
         # TBD: Read bucket value from encrypted aws config file and
         # replace them with 'xyz' value below
-        s3_client.put_object(bucket: 'xyz', key: key, body: file)
+        s3_client.put_object(bucket: 'biosmart-ui', key: key, body: file, acl: "public-read")
       end
     rescue => e
       Rails.logger.error("Unable to upload file #{file_path} to key #{key} => #{e}")
