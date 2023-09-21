@@ -291,7 +291,6 @@ class Region < ApplicationRecord
           # TBD: Update S3 file locations to regions schema
         end
       else
-        # Delete files from S3 if exists for the region
         Rails.logger.info("No logo image to upload on S3 ")
       end
     end
@@ -312,6 +311,15 @@ class Region < ApplicationRecord
       if header_image_path
         header_thumbnail = "#{header_file_name}_thumbnail"
         header_thumbnail_path = FileOperations.save_thumbnail_image(header_image_path, header_thumbnail)
+        # Save header and thumbnail files to S3
+        client = AWSOperations.get_s3_client
+        if client
+          AWSOperations.aws_s3_file_upload(client, header_image_path, "region-headers/" )
+          AWSOperations.aws_s3_file_upload(client, header_thumbnail_path, "region-headers/" ) if header_thumbnail_path
+          # TBD: Update S3 file locations to regions schema
+        end
+      else
+        Rails.logger.info("No header image to upload on S3 ")
       end
     end
     # region_id = self.id
