@@ -249,5 +249,29 @@ module Api::V1
 
       render json: { raw_polygon_json: polygon }
     end
+
+    # This function returns list of regions (with schema details) whose polygons contain
+    # given location(lat,lng)
+    def get_regions_for_location
+      lat = params[:lat]
+      lng = params[:lng]
+
+      if !lat || !lng
+        raise ApiFail.new("Must provide 'lat' and 'lng'")
+      end
+      regions_json = []
+      geokit_point = Geokit::LatLng.new lat, lng
+
+      Region.where(base_region_id: nil).each do |region|
+        region.get_geokit_polygons.each do |polygon|
+          if polygon.contains?(geokit_point)
+            region_hash = RegionSerializer.new(region).serializable_hash[:data][:attributes]
+            regions_json.push(region_hash)
+            break
+          end
+        end
+      end
+      render json: regions_json
+    end
   end
 end 

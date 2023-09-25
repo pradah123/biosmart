@@ -68,6 +68,7 @@ Rails.application.routes.draw do
 
       get '/region/polygons', to: 'region#polygons'
       get '/region/polygon/generate', to: 'region#generate_polygon'
+      get '/regions/search/location', to: 'region#get_regions_for_location'
       get '/region/data/:region_id/:contest_id', to: 'region#data'
 
       post '/observations', to: 'observation#bulk_create'
