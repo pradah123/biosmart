@@ -47,8 +47,8 @@ class Region < ApplicationRecord
   #
   after_save :set_time_zone_from_polygon, if: :saved_change_to_raw_polygon_json
   after_save :set_slug, if: :saved_change_to_name
-  after_save :update_logo_image, if: lambda {|r| r.saved_change_to_logo_image_url? || r.saved_change_to_logo_image? }
-  after_save :update_header_image, if: lambda {|r| r.saved_change_to_header_image_url? || r.saved_change_to_header_image? }
+  #after_save :update_logo_image, if: lambda {|r| r.saved_change_to_logo_image_url? || r.saved_change_to_logo_image? }
+  #after_save :update_header_image, if: lambda {|r| r.saved_change_to_header_image_url? || r.saved_change_to_header_image? }
 
   #
   # polygon computations are required to decide if an observation lies inside this
@@ -289,6 +289,7 @@ class Region < ApplicationRecord
           AWSOperations.aws_s3_file_upload(client, logo_image_path, "region-logos/" )
           AWSOperations.aws_s3_file_upload(client, logo_thumbnail_path, "region-logos/" ) if logo_thumbnail_path
           # TBD: Update S3 file locations to regions schema
+          # https://biosmart-ui.s3.ap-southeast-2.amazonaws.com/region-logos/region_441_logo.png
         end
       else
         Rails.logger.info("No logo image to upload on S3 ")
